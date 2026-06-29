@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Diet AI — Free AI Diet Plan & Calorie Tracker</title>
+<meta name="description" content="Diet AI is a free AI-powered nutrition coach. Get a personalised calorie & macro target, an instant day's meal plan, and track your food — right in your browser. No sign-up, no cost." />
+<meta name="theme-color" content="#16a34a" />
+<link rel="canonical" href="https://dietai.in/" />
+
+<!-- Open Graph / social -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Diet AI" />
+<meta property="og:title" content="Diet AI — Your free AI nutrition coach" />
+<meta property="og:description" content="Get a personalised calorie & macro target, an instant meal plan, and a built-in food tracker. Free, private, in your browser." />
+<meta property="og:url" content="https://dietai.in/" />
+<meta property="og:image" content="https://dietai.in/og.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Diet AI — Your free AI nutrition coach" />
+<meta name="twitter:description" content="Personalised calorie & macro targets, an instant meal plan, and a food tracker. Free and private." />
+<meta name="twitter:image" content="https://dietai.in/og.png" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%97%3C/text%3E%3C/svg%3E" />
+
+<style>
+  :root{
+    --green:#16a34a; --green-d:#15803d; --green-l:#dcfce7;
+    --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc; --card:#ffffff;
+    --amber:#f59e0b; --blue:#2563eb; --red:#ef4444;
+    --shadow:0 10px 30px rgba(2,6,23,.08); --radius:16px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:inherit}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+  .btn{display:inline-flex;align-items:center;gap:8px;border:none;border-radius:12px;padding:14px 22px;font-size:16px;font-weight:700;cursor:pointer;transition:.18s;text-decoration:none}
+  .btn-primary{background:linear-gradient(135deg,var(--green),var(--green-d));color:#fff;box-shadow:0 8px 20px rgba(22,163,74,.28)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(22,163,74,.38)}
+  .btn-ghost{background:#fff;color:var(--green-d);border:2px solid var(--green-l)}
+  .btn-ghost:hover{border-color:var(--green)}
+
+  /* Header */
+  header{position:sticky;top:0;z-index:50;background:rgba(248,250,252,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em}
+  .logo .dot{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--green),var(--green-d));display:grid;place-items:center;font-size:18px}
+  .nav-links{display:flex;gap:24px;align-items:center}
+  .nav-links a{color:var(--muted);text-decoration:none;font-weight:600;font-size:15px}
+  .nav-links a:hover{color:var(--ink)}
+  @media(max-width:640px){.nav-links a:not(.btn){display:none}}
+
+  /* Hero */
+  .hero{padding:64px 0 36px;text-align:center}
+  .pill{display:inline-block;background:var(--green-l);color:var(--green-d);font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px;margin-bottom:18px}
+  .hero h1{font-size:clamp(32px,6vw,52px);line-height:1.08;letter-spacing:-.03em;margin-bottom:16px}
+  .hero h1 .hl{background:linear-gradient(120deg,var(--green),#22c55e);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.sub{font-size:clamp(16px,2.4vw,20px);color:var(--muted);max-width:620px;margin:0 auto 28px}
+  .hero .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .trust{margin-top:22px;color:var(--muted);font-size:14px;display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+  .trust span{display:inline-flex;align-items:center;gap:6px}
+
+  /* App card */
+  .app{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin:18px 0 48px;overflow:hidden}
+  .tabs{display:flex;border-bottom:1px solid var(--line);background:#fff}
+  .tab{flex:1;padding:16px;text-align:center;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:none;font-size:15px;border-bottom:3px solid transparent;transition:.15s}
+  .tab.active{color:var(--green-d);border-bottom-color:var(--green)}
+  .tab:hover{color:var(--ink);background:#fafafa}
+  .panel{padding:28px}
+  @media(max-width:640px){.panel{padding:20px}}
+  .panel h2{font-size:22px;letter-spacing:-.02em;margin-bottom:4px}
+  .panel .lead{color:var(--muted);margin-bottom:22px;font-size:15px}
+
+  .grid{display:grid;gap:16px}
+  .grid-2{grid-template-columns:1fr 1fr}
+  .grid-3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:640px){.grid-2,.grid-3{grid-template-columns:1fr}}
+  label{display:block;font-weight:600;font-size:13px;margin-bottom:7px;color:#334155}
+  input,select{width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:10px;font-size:15px;font-family:inherit;background:#fff;transition:.15s}
+  input:focus,select:focus{outline:none;border-color:var(--green)}
+  .seg{display:flex;gap:8px}
+  .seg button{flex:1;padding:11px;border:2px solid var(--line);background:#fff;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;color:var(--muted);transition:.15s}
+  .seg button.on{border-color:var(--green);background:var(--green-l);color:var(--green-d)}
+
+  /* Results */
+  .results{margin-top:24px;display:none}
+  .results.show{display:block;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .kcal-hero{text-align:center;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid var(--green-l);border-radius:14px;padding:24px;margin-bottom:18px}
+  .kcal-hero .big{font-size:46px;font-weight:800;color:var(--green-d);line-height:1}
+  .kcal-hero .lbl{color:var(--muted);font-weight:600;margin-top:6px}
+  .macros{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:8px}
+  .macro{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center}
+  .macro .v{font-size:24px;font-weight:800}
+  .macro .n{font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+  .macro.p .v{color:var(--blue)} .macro.c .v{color:var(--amber)} .macro.f .v{color:var(--red)}
+
+  .meal{display:flex;gap:14px;align-items:flex-start;padding:14px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:#fff}
+  .meal .ic{width:42px;height:42px;border-radius:10px;background:var(--green-l);display:grid;place-items:center;font-size:20px;flex-shrink:0}
+  .meal .mt{font-weight:700}
+  .meal .mi{color:var(--muted);font-size:14px;margin-top:2px}
+  .meal .mk{margin-left:auto;font-weight:800;color:var(--green-d);white-space:nowrap;font-size:14px}
+
+  /* Tracker */
+  .add-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end}
+  @media(max-width:640px){.add-row{grid-template-columns:1fr 1fr}.add-row .full{grid-column:1/-1}}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}
+  @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+  .stat .v{font-size:22px;font-weight:800;color:var(--green-d)}
+  .stat .n{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:3px}
+  .bar{height:12px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 2px}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--green),#22c55e);width:0;transition:width .4s}
+  .bar.over > i{background:linear-gradient(90deg,var(--amber),var(--red))}
+  .log-item{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:#fff}
+  .log-item .nm{font-weight:600}
+  .log-item .meta{color:var(--muted);font-size:13px}
+  .log-item .k{margin-left:auto;font-weight:700;color:var(--ink)}
+  .del{border:none;background:#fef2f2;color:var(--red);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;line-height:1}
+  .del:hover{background:#fee2e2}
+  .empty{text-align:center;color:var(--muted);padding:26px;border:1px dashed var(--line);border-radius:12px}
+  datalist{display:none}
+  .hint{font-size:13px;color:var(--muted);margin-top:10px}
+
+  /* Features */
+  .features{padding:20px 0 10px}
+  .features h2{text-align:center;font-size:28px;letter-spacing:-.02em;margin-bottom:8px}
+  .features .lead{text-align:center;color:var(--muted);margin-bottom:28px}
+  .fcards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:740px){.fcards{grid-template-columns:1fr}}
+  .fcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px}
+  .fcard .ic{width:46px;height:46px;border-radius:12px;background:var(--green-l);display:grid;place-items:center;font-size:22px;margin-bottom:12px}
+  .fcard h3{font-size:17px;margin-bottom:6px}
+  .fcard p{color:var(--muted);font-size:14px}
+
+  footer{border-top:1px solid var(--line);margin-top:48px;padding:28px 0;color:var(--muted);font-size:14px}
+  .foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+  .disc{font-size:12.5px;color:#94a3b8;margin-top:10px;max-width:760px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo"><span class="dot">🥗</span> Diet AI</div>
+    <nav class="nav-links">
+      <a href="#planner">Plan</a>
+      <a href="#tracker">Track</a>
+      <a href="#features">Why</a>
+      <a href="#planner" class="btn btn-primary" style="padding:10px 18px;font-size:14px">Get my plan</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="pill">100% free · no sign-up · private</span>
+    <h1>Your free <span class="hl">AI nutrition coach</span><br/>for everyday eating</h1>
+    <p class="sub">Tell Diet AI a little about you and instantly get a personalised calorie &amp; macro target, a ready-to-eat day's meal plan, and a built-in tracker — all in your browser.</p>
+    <div class="cta">
+      <a href="#planner" class="btn btn-primary">Build my plan →</a>
+      <a href="#tracker" class="btn btn-ghost">Track my food</a>
+    </div>
+    <div class="trust">
+      <span>✅ No account needed</span>
+      <span>🔒 Data stays on your device</span>
+      <span>🇮🇳 Indian &amp; global foods</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="app">
+    <div class="tabs">
+      <button class="tab active" data-tab="planner" id="planner">🎯 AI Plan Generator</button>
+      <button class="tab" data-tab="tracker" id="tracker">📊 Food Tracker</button>
+    </div>
+
+    <!-- PLANNER -->
+    <div class="panel" data-panel="planner">
+      <h2>Get your personalised plan</h2>
+      <p class="lead">Based on the Mifflin-St Jeor formula nutritionists use — adjusted for your goal.</p>
+
+      <div class="grid grid-2">
+        <div>
+          <label>Your goal</label>
+          <div class="seg" id="goalSeg">
+            <button data-goal="lose" class="on">Lose fat</button>
+            <button data-goal="maintain">Maintain</button>
+            <button data-goal="gain">Build muscle</button>
+          </div>
+        </div>
+        <div>
+          <label>Sex (for the formula)</label>
+          <div class="seg" id="sexSeg">
+            <button data-sex="male" class="on">Male</button>
+            <button data-sex="female">Female</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-3" style="margin-top:16px">
+        <div><label>Age (years)</label><input id="age" type="number" min="14" max="100" placeholder="28" value="28"></div>
+        <div><label>Height (cm)</label><input id="height" type="number" min="120" max="230" placeholder="175" value="175"></div>
+        <div><label>Weight (kg)</label><input id="weight" type="number" min="35" max="250" placeholder="72" value="72"></div>
+      </div>
+
+      <div style="margin-top:16px">
+        <label>Activity level</label>
+        <select id="activity">
+          <option value="1.2">Sedentary — desk job, little exercise</option>
+          <option value="1.375" selected>Lightly active — 1–3 workouts/week</option>
+          <option value="1.55">Moderately active — 3–5 workouts/week</option>
+          <option value="1.725">Very active — 6–7 workouts/week</option>
+          <option value="1.9">Athlete — hard training / physical job</option>
+        </select>
+      </div>
+
+      <div style="margin-top:22px">
+        <button class="btn btn-primary" style="width:100%" onclick="generatePlan()">⚡ Generate my plan</button>
+      </div>
+
+      <div class="results" id="planResults">
+        <div class="kcal-hero">
+          <div class="big" id="rKcal">0</div>
+          <div class="lbl" id="rGoalLbl">calories per day</div>
+        </div>
+        <div class="macros">
+          <div class="macro p"><div class="v" id="rP">0g</div><div class="n">Protein</div></div>
+          <div class="macro c"><div class="v" id="rC">0g</div><div class="n">Carbs</div></div>
+          <div class="macro f"><div class="v" id="rF">0g</div><div class="n">Fat</div></div>
+        </div>
+        <p class="hint" id="rNote"></p>
+
+        <h2 style="margin:24px 0 4px;font-size:18px">🍽️ A sample day at this target</h2>
+        <p class="lead" style="margin-bottom:14px">Swap anything you like — these are just ideas that hit your numbers.</p>
+        <div id="mealPlan"></div>
+
+        <button class="btn btn-ghost" style="width:100%;margin-top:6px" onclick="sendToTracker()">📊 Load this day into my tracker</button>
+      </div>
+    </div>
+
+    <!-- TRACKER -->
+    <div class="panel" data-panel="tracker" style="display:none">
+      <h2>Today's food log</h2>
+      <p class="lead">Add what you eat and watch your calories &amp; protein. Saved on your device automatically.</p>
+
+      <div style="background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <label style="margin:0">Daily calorie target</label>
+        <input id="targetCal" type="number" style="width:120px" placeholder="2000" oninput="saveTarget();renderTracker()">
+        <span class="hint" style="margin:0">Tip: generate a plan and it fills in automatically.</span>
+      </div>
+
+      <div class="add-row">
+        <div class="full">
+          <label>Food</label>
+          <input id="fName" list="foodDB" placeholder="Start typing… e.g. Roti, Paneer, Banana" oninput="autofill()">
+          <datalist id="foodDB"></datalist>
+        </div>
+        <div><label>Calories</label><input id="fCal" type="number" min="0" placeholder="0"></div>
+        <div><label>Protein (g)</label><input id="fProt" type="number" min="0" placeholder="0"></div>
+        <div><button class="btn btn-primary" style="padding:12px 18px" onclick="addFood()">Add</button></div>
+      </div>
+      <p class="hint">Pick from 30+ common foods (auto-fills calories &amp; protein) or type your own numbers.</p>
+
+      <div class="stats">
+        <div class="stat"><div class="v" id="sCal">0</div><div class="n">Calories</div></div>
+        <div class="stat"><div class="v" id="sLeft">0</div><div class="n">Remaining</div></div>
+        <div class="stat"><div class="v" id="sProt">0g</div><div class="n">Protein</div></div>
+        <div class="stat"><div class="v" id="sCount">0</div><div class="n">Items</div></div>
+      </div>
+      <div class="bar" id="calBarWrap"><i id="calBar"></i></div>
+      <p class="hint" id="calBarLbl">Add a target to see your progress.</p>
+
+      <div id="log" style="margin-top:18px"></div>
+      <button class="btn btn-ghost" style="margin-top:6px" onclick="clearDay()">Clear today</button>
+    </div>
+  </div>
+</div>
+
+<section class="features wrap" id="features">
+  <h2>Why people use Diet AI</h2>
+  <p class="lead">A real nutrition tool — not another locked-down app.</p>
+  <div class="fcards">
+    <div class="fcard"><div class="ic">🎯</div><h3>Numbers that fit you</h3><p>Calorie &amp; macro targets from the same formula dietitians use, tuned to your goal and activity — in one tap.</p></div>
+    <div class="fcard"><div class="ic">🍽️</div><h3>A plan, not just a number</h3><p>Get a full day of meals that actually add up to your target, using everyday Indian and global foods.</p></div>
+    <div class="fcard"><div class="ic">🔒</div><h3>Private &amp; free, forever</h3><p>No account, no ads, no uploads. Everything runs in your browser and your log stays on your device.</p></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="logo" style="font-size:18px"><span class="dot" style="width:30px;height:30px;font-size:16px">🥗</span> Diet AI</div>
+      <div>© <span id="yr"></span> dietai.in · Made with care for healthier eating</div>
+    </div>
+    <p class="disc">Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and macro figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p>
+  </div>
+</footer>
+
+<script>
+/* ---------- Food database (per typical serving) ---------- */
+const FOODS = [
+  {n:"Roti / Chapati (1)", k:120, p:3, c:18, f:3},
+  {n:"Plain rice (1 cup)", k:205, p:4, c:45, f:0},
+  {n:"Dal cooked (1 cup)", k:230, p:18, c:30, f:4},
+  {n:"Paneer (100g)", k:265, p:18, c:6, f:20},
+  {n:"Chicken breast (100g)", k:165, p:31, c:0, f:4},
+  {n:"Egg, boiled (1)", k:78, p:6, c:1, f:5},
+  {n:"Curd / Yogurt (1 cup)", k:150, p:8, c:11, f:8},
+  {n:"Milk, toned (1 cup)", k:120, p:8, c:12, f:5},
+  {n:"Oats, dry (40g)", k:150, p:5, c:27, f:3},
+  {n:"Banana (1)", k:105, p:1, c:27, f:0},
+  {n:"Apple (1)", k:95, p:0, c:25, f:0},
+  {n:"Almonds (10)", k:70, p:3, c:2, f:6},
+  {n:"Peanut butter (1 tbsp)", k:95, p:4, c:3, f:8},
+  {n:"Idli (2)", k:160, p:4, c:34, f:1},
+  {n:"Dosa, plain (1)", k:170, p:4, c:30, f:4},
+  {n:"Poha (1 plate)", k:270, p:5, c:48, f:7},
+  {n:"Rajma cooked (1 cup)", k:215, p:13, c:38, f:1},
+  {n:"Chole cooked (1 cup)", k:270, p:13, c:45, f:4},
+  {n:"Mixed veg sabzi (1 cup)", k:140, p:4, c:16, f:7},
+  {n:"Tofu (100g)", k:145, p:16, c:4, f:9},
+  {n:"Fish, cooked (100g)", k:175, p:25, c:0, f:8},
+  {n:"Brown rice (1 cup)", k:215, p:5, c:45, f:2},
+  {n:"Whole wheat bread (2 slices)", k:160, p:8, c:28, f:2},
+  {n:"Sprouts (1 cup)", k:125, p:10, c:22, f:1},
+  {n:"Greek yogurt (150g)", k:130, p:15, c:6, f:4},
+  {n:"Whey protein (1 scoop)", k:120, p:24, c:3, f:2},
+  {n:"Peanuts (handful, 30g)", k:170, p:7, c:5, f:14},
+  {n:"Cheese slice (1)", k:70, p:4, c:1, f:5},
+  {n:"Sweet potato (150g)", k:130, p:2, c:30, f:0},
+  {n:"Salad bowl (veg)", k:80, p:3, c:12, f:2},
+  {n:"Coffee with milk &amp; sugar", k:60, p:2, c:9, f:2}
+];
+
+/* ---------- Planner ---------- */
+let goal="lose", sex="male";
+document.querySelectorAll('#goalSeg button').forEach(b=>b.onclick=()=>{goal=b.dataset.goal;sel('#goalSeg',b)});
+document.querySelectorAll('#sexSeg button').forEach(b=>b.onclick=()=>{sex=b.dataset.sex;sel('#sexSeg',b)});
+function sel(grp,btn){document.querySelectorAll(grp+' button').forEach(x=>x.classList.remove('on'));btn.classList.add('on');}
+
+let lastPlan=null;
+
+function generatePlan(){
+  const age=+document.getElementById('age').value, h=+document.getElementById('height').value, w=+document.getElementById('weight').value;
+  const act=+document.getElementById('activity').value;
+  if(!age||!h||!w){alert('Please enter your age, height and weight.');return;}
+  // Mifflin-St Jeor
+  let bmr = 10*w + 6.25*h - 5*age + (sex==='male'?5:-161);
+  let tdee = bmr*act;
+  let target = tdee, lbl="calories to maintain";
+  if(goal==='lose'){target = tdee-500; lbl="calories per day to lose fat (~0.45 kg/week)";}
+  if(goal==='gain'){target = tdee+300; lbl="calories per day to build muscle";}
+  // Safety floor
+  const floor = sex==='male'?1500:1200; let floored=false;
+  if(target<floor){target=floor;floored=true;}
+  target=Math.round(target/10)*10;
+
+  // Macros: protein 1.8g/kg, fat 25% kcal, carbs remainder
+  let protein=Math.round(1.8*w);
+  let fat=Math.round((target*0.25)/9);
+  let carbs=Math.round((target - protein*4 - fat*9)/4);
+  if(carbs<0)carbs=0;
+
+  document.getElementById('rKcal').textContent=target.toLocaleString();
+  document.getElementById('rGoalLbl').textContent=lbl;
+  document.getElementById('rP').textContent=protein+'g';
+  document.getElementById('rC').textContent=carbs+'g';
+  document.getElementById('rF').textContent=fat+'g';
+  document.getElementById('rNote').innerHTML = "Estimated maintenance: <b>"+Math.round(tdee).toLocaleString()+" kcal</b>." + (floored? " We've raised your target to a safe minimum of "+floor+" kcal — going lower isn't recommended." : "");
+
+  buildMeals(target, protein);
+  lastPlan={target,protein};
+  document.getElementById('planResults').classList.add('show');
+  document.getElementById('planResults').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function buildMeals(target, protein){
+  // distribute kcal: breakfast 25, lunch 35, dinner 30, snack 10
+  const split=[['Breakfast','🌅',.25],['Lunch','☀️',.35],['Dinner','🌙',.30],['Snack','🍎',.10]];
+  const picks={
+    Breakfast:[["Oats, dry (40g)","Milk, toned (1 cup)","Banana (1)"],["Idli (2)","Curd / Yogurt (1 cup)"],["Whole wheat bread (2 slices)","Egg, boiled (1)","Egg, boiled (1)"]],
+    Lunch:[["Roti / Chapati (1)","Roti / Chapati (1)","Dal cooked (1 cup)","Mixed veg sabzi (1 cup)","Curd / Yogurt (1 cup)"],["Plain rice (1 cup)","Rajma cooked (1 cup)","Salad bowl (veg)"],["Brown rice (1 cup)","Chicken breast (100g)","Salad bowl (veg)"]],
+    Dinner:[["Roti / Chapati (1)","Roti / Chapati (1)","Paneer (100g)","Mixed veg sabzi (1 cup)"],["Plain rice (1 cup)","Dal cooked (1 cup)","Tofu (100g)"],["Fish, cooked (100g)","Brown rice (1 cup)","Salad bowl (veg)"]],
+    Snack:[["Greek yogurt (150g)","Almonds (10)"],["Apple (1)","Peanuts (handful, 30g)"],["Whey protein (1 scoop)","Banana (1)"]]
+  };
+  const c=document.getElementById('mealPlan'); c.innerHTML='';
+  const idx = protein>=110?2 : protein>=80?0 : 1; // bias selection a bit by protein need
+  split.forEach(([name,ic,frac])=>{
+    const items = picks[name][idx % picks[name].length];
+    let k=0,p=0;
+    items.forEach(nm=>{const fd=FOODS.find(f=>f.n===nm);if(fd){k+=fd.k;p+=fd.p;}});
+    const list = items.map(s=>s.replace(/ \(.*?\)/,'')).join(', ');
+    c.innerHTML += `<div class="meal"><div class="ic">${ic}</div><div><div class="mt">${name}</div><div class="mi">${list}</div></div><div class="mk">${k} kcal<br><span style="color:var(--blue);font-weight:700">${p}g P</span></div></div>`;
+  });
+}
+
+function sendToTracker(){
+  if(lastPlan){document.getElementById('targetCal').value=lastPlan.target;saveTarget();}
+  switchTab('tracker');renderTracker();
+  window.scrollTo({top:document.querySelector('.app').offsetTop-70,behavior:'smooth'});
+}
+
+/* ---------- Tabs ---------- */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>switchTab(t.dataset.tab));
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  document.querySelectorAll('[data-panel]').forEach(p=>p.style.display = p.dataset.panel===name?'block':'none');
+}
+
+/* ---------- Tracker ---------- */
+let foods=JSON.parse(localStorage.getItem('dietai_foods')||'[]');
+let today=localStorage.getItem('dietai_day');
+const todayStr=new Date().toLocaleDateString();
+if(today!==todayStr){foods=[];localStorage.setItem('dietai_day',todayStr);localStorage.setItem('dietai_foods','[]');}
+
+// build datalist
+document.getElementById('foodDB').innerHTML=FOODS.map(f=>`<option value="${f.n.replace(/&amp;/g,'&')}">`).join('');
+
+function autofill(){
+  const v=document.getElementById('fName').value;
+  const fd=FOODS.find(f=>f.n.replace(/&amp;/g,'&')===v);
+  if(fd){document.getElementById('fCal').value=fd.k;document.getElementById('fProt').value=fd.p;}
+}
+function saveTarget(){localStorage.setItem('dietai_target',document.getElementById('targetCal').value||'');}
+function addFood(){
+  const n=document.getElementById('fName').value.trim();
+  const k=parseInt(document.getElementById('fCal').value)||0;
+  const p=parseInt(document.getElementById('fProt').value)||0;
+  if(!n||k<=0){alert('Enter a food name and its calories.');return;}
+  foods.push({n,k,p,id:Date.now()});
+  localStorage.setItem('dietai_foods',JSON.stringify(foods));
+  ['fName','fCal','fProt'].forEach(id=>document.getElementById(id).value='');
+  renderTracker();
+}
+function delFood(id){foods=foods.filter(f=>f.id!==id);localStorage.setItem('dietai_foods',JSON.stringify(foods));renderTracker();}
+function clearDay(){if(confirm('Clear all of today\'s entries?')){foods=[];localStorage.setItem('dietai_foods','[]');renderTracker();}}
+
+function renderTracker(){
+  const totK=foods.reduce((s,f)=>s+f.k,0), totP=foods.reduce((s,f)=>s+f.p,0);
+  const tgt=parseInt(document.getElementById('targetCal').value)||0;
+  document.getElementById('sCal').textContent=totK.toLocaleString();
+  document.getElementById('sLeft').textContent=tgt?(tgt-totK).toLocaleString():'—';
+  document.getElementById('sProt').textContent=totP+'g';
+  document.getElementById('sCount').textContent=foods.length;
+  const bar=document.getElementById('calBar'), wrap=document.getElementById('calBarWrap');
+  if(tgt){const pct=Math.min(100,Math.round(totK/tgt*100));bar.style.width=pct+'%';wrap.classList.toggle('over',totK>tgt);
+    document.getElementById('calBarLbl').textContent= totK>tgt? `Over target by ${(totK-tgt).toLocaleString()} kcal` : `${pct}% of your ${tgt.toLocaleString()} kcal target`;}
+  else{bar.style.width='0%';document.getElementById('calBarLbl').textContent='Add a target to see your progress.';}
+  const log=document.getElementById('log');
+  if(!foods.length){log.innerHTML='<div class="empty">No food logged yet today. Add your first item above 🍽️</div>';return;}
+  log.innerHTML=foods.map(f=>`<div class="log-item"><div><div class="nm">${esc(f.n)}</div><div class="meta">${f.k} kcal · ${f.p}g protein</div></div><div class="k">${f.k}</div><button class="del" onclick="delFood(${f.id})">×</button></div>`).join('');
+}
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+document.getElementById('targetCal').value=localStorage.getItem('dietai_target')||'';
+document.getElementById('yr').textContent=new Date().getFullYear();
+renderTracker();
+</script>
+</body>
+</html>
