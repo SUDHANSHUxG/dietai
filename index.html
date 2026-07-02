@@ -3,25 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Diet AI — Free AI Diet Plan & Calorie Tracker</title>
-<meta name="description" content="Diet AI is a free AI-powered nutrition coach. Get a personalised calorie & macro target, an instant day's meal plan, and track your food — right in your browser. No sign-up, no cost." />
+<title>Diet AI — Free AI Diet Plan, Indian Meal Plans & Calorie Tracker</title>
+<meta name="description" content="India's free AI nutrition coach. Personalised calorie & macro targets, veg / egg / non-veg Indian meal plans, water & weight tracking — private, in your browser, no sign-up." />
 <meta name="theme-color" content="#16a34a" />
 <link rel="canonical" href="https://dietai.in/" />
-
-<!-- Open Graph / social -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Diet AI" />
 <meta property="og:title" content="Diet AI — Your free AI nutrition coach" />
-<meta property="og:description" content="Get a personalised calorie & macro target, an instant meal plan, and a built-in food tracker. Free, private, in your browser." />
+<meta property="og:description" content="Personalised calorie & macro targets, Indian veg/non-veg meal plans, water & weight tracker. Free and private." />
 <meta property="og:url" content="https://dietai.in/" />
 <meta property="og:image" content="https://dietai.in/og.png" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Diet AI — Your free AI nutrition coach" />
-<meta name="twitter:description" content="Personalised calorie & macro targets, an instant meal plan, and a food tracker. Free and private." />
+<meta name="twitter:description" content="Personalised calorie & macro targets, Indian meal plans, and trackers. Free and private." />
 <meta name="twitter:image" content="https://dietai.in/og.png" />
-
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%97%3C/text%3E%3C/svg%3E" />
-
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Diet AI","url":"https://dietai.in/","applicationCategory":"HealthApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"description":"Free AI-powered Indian diet planner and calorie tracker. Personalised calorie and macro targets with veg, egg and non-veg meal plans."}
+</script>
 <style>
   :root{
     --green:#16a34a; --green-d:#15803d; --green-l:#dcfce7;
@@ -34,13 +33,12 @@
   body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
   a{color:inherit}
   .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
-  .btn{display:inline-flex;align-items:center;gap:8px;border:none;border-radius:12px;padding:14px 22px;font-size:16px;font-weight:700;cursor:pointer;transition:.18s;text-decoration:none}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:12px;padding:14px 22px;font-size:16px;font-weight:700;cursor:pointer;transition:.18s;text-decoration:none}
   .btn-primary{background:linear-gradient(135deg,var(--green),var(--green-d));color:#fff;box-shadow:0 8px 20px rgba(22,163,74,.28)}
   .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(22,163,74,.38)}
   .btn-ghost{background:#fff;color:var(--green-d);border:2px solid var(--green-l)}
   .btn-ghost:hover{border-color:var(--green)}
-
-  /* Header */
+  .btn-wa{background:#25d366;color:#fff}
   header{position:sticky;top:0;z-index:50;background:rgba(248,250,252,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
   .nav{display:flex;align-items:center;justify-content:space-between;height:64px}
   .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em}
@@ -49,18 +47,13 @@
   .nav-links a{color:var(--muted);text-decoration:none;font-weight:600;font-size:15px}
   .nav-links a:hover{color:var(--ink)}
   @media(max-width:640px){.nav-links a:not(.btn){display:none}}
-
-  /* Hero */
-  .hero{padding:64px 0 36px;text-align:center}
+  .hero{padding:56px 0 30px;text-align:center}
   .pill{display:inline-block;background:var(--green-l);color:var(--green-d);font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px;margin-bottom:18px}
   .hero h1{font-size:clamp(32px,6vw,52px);line-height:1.08;letter-spacing:-.03em;margin-bottom:16px}
   .hero h1 .hl{background:linear-gradient(120deg,var(--green),#22c55e);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .hero p.sub{font-size:clamp(16px,2.4vw,20px);color:var(--muted);max-width:620px;margin:0 auto 28px}
+  .hero p.sub{font-size:clamp(16px,2.4vw,20px);color:var(--muted);max-width:640px;margin:0 auto 28px}
   .hero .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
   .trust{margin-top:22px;color:var(--muted);font-size:14px;display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
-  .trust span{display:inline-flex;align-items:center;gap:6px}
-
-  /* App card */
   .app{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin:18px 0 48px;overflow:hidden}
   .tabs{display:flex;border-bottom:1px solid var(--line);background:#fff}
   .tab{flex:1;padding:16px;text-align:center;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:none;font-size:15px;border-bottom:3px solid transparent;transition:.15s}
@@ -70,7 +63,6 @@
   @media(max-width:640px){.panel{padding:20px}}
   .panel h2{font-size:22px;letter-spacing:-.02em;margin-bottom:4px}
   .panel .lead{color:var(--muted);margin-bottom:22px;font-size:15px}
-
   .grid{display:grid;gap:16px}
   .grid-2{grid-template-columns:1fr 1fr}
   .grid-3{grid-template-columns:repeat(3,1fr)}
@@ -78,11 +70,9 @@
   label{display:block;font-weight:600;font-size:13px;margin-bottom:7px;color:#334155}
   input,select{width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:10px;font-size:15px;font-family:inherit;background:#fff;transition:.15s}
   input:focus,select:focus{outline:none;border-color:var(--green)}
-  .seg{display:flex;gap:8px}
-  .seg button{flex:1;padding:11px;border:2px solid var(--line);background:#fff;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;color:var(--muted);transition:.15s}
+  .seg{display:flex;gap:8px;flex-wrap:wrap}
+  .seg button{flex:1;min-width:90px;padding:11px;border:2px solid var(--line);background:#fff;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;color:var(--muted);transition:.15s}
   .seg button.on{border-color:var(--green);background:var(--green-l);color:var(--green-d)}
-
-  /* Results */
   .results{margin-top:24px;display:none}
   .results.show{display:block;animation:fade .35s ease}
   @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -94,14 +84,16 @@
   .macro .v{font-size:24px;font-weight:800}
   .macro .n{font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
   .macro.p .v{color:var(--blue)} .macro.c .v{color:var(--amber)} .macro.f .v{color:var(--red)}
-
+  .biocards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+  @media(max-width:640px){.biocards{grid-template-columns:1fr}}
+  .bio{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+  .bio .v{font-size:20px;font-weight:800;color:var(--green-d)}
+  .bio .n{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:3px}
   .meal{display:flex;gap:14px;align-items:flex-start;padding:14px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:#fff}
   .meal .ic{width:42px;height:42px;border-radius:10px;background:var(--green-l);display:grid;place-items:center;font-size:20px;flex-shrink:0}
   .meal .mt{font-weight:700}
   .meal .mi{color:var(--muted);font-size:14px;margin-top:2px}
   .meal .mk{margin-left:auto;font-weight:800;color:var(--green-d);white-space:nowrap;font-size:14px}
-
-  /* Tracker */
   .add-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end}
   @media(max-width:640px){.add-row{grid-template-columns:1fr 1fr}.add-row .full{grid-column:1/-1}}
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}
@@ -121,8 +113,21 @@
   .empty{text-align:center;color:var(--muted);padding:26px;border:1px dashed var(--line);border-radius:12px}
   datalist{display:none}
   .hint{font-size:13px;color:var(--muted);margin-top:10px}
-
-  /* Features */
+  .waterbox{display:flex;align-items:center;gap:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px 14px;margin:14px 0;flex-wrap:wrap}
+  .waterbox .cups{display:flex;gap:5px;flex-wrap:wrap}
+  .cup{width:30px;height:34px;border:2px solid #93c5fd;border-radius:6px 6px 10px 10px;background:#fff;cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.12s}
+  .cup.full{background:#3b82f6;border-color:#2563eb}
+  .streak{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:10px 14px;font-weight:700;font-size:14px;display:inline-block;margin-bottom:14px}
+  .prem{margin-top:18px;padding:24px;border-radius:16px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff}
+  .prem h3{font-size:22px;margin-bottom:4px}
+  .prem .sub{color:#cbd5e1;font-size:14.5px;margin-bottom:14px}
+  .prem ul{list-style:none;margin:0 0 16px;display:grid;gap:8px}
+  .prem li{font-size:14.5px;color:#e2e8f0}
+  .prem .price{display:flex;align-items:baseline;gap:10px;justify-content:center;margin-bottom:12px}
+  .prem .old{color:#94a3b8;text-decoration:line-through;font-size:18px}
+  .prem .now{font-size:34px;font-weight:800;color:#4ade80}
+  .prem .tag{background:#f59e0b;color:#0f172a;font-weight:800;font-size:12px;padding:3px 10px;border-radius:999px}
+  .prem .fine{font-size:12px;color:#94a3b8;text-align:center;margin-top:8px}
   .features{padding:20px 0 10px}
   .features h2{text-align:center;font-size:28px;letter-spacing:-.02em;margin-bottom:8px}
   .features .lead{text-align:center;color:var(--muted);margin-bottom:28px}
@@ -132,7 +137,11 @@
   .fcard .ic{width:46px;height:46px;border-radius:12px;background:var(--green-l);display:grid;place-items:center;font-size:22px;margin-bottom:12px}
   .fcard h3{font-size:17px;margin-bottom:6px}
   .fcard p{color:var(--muted);font-size:14px}
-
+  .faq{max-width:760px;margin:40px auto 0}
+  .faq h2{text-align:center;font-size:28px;margin-bottom:20px}
+  details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:10px}
+  summary{font-weight:700;cursor:pointer;font-size:15px}
+  details p{color:var(--muted);font-size:14.5px;margin-top:8px}
   footer{border-top:1px solid var(--line);margin-top:48px;padding:28px 0;color:var(--muted);font-size:14px}
   .foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
   .disc{font-size:12.5px;color:#94a3b8;margin-top:10px;max-width:760px}
@@ -154,17 +163,17 @@
 
 <section class="hero">
   <div class="wrap">
-    <span class="pill">100% free · no sign-up · private</span>
-    <h1>Your free <span class="hl">AI nutrition coach</span><br/>for everyday eating</h1>
-    <p class="sub">Tell Diet AI a little about you and instantly get a personalised calorie &amp; macro target, a ready-to-eat day's meal plan, and a built-in tracker — all in your browser.</p>
+    <span class="pill">100% free · no sign-up · made for India 🇮🇳</span>
+    <h1>Eat right. <span class="hl">Lose fat.</span><br/>Without giving up Indian food.</h1>
+    <p class="sub">Diet AI builds your exact calorie &amp; protein targets, plans a full day of real Indian meals — veg, egg or non-veg — and tracks your food, water and weight. All private, all in your browser.</p>
     <div class="cta">
-      <a href="#planner" class="btn btn-primary">Build my plan →</a>
+      <a href="#planner" class="btn btn-primary">Build my free plan →</a>
       <a href="#tracker" class="btn btn-ghost">Track my food</a>
     </div>
     <div class="trust">
       <span>✅ No account needed</span>
       <span>🔒 Data stays on your device</span>
-      <span>🇮🇳 Indian &amp; global foods</span>
+      <span>🍛 Roti-dal-rice friendly</span>
     </div>
   </div>
 </section>
@@ -173,13 +182,13 @@
   <div class="app">
     <div class="tabs">
       <button class="tab active" data-tab="planner" id="planner">🎯 AI Plan Generator</button>
-      <button class="tab" data-tab="tracker" id="tracker">📊 Food Tracker</button>
+      <button class="tab" data-tab="tracker" id="tracker">📊 Daily Tracker</button>
     </div>
 
     <!-- PLANNER -->
     <div class="panel" data-panel="planner">
       <h2>Get your personalised plan</h2>
-      <p class="lead">Based on the Mifflin-St Jeor formula nutritionists use — adjusted for your goal.</p>
+      <p class="lead">Built on the Mifflin-St Jeor formula dietitians use — tuned to your goal, body and food preference.</p>
 
       <div class="grid grid-2">
         <div>
@@ -196,6 +205,15 @@
             <button data-sex="male" class="on">Male</button>
             <button data-sex="female">Female</button>
           </div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px">
+        <label>Food preference</label>
+        <div class="seg" id="dietSeg">
+          <button data-diet="veg" class="on">🌱 Pure veg</button>
+          <button data-diet="egg">🥚 Veg + egg</button>
+          <button data-diet="nonveg">🍗 Non-veg</button>
         </div>
       </div>
 
@@ -230,25 +248,57 @@
           <div class="macro c"><div class="v" id="rC">0g</div><div class="n">Carbs</div></div>
           <div class="macro f"><div class="v" id="rF">0g</div><div class="n">Fat</div></div>
         </div>
+        <div class="biocards">
+          <div class="bio"><div class="v" id="rBMI">—</div><div class="n">Your BMI</div></div>
+          <div class="bio"><div class="v" id="rRange">—</div><div class="n">Healthy weight</div></div>
+          <div class="bio"><div class="v" id="rWater">—</div><div class="n">Water / day</div></div>
+        </div>
         <p class="hint" id="rNote"></p>
 
-        <h2 style="margin:24px 0 4px;font-size:18px">🍽️ A sample day at this target</h2>
-        <p class="lead" style="margin-bottom:14px">Swap anything you like — these are just ideas that hit your numbers.</p>
+        <h2 style="margin:24px 0 4px;font-size:18px" id="mealHead">🍽️ A sample day at this target</h2>
+        <p class="lead" style="margin-bottom:14px">Matched to your food preference — swap anything you like.</p>
         <div id="mealPlan"></div>
 
-        <button class="btn btn-ghost" style="width:100%;margin-top:6px" onclick="sendToTracker()">📊 Load this day into my tracker</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+          <button class="btn btn-ghost" style="flex:1;min-width:220px" onclick="sendToTracker()">📊 Load into my tracker</button>
+          <button class="btn btn-wa" style="flex:1;min-width:220px" onclick="shareWA()">📲 Share on WhatsApp</button>
+        </div>
+
+        <!-- PREMIUM -->
+        <div class="prem" id="premiumCard">
+          <h3>🔥 The Premium Pack</h3>
+          <p class="sub">Stop deciding what to eat every morning. Get your entire week planned in 10 seconds.</p>
+          <ul>
+            <li>✅ <b>Personalised 7-day meal plan</b> — every day hits your calories &amp; protein, matched to veg / egg / non-veg</li>
+            <li>✅ <b>Weekly grocery list</b> with serving counts — one shopping trip, zero guesswork</li>
+            <li>✅ <b>Printable / save as PDF</b> — stick it on the fridge, share with family or your cook</li>
+            <li>✅ <b>Protein cheat-sheet</b> — the 10 cheapest Indian protein sources per gram</li>
+            <li>✅ Yours forever on this device — regenerate anytime your weight changes</li>
+          </ul>
+          <div class="price"><span class="old">₹499</span><span class="now">₹99</span><span class="tag">LAUNCH PRICE</span></div>
+          <button class="btn btn-primary" style="width:100%" id="premiumBtn" onclick="buyPremium()">⚡ Unlock Premium — ₹99</button>
+          <p class="fine">One-time payment · Secure via Razorpay · UPI, cards, netbanking</p>
+        </div>
       </div>
     </div>
 
     <!-- TRACKER -->
     <div class="panel" data-panel="tracker" style="display:none">
-      <h2>Today's food log</h2>
-      <p class="lead">Add what you eat and watch your calories &amp; protein. Saved on your device automatically.</p>
+      <h2>Today's dashboard</h2>
+      <p class="lead">Food, water and weight in one place. Saved on your device automatically.</p>
 
-      <div style="background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div class="streak" id="streakBox">🔥 Day 1 — start your streak by logging today!</div>
+
+      <div style="background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
         <label style="margin:0">Daily calorie target</label>
         <input id="targetCal" type="number" style="width:120px" placeholder="2000" oninput="saveTarget();renderTracker()">
         <span class="hint" style="margin:0">Tip: generate a plan and it fills in automatically.</span>
+      </div>
+
+      <div class="waterbox">
+        <b style="color:#1d4ed8">💧 Water</b>
+        <div class="cups" id="cups"></div>
+        <span class="hint" style="margin:0" id="waterLbl"></span>
       </div>
 
       <div class="add-row">
@@ -272,8 +322,21 @@
       <div class="bar" id="calBarWrap"><i id="calBar"></i></div>
       <p class="hint" id="calBarLbl">Add a target to see your progress.</p>
 
+      <div id="suggestBox" style="display:none;background:#f0fdf4;border:1px solid var(--green-l);border-radius:12px;padding:14px;margin-top:16px">
+        <b style="color:var(--green-d)">🤖 What can I eat right now?</b>
+        <div id="suggestList" style="margin-top:8px;font-size:14px;color:#334155"></div>
+      </div>
+
       <div id="log" style="margin-top:18px"></div>
-      <button class="btn btn-ghost" style="margin-top:6px" onclick="clearDay()">Clear today</button>
+
+      <div style="background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <label style="margin:0">⚖️ Today's weight (kg)</label>
+        <input id="wToday" type="number" step="0.1" style="width:110px" placeholder="72.0">
+        <button class="btn btn-ghost" style="padding:10px 16px" onclick="logWeight()">Log</button>
+        <span class="hint" style="margin:0" id="wTrend"></span>
+      </div>
+
+      <button class="btn btn-ghost" style="margin-top:14px" onclick="clearDay()">Clear today</button>
     </div>
   </div>
 </div>
@@ -282,9 +345,23 @@
   <h2>Why people use Diet AI</h2>
   <p class="lead">A real nutrition tool — not another locked-down app.</p>
   <div class="fcards">
-    <div class="fcard"><div class="ic">🎯</div><h3>Numbers that fit you</h3><p>Calorie &amp; macro targets from the same formula dietitians use, tuned to your goal and activity — in one tap.</p></div>
-    <div class="fcard"><div class="ic">🍽️</div><h3>A plan, not just a number</h3><p>Get a full day of meals that actually add up to your target, using everyday Indian and global foods.</p></div>
+    <div class="fcard"><div class="ic">🍛</div><h3>Indian food, finally</h3><p>Roti, dal, idli, poha, paneer, rajma — plans built from what you actually eat, with veg / egg / non-veg options.</p></div>
+    <div class="fcard"><div class="ic">🎯</div><h3>Numbers that fit you</h3><p>Calorie, protein &amp; water targets from the same formula dietitians use — plus your BMI and healthy weight range.</p></div>
     <div class="fcard"><div class="ic">🔒</div><h3>Private &amp; free, forever</h3><p>No account, no ads, no uploads. Everything runs in your browser and your log stays on your device.</p></div>
+  </div>
+
+  <div class="fcards" style="margin-top:16px">
+    <div class="fcard"><div class="ic">🚫</div><h3>No dark patterns</h3><p>No login walls, no email capture, no "free trial" that bills you. The free tools are actually free, forever.</p></div>
+    <div class="fcard"><div class="ic">🧮</div><h3>Honest numbers</h3><p>Standard dietitian formulas (Mifflin-St Jeor, 1.8g protein/kg) — not made-up "AI magic" promises of overnight results.</p></div>
+    <div class="fcard"><div class="ic">📲</div><h3>Share it freely</h3><p>Send your plan to family or your gym group on WhatsApp in one tap. Health advice is better together.</p></div>
+  </div>
+
+  <div class="faq">
+    <h2>Questions people ask</h2>
+    <details><summary>Is it really free?</summary><p>Yes. The planner, tracker, water and weight logs are free forever. The optional Premium Pack (₹99 one-time) adds a full 7-day plan with a grocery list.</p></details>
+    <details><summary>Will I have to eat boiled chicken and salads?</summary><p>No. Plans are built from everyday Indian meals — dal-roti, rice-rajma, idli, poha, paneer sabzi. Fat loss comes from portions and consistency, not exotic food.</p></details>
+    <details><summary>Where is my data stored?</summary><p>Only on your own device (browser storage). Nothing is uploaded — we couldn't see your data even if we wanted to.</p></details>
+    <details><summary>How fast will I lose weight?</summary><p>The default deficit targets roughly 0.45 kg/week — the pace most dietitians consider sustainable. Slower is fine; consistency beats speed.</p></details>
   </div>
 </section>
 
@@ -299,45 +376,74 @@
 </footer>
 
 <script>
-/* ---------- Food database (per typical serving) ---------- */
+/* ==== CONFIG: paste your Razorpay Payment Link between the quotes ==== */
+const PAY_LINK = "";
+/* In Razorpay, set the link's redirect URL to: https://dietai.in/?premium=unlocked */
+
+/* ---------- Food database (per typical serving). t: v=veg, e=egg, n=nonveg ---------- */
 const FOODS = [
-  {n:"Roti / Chapati (1)", k:120, p:3, c:18, f:3},
-  {n:"Plain rice (1 cup)", k:205, p:4, c:45, f:0},
-  {n:"Dal cooked (1 cup)", k:230, p:18, c:30, f:4},
-  {n:"Paneer (100g)", k:265, p:18, c:6, f:20},
-  {n:"Chicken breast (100g)", k:165, p:31, c:0, f:4},
-  {n:"Egg, boiled (1)", k:78, p:6, c:1, f:5},
-  {n:"Curd / Yogurt (1 cup)", k:150, p:8, c:11, f:8},
-  {n:"Milk, toned (1 cup)", k:120, p:8, c:12, f:5},
-  {n:"Oats, dry (40g)", k:150, p:5, c:27, f:3},
-  {n:"Banana (1)", k:105, p:1, c:27, f:0},
-  {n:"Apple (1)", k:95, p:0, c:25, f:0},
-  {n:"Almonds (10)", k:70, p:3, c:2, f:6},
-  {n:"Peanut butter (1 tbsp)", k:95, p:4, c:3, f:8},
-  {n:"Idli (2)", k:160, p:4, c:34, f:1},
-  {n:"Dosa, plain (1)", k:170, p:4, c:30, f:4},
-  {n:"Poha (1 plate)", k:270, p:5, c:48, f:7},
-  {n:"Rajma cooked (1 cup)", k:215, p:13, c:38, f:1},
-  {n:"Chole cooked (1 cup)", k:270, p:13, c:45, f:4},
-  {n:"Mixed veg sabzi (1 cup)", k:140, p:4, c:16, f:7},
-  {n:"Tofu (100g)", k:145, p:16, c:4, f:9},
-  {n:"Fish, cooked (100g)", k:175, p:25, c:0, f:8},
-  {n:"Brown rice (1 cup)", k:215, p:5, c:45, f:2},
-  {n:"Whole wheat bread (2 slices)", k:160, p:8, c:28, f:2},
-  {n:"Sprouts (1 cup)", k:125, p:10, c:22, f:1},
-  {n:"Greek yogurt (150g)", k:130, p:15, c:6, f:4},
-  {n:"Whey protein (1 scoop)", k:120, p:24, c:3, f:2},
-  {n:"Peanuts (handful, 30g)", k:170, p:7, c:5, f:14},
-  {n:"Cheese slice (1)", k:70, p:4, c:1, f:5},
-  {n:"Sweet potato (150g)", k:130, p:2, c:30, f:0},
-  {n:"Salad bowl (veg)", k:80, p:3, c:12, f:2},
-  {n:"Coffee with milk &amp; sugar", k:60, p:2, c:9, f:2}
+  {n:"Roti / Chapati (1)", k:120, p:3, t:'v'},
+  {n:"Plain rice (1 cup)", k:205, p:4, t:'v'},
+  {n:"Dal cooked (1 cup)", k:230, p:18, t:'v'},
+  {n:"Paneer (100g)", k:265, p:18, t:'v'},
+  {n:"Chicken breast (100g)", k:165, p:31, t:'n'},
+  {n:"Egg, boiled (1)", k:78, p:6, t:'e'},
+  {n:"Curd / Yogurt (1 cup)", k:150, p:8, t:'v'},
+  {n:"Milk, toned (1 cup)", k:120, p:8, t:'v'},
+  {n:"Oats, dry (40g)", k:150, p:5, t:'v'},
+  {n:"Banana (1)", k:105, p:1, t:'v'},
+  {n:"Apple (1)", k:95, p:0, t:'v'},
+  {n:"Almonds (10)", k:70, p:3, t:'v'},
+  {n:"Peanut butter (1 tbsp)", k:95, p:4, t:'v'},
+  {n:"Idli (2)", k:160, p:4, t:'v'},
+  {n:"Dosa, plain (1)", k:170, p:4, t:'v'},
+  {n:"Poha (1 plate)", k:270, p:5, t:'v'},
+  {n:"Rajma cooked (1 cup)", k:215, p:13, t:'v'},
+  {n:"Chole cooked (1 cup)", k:270, p:13, t:'v'},
+  {n:"Mixed veg sabzi (1 cup)", k:140, p:4, t:'v'},
+  {n:"Tofu (100g)", k:145, p:16, t:'v'},
+  {n:"Fish, cooked (100g)", k:175, p:25, t:'n'},
+  {n:"Brown rice (1 cup)", k:215, p:5, t:'v'},
+  {n:"Whole wheat bread (2 slices)", k:160, p:8, t:'v'},
+  {n:"Sprouts (1 cup)", k:125, p:10, t:'v'},
+  {n:"Greek yogurt (150g)", k:130, p:15, t:'v'},
+  {n:"Whey protein (1 scoop)", k:120, p:24, t:'v'},
+  {n:"Peanuts (handful, 30g)", k:170, p:7, t:'v'},
+  {n:"Cheese slice (1)", k:70, p:4, t:'v'},
+  {n:"Sweet potato (150g)", k:130, p:2, t:'v'},
+  {n:"Salad bowl (veg)", k:80, p:3, t:'v'},
+  {n:"Soya chunks cooked (50g dry)", k:170, p:26, t:'v'},
+  {n:"Coffee with milk & sugar", k:60, p:2, t:'v'}
 ];
+function foodBy(n){return FOODS.find(f=>f.n===n);}
+
+/* ---------- Meal sets per preference: 7 variants per meal ---------- */
+const MEALSETS = {
+  veg:{
+    Breakfast:[["Oats, dry (40g)","Milk, toned (1 cup)","Banana (1)"],["Idli (2)","Curd / Yogurt (1 cup)"],["Poha (1 plate)","Curd / Yogurt (1 cup)"],["Dosa, plain (1)","Sprouts (1 cup)"],["Whole wheat bread (2 slices)","Peanut butter (1 tbsp)","Milk, toned (1 cup)"],["Oats, dry (40g)","Greek yogurt (150g)","Almonds (10)"],["Idli (2)","Milk, toned (1 cup)","Banana (1)"]],
+    Lunch:[["Roti / Chapati (1)","Roti / Chapati (1)","Dal cooked (1 cup)","Mixed veg sabzi (1 cup)","Curd / Yogurt (1 cup)"],["Plain rice (1 cup)","Rajma cooked (1 cup)","Salad bowl (veg)"],["Plain rice (1 cup)","Chole cooked (1 cup)","Salad bowl (veg)"],["Roti / Chapati (1)","Roti / Chapati (1)","Paneer (100g)","Salad bowl (veg)"],["Brown rice (1 cup)","Dal cooked (1 cup)","Mixed veg sabzi (1 cup)"],["Roti / Chapati (1)","Roti / Chapati (1)","Soya chunks cooked (50g dry)","Mixed veg sabzi (1 cup)"],["Brown rice (1 cup)","Rajma cooked (1 cup)","Curd / Yogurt (1 cup)"]],
+    Dinner:[["Roti / Chapati (1)","Roti / Chapati (1)","Paneer (100g)","Mixed veg sabzi (1 cup)"],["Plain rice (1 cup)","Dal cooked (1 cup)","Tofu (100g)"],["Roti / Chapati (1)","Roti / Chapati (1)","Dal cooked (1 cup)","Salad bowl (veg)"],["Brown rice (1 cup)","Chole cooked (1 cup)","Salad bowl (veg)"],["Roti / Chapati (1)","Soya chunks cooked (50g dry)","Mixed veg sabzi (1 cup)","Curd / Yogurt (1 cup)"],["Paneer (100g)","Brown rice (1 cup)","Salad bowl (veg)"],["Rajma cooked (1 cup)","Plain rice (1 cup)","Salad bowl (veg)"]],
+    Snack:[["Greek yogurt (150g)","Almonds (10)"],["Apple (1)","Peanuts (handful, 30g)"],["Whey protein (1 scoop)","Banana (1)"],["Sprouts (1 cup)"],["Peanut butter (1 tbsp)","Whole wheat bread (2 slices)"],["Curd / Yogurt (1 cup)","Banana (1)"],["Cheese slice (1)","Apple (1)"]]
+  }
+};
+/* egg = veg + egg swaps; nonveg = egg + meat swaps */
+MEALSETS.egg = JSON.parse(JSON.stringify(MEALSETS.veg));
+MEALSETS.egg.Breakfast[4]=["Whole wheat bread (2 slices)","Egg, boiled (1)","Egg, boiled (1)"];
+MEALSETS.egg.Breakfast[5]=["Egg, boiled (1)","Egg, boiled (1)","Roti / Chapati (1)","Milk, toned (1 cup)"];
+MEALSETS.egg.Snack[3]=["Egg, boiled (1)","Egg, boiled (1)"];
+MEALSETS.nonveg = JSON.parse(JSON.stringify(MEALSETS.egg));
+MEALSETS.nonveg.Lunch[2]=["Brown rice (1 cup)","Chicken breast (100g)","Salad bowl (veg)"];
+MEALSETS.nonveg.Lunch[5]=["Brown rice (1 cup)","Fish, cooked (100g)","Mixed veg sabzi (1 cup)"];
+MEALSETS.nonveg.Dinner[2]=["Chicken breast (100g)","Roti / Chapati (1)","Roti / Chapati (1)","Salad bowl (veg)"];
+MEALSETS.nonveg.Dinner[5]=["Fish, cooked (100g)","Brown rice (1 cup)","Salad bowl (veg)"];
+
+const SPLITS=[['Breakfast','🌅'],['Lunch','☀️'],['Dinner','🌙'],['Snack','🍎']];
 
 /* ---------- Planner ---------- */
-let goal="lose", sex="male";
+let goal="lose", sex="male", diet="veg";
 document.querySelectorAll('#goalSeg button').forEach(b=>b.onclick=()=>{goal=b.dataset.goal;sel('#goalSeg',b)});
 document.querySelectorAll('#sexSeg button').forEach(b=>b.onclick=()=>{sex=b.dataset.sex;sel('#sexSeg',b)});
+document.querySelectorAll('#dietSeg button').forEach(b=>b.onclick=()=>{diet=b.dataset.diet;sel('#dietSeg',b);if(lastPlan)buildMeals(0)});
 function sel(grp,btn){document.querySelectorAll(grp+' button').forEach(x=>x.classList.remove('on'));btn.classList.add('on');}
 
 let lastPlan=null;
@@ -346,60 +452,108 @@ function generatePlan(){
   const age=+document.getElementById('age').value, h=+document.getElementById('height').value, w=+document.getElementById('weight').value;
   const act=+document.getElementById('activity').value;
   if(!age||!h||!w){alert('Please enter your age, height and weight.');return;}
-  // Mifflin-St Jeor
   let bmr = 10*w + 6.25*h - 5*age + (sex==='male'?5:-161);
   let tdee = bmr*act;
   let target = tdee, lbl="calories to maintain";
   if(goal==='lose'){target = tdee-500; lbl="calories per day to lose fat (~0.45 kg/week)";}
   if(goal==='gain'){target = tdee+300; lbl="calories per day to build muscle";}
-  // Safety floor
   const floor = sex==='male'?1500:1200; let floored=false;
   if(target<floor){target=floor;floored=true;}
   target=Math.round(target/10)*10;
 
-  // Macros: protein 1.8g/kg, fat 25% kcal, carbs remainder
   let protein=Math.round(1.8*w);
   let fat=Math.round((target*0.25)/9);
   let carbs=Math.round((target - protein*4 - fat*9)/4);
   if(carbs<0)carbs=0;
+
+  const bmi=w/((h/100)*(h/100));
+  const lo=(18.5*(h/100)*(h/100)).toFixed(0), hi=(24.9*(h/100)*(h/100)).toFixed(0);
+  const water=Math.round(w*35/250)/4; // litres, ~35ml/kg rounded to .25
 
   document.getElementById('rKcal').textContent=target.toLocaleString();
   document.getElementById('rGoalLbl').textContent=lbl;
   document.getElementById('rP').textContent=protein+'g';
   document.getElementById('rC').textContent=carbs+'g';
   document.getElementById('rF').textContent=fat+'g';
+  document.getElementById('rBMI').textContent=bmi.toFixed(1)+(bmi<18.5?' (under)':bmi<25?' ✅':bmi<30?' (over)':' (obese)');
+  document.getElementById('rRange').textContent=lo+'–'+hi+' kg';
+  document.getElementById('rWater').textContent=water.toFixed(1).replace('.0','')+' L';
   document.getElementById('rNote').innerHTML = "Estimated maintenance: <b>"+Math.round(tdee).toLocaleString()+" kcal</b>." + (floored? " We've raised your target to a safe minimum of "+floor+" kcal — going lower isn't recommended." : "");
 
-  buildMeals(target, protein);
-  lastPlan={target,protein};
+  lastPlan={target,protein,water};
+  buildMeals(0);
+  refreshPremiumBtn();
   document.getElementById('planResults').classList.add('show');
   document.getElementById('planResults').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function buildMeals(target, protein){
-  // distribute kcal: breakfast 25, lunch 35, dinner 30, snack 10
-  const split=[['Breakfast','🌅',.25],['Lunch','☀️',.35],['Dinner','🌙',.30],['Snack','🍎',.10]];
-  const picks={
-    Breakfast:[["Oats, dry (40g)","Milk, toned (1 cup)","Banana (1)"],["Idli (2)","Curd / Yogurt (1 cup)"],["Whole wheat bread (2 slices)","Egg, boiled (1)","Egg, boiled (1)"]],
-    Lunch:[["Roti / Chapati (1)","Roti / Chapati (1)","Dal cooked (1 cup)","Mixed veg sabzi (1 cup)","Curd / Yogurt (1 cup)"],["Plain rice (1 cup)","Rajma cooked (1 cup)","Salad bowl (veg)"],["Brown rice (1 cup)","Chicken breast (100g)","Salad bowl (veg)"]],
-    Dinner:[["Roti / Chapati (1)","Roti / Chapati (1)","Paneer (100g)","Mixed veg sabzi (1 cup)"],["Plain rice (1 cup)","Dal cooked (1 cup)","Tofu (100g)"],["Fish, cooked (100g)","Brown rice (1 cup)","Salad bowl (veg)"]],
-    Snack:[["Greek yogurt (150g)","Almonds (10)"],["Apple (1)","Peanuts (handful, 30g)"],["Whey protein (1 scoop)","Banana (1)"]]
-  };
-  const c=document.getElementById('mealPlan'); c.innerHTML='';
-  const idx = protein>=110?2 : protein>=80?0 : 1; // bias selection a bit by protein need
-  split.forEach(([name,ic,frac])=>{
-    const items = picks[name][idx % picks[name].length];
+function dayMeals(d){
+  const set=MEALSETS[diet];
+  return SPLITS.map(function(s,mi){
+    const opts=set[s[0]];
+    const items=opts[(d+mi)%opts.length];
     let k=0,p=0;
-    items.forEach(nm=>{const fd=FOODS.find(f=>f.n===nm);if(fd){k+=fd.k;p+=fd.p;}});
-    const list = items.map(s=>s.replace(/ \(.*?\)/,'')).join(', ');
-    c.innerHTML += `<div class="meal"><div class="ic">${ic}</div><div><div class="mt">${name}</div><div class="mi">${list}</div></div><div class="mk">${k} kcal<br><span style="color:var(--blue);font-weight:700">${p}g P</span></div></div>`;
+    items.forEach(nm=>{const f=foodBy(nm);if(f){k+=f.k;p+=f.p;}});
+    return {name:s[0],ic:s[1],items:items,k:k,p:p};
   });
+}
+
+function buildMeals(d){
+  const c=document.getElementById('mealPlan'); c.innerHTML='';
+  dayMeals(d).forEach(function(m){
+    const list=m.items.map(s=>s.replace(/ \(.*?\)/,'')).join(', ');
+    c.innerHTML += '<div class="meal"><div class="ic">'+m.ic+'</div><div><div class="mt">'+m.name+'</div><div class="mi">'+list+'</div></div><div class="mk">'+m.k+' kcal<br><span style="color:var(--blue);font-weight:700">'+m.p+'g P</span></div></div>';
+  });
+}
+
+function shareWA(){
+  if(!lastPlan)return;
+  const t="🥗 My Diet AI plan: "+lastPlan.target.toLocaleString()+" kcal/day, "+lastPlan.protein+"g protein. Get your free Indian diet plan at https://dietai.in";
+  window.open("https://wa.me/?text="+encodeURIComponent(t),"_blank");
 }
 
 function sendToTracker(){
   if(lastPlan){document.getElementById('targetCal').value=lastPlan.target;saveTarget();}
   switchTab('tracker');renderTracker();
   window.scrollTo({top:document.querySelector('.app').offsetTop-70,behavior:'smooth'});
+}
+
+/* ---------- Premium ---------- */
+function isPremium(){return localStorage.getItem('dietai_premium')==='1';}
+try{
+  if(new URLSearchParams(location.search).get('premium')==='unlocked'){
+    localStorage.setItem('dietai_premium','1');
+    history.replaceState({},'',location.pathname);
+    alert('🎉 Premium unlocked! Generate your plan, then open your 7-day Premium Pack.');
+  }
+}catch(e){}
+function refreshPremiumBtn(){
+  const b=document.getElementById('premiumBtn');
+  if(b) b.textContent = isPremium()? '📄 Open my 7-day Premium Pack' : '⚡ Unlock Premium — ₹99';
+}
+function buyPremium(){
+  if(isPremium()){openPack();return;}
+  if(!PAY_LINK){alert('Payments are being set up — check back in a day or two!');return;}
+  location.href=PAY_LINK;
+}
+function openPack(){
+  if(!lastPlan){alert('Generate your plan above first.');return;}
+  let days='', grocery={};
+  for(let d=0;d<7;d++){
+    let rows='',dayK=0,dayP=0;
+    dayMeals(d).forEach(function(m){
+      dayK+=m.k;dayP+=m.p;
+      m.items.forEach(nm=>{grocery[nm]=(grocery[nm]||0)+1;});
+      rows+='<tr><td>'+m.ic+' '+m.name+'</td><td>'+m.items.map(x=>x.replace(/ \(.*?\)/,'')).join(', ')+'</td><td style="text-align:right">'+m.k+' kcal · '+m.p+'g P</td></tr>';
+    });
+    days+='<h3>Day '+(d+1)+' <span style="color:#16a34a;font-size:14px">'+dayK+' kcal · '+dayP+'g protein</span></h3><table>'+rows+'</table>';
+  }
+  const g=Object.keys(grocery).sort().map(n=>'<li>'+n+' <b>×'+grocery[n]+'</b></li>').join('');
+  const cheap=[["Soya chunks","~₹0.35/g protein"],["Eggs","~₹1.1/g"],["Dal (toor/moong)","~₹1.2/g"],["Peanuts","~₹1.3/g"],["Milk (toned)","~₹1.6/g"],["Curd","~₹1.8/g"],["Chana/Rajma","~₹1.3/g"],["Paneer","~₹2.5/g"],["Chicken breast","~₹1.4/g"],["Whey protein","~₹2/g"]];
+  const cheapHtml=cheap.map(c=>'<li><b>'+c[0]+'</b> — '+c[1]+'</li>').join('');
+  const w=window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><title>Diet AI Premium — 7-Day Plan</title><style>body{font-family:Segoe UI,Arial,sans-serif;max-width:760px;margin:24px auto;padding:0 16px;color:#0f172a;line-height:1.5}h1{color:#15803d}table{width:100%;border-collapse:collapse;margin:8px 0 18px}td{border-bottom:1px solid #e2e8f0;padding:8px 6px;font-size:14px}h3{margin:18px 0 4px}ul{columns:2;font-size:14px}.no-print{background:#16a34a;color:#fff;border:none;padding:12px 22px;border-radius:10px;font-weight:700;cursor:pointer}@media print{.no-print{display:none}}</style></head><body><h1>🥗 Diet AI — Premium 7-Day Plan</h1><p>Daily target: <b>'+lastPlan.target.toLocaleString()+' kcal</b> · Protein goal: <b>'+lastPlan.protein+'g/day</b> · Water: <b>'+lastPlan.water+' L/day</b></p><button class="no-print" onclick="print()">🖨️ Print / Save as PDF</button>'+days+'<h2>🛒 Weekly grocery list (servings)</h2><ul>'+g+'</ul><h2>💪 Cheapest Indian protein sources</h2><ul>'+cheapHtml+'</ul><p style="color:#64748b;font-size:12px">General nutrition estimates, not medical advice. © dietai.in</p></body></html>');
+  w.document.close();
 }
 
 /* ---------- Tabs ---------- */
@@ -411,13 +565,33 @@ function switchTab(name){
 
 /* ---------- Tracker ---------- */
 let foods=JSON.parse(localStorage.getItem('dietai_foods')||'[]');
-let today=localStorage.getItem('dietai_day');
+let water=+(localStorage.getItem('dietai_water')||0);
 const todayStr=new Date().toLocaleDateString();
-if(today!==todayStr){foods=[];localStorage.setItem('dietai_day',todayStr);localStorage.setItem('dietai_foods','[]');}
+if(localStorage.getItem('dietai_day')!==todayStr){
+  // streak: increment if yesterday was logged
+  const last=localStorage.getItem('dietai_lastlog');
+  foods=[];water=0;
+  localStorage.setItem('dietai_day',todayStr);
+  localStorage.setItem('dietai_foods','[]');
+  localStorage.setItem('dietai_water','0');
+}
+function bumpStreak(){
+  const today=new Date().toLocaleDateString();
+  if(localStorage.getItem('dietai_lastlog')===today)return;
+  const y=new Date(Date.now()-864e5).toLocaleDateString();
+  let s=+(localStorage.getItem('dietai_streak')||0);
+  s = (localStorage.getItem('dietai_lastlog')===y)? s+1 : 1;
+  localStorage.setItem('dietai_streak',s);
+  localStorage.setItem('dietai_lastlog',today);
+  renderStreak();
+}
+function renderStreak(){
+  const s=+(localStorage.getItem('dietai_streak')||0);
+  const logged=localStorage.getItem('dietai_lastlog')===new Date().toLocaleDateString();
+  document.getElementById('streakBox').textContent = s>0? ('🔥 '+s+'-day streak'+(logged?' — logged today!':' — log something to keep it alive!')) : '🔥 Start your streak by logging today!';
+}
 
-// build datalist
 document.getElementById('foodDB').innerHTML=FOODS.map(f=>`<option value="${f.n.replace(/&amp;/g,'&')}">`).join('');
-
 function autofill(){
   const v=document.getElementById('fName').value;
   const fd=FOODS.find(f=>f.n.replace(/&amp;/g,'&')===v);
@@ -432,10 +606,48 @@ function addFood(){
   foods.push({n,k,p,id:Date.now()});
   localStorage.setItem('dietai_foods',JSON.stringify(foods));
   ['fName','fCal','fProt'].forEach(id=>document.getElementById(id).value='');
+  bumpStreak();
   renderTracker();
 }
 function delFood(id){foods=foods.filter(f=>f.id!==id);localStorage.setItem('dietai_foods',JSON.stringify(foods));renderTracker();}
-function clearDay(){if(confirm('Clear all of today\'s entries?')){foods=[];localStorage.setItem('dietai_foods','[]');renderTracker();}}
+function clearDay(){if(confirm('Clear all of today\'s entries?')){foods=[];water=0;localStorage.setItem('dietai_foods','[]');localStorage.setItem('dietai_water','0');renderTracker();renderWater();}}
+
+/* water */
+function renderWater(){
+  const c=document.getElementById('cups');c.innerHTML='';
+  for(let i=0;i<8;i++){
+    const d=document.createElement('div');
+    d.className='cup'+(i<water?' full':'');
+    d.textContent=i<water?'💧':'';
+    d.onclick=()=>{water=(i<water&&i===water-1)?i:i+1;localStorage.setItem('dietai_water',water);bumpStreak();renderWater();};
+    c.appendChild(d);
+  }
+  document.getElementById('waterLbl').textContent=(water*250/1000).toFixed(2).replace(/\.?0+$/,'')+' L of ~2 L';
+}
+
+/* weight log */
+function logWeight(){
+  const v=parseFloat(document.getElementById('wToday').value);
+  if(!v){alert('Enter your weight.');return;}
+  let hist=JSON.parse(localStorage.getItem('dietai_weights')||'[]');
+  hist=hist.filter(x=>x.d!==todayStr);
+  hist.push({d:todayStr,w:v});
+  if(hist.length>60)hist=hist.slice(-60);
+  localStorage.setItem('dietai_weights',JSON.stringify(hist));
+  bumpStreak();
+  renderWeight();
+}
+function renderWeight(){
+  const hist=JSON.parse(localStorage.getItem('dietai_weights')||'[]');
+  const el=document.getElementById('wTrend');
+  if(!hist.length){el.textContent='Log daily to see your trend.';return;}
+  const last=hist[hist.length-1];
+  document.getElementById('wToday').value=last.w;
+  if(hist.length<2){el.textContent='Logged '+last.w+' kg. Come back tomorrow!';return;}
+  const first=hist[Math.max(0,hist.length-8)];
+  const diff=(last.w-first.w).toFixed(1);
+  el.textContent='Last '+Math.min(hist.length,8)+' logs: '+(diff<=0?'⬇️ '+Math.abs(diff):'⬆️ '+diff)+' kg';
+}
 
 function renderTracker(){
   const totK=foods.reduce((s,f)=>s+f.k,0), totP=foods.reduce((s,f)=>s+f.p,0);
@@ -451,13 +663,22 @@ function renderTracker(){
   const log=document.getElementById('log');
   if(!foods.length){log.innerHTML='<div class="empty">No food logged yet today. Add your first item above 🍽️</div>';return;}
   log.innerHTML=foods.map(f=>`<div class="log-item"><div><div class="nm">${esc(f.n)}</div><div class="meta">${f.k} kcal · ${f.p}g protein</div></div><div class="k">${f.k}</div><button class="del" onclick="delFood(${f.id})">×</button></div>`).join('');
+  renderSuggest(tgt-totK);
+}
+function renderSuggest(left){
+  const box=document.getElementById('suggestBox');
+  if(!left||left<=0||left>1500){box.style.display='none';return;}
+  const allowed = diet==='veg'? f=>f.t==='v' : diet==='egg'? f=>f.t!=='n' : ()=>true;
+  const picks=FOODS.filter(f=>allowed(f)&&f.k<=left).sort((a,b)=>(b.p/b.k)-(a.p/a.k)).slice(0,5);
+  if(!picks.length){box.style.display='none';return;}
+  box.style.display='block';
+  document.getElementById('suggestList').innerHTML='You have <b>'+left.toLocaleString()+' kcal</b> left. Best protein-per-calorie fits: '+picks.map(f=>'<b>'+f.n.replace(/ \(.*?\)/,'')+'</b> ('+f.k+' kcal, '+f.p+'g P)').join(' · ');
 }
 function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
 document.getElementById('targetCal').value=localStorage.getItem('dietai_target')||'';
 document.getElementById('yr').textContent=new Date().getFullYear();
-renderTracker();
+renderTracker();renderWater();renderStreak();renderWeight();refreshPremiumBtn();
 </script>
-  <script src="premium.js"></script>
 </body>
 </html>
