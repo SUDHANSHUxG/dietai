@@ -1,7 +1,7 @@
 /* Diet AI — Premium Pack (7-day plan + grocery list, client-side) */
 (function(){
   // ==== CONFIG: paste your Razorpay Payment Link below, keep quotes ====
-  var PAY_LINK = "";
+  var PAY_LINK = "https://pages.razorpay.com/dietai-premium";
   // In Razorpay, set the payment link's redirect URL to: https://dietai.in/?premium=unlocked
   var PRICE = "₹99";
 
