@@ -1,0 +1,7 @@
+name = "dietai-ai"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Optional: override the default allowed origins (comma-separated) without a code change.
+# [vars]
+# ALLOWED_ORIGINS = "https://dietai.in,https://www.dietai.in"

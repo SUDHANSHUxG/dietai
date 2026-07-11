@@ -313,6 +313,15 @@
       </div>
       <p class="hint">Pick from 30+ common foods (auto-fills calories &amp; protein) or type your own numbers.</p>
 
+      <div class="ai-log">
+        <label>✨ Or describe what you ate — AI estimates it</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <input id="aiText" placeholder="e.g. 2 rotis, a bowl of dal and some curd" style="flex:1;min-width:220px" onkeydown="if(event.key==='Enter')logWithAI()">
+          <button class="btn btn-primary" id="aiLogBtn" onclick="logWithAI()">🤖 Log with AI</button>
+        </div>
+        <p class="hint" id="aiHint">Great for homemade meals, restaurant food, or anything not in the list above.</p>
+      </div>
+
       <div class="stats">
         <div class="stat"><div class="v" id="sCal">0</div><div class="n">Calories</div></div>
         <div class="stat"><div class="v" id="sLeft">0</div><div class="n">Remaining</div></div>
@@ -325,6 +334,11 @@
       <div id="suggestBox" style="display:none;background:#f0fdf4;border:1px solid var(--green-l);border-radius:12px;padding:14px;margin-top:16px">
         <b style="color:var(--green-d)">🤖 What can I eat right now?</b>
         <div id="suggestList" style="margin-top:8px;font-size:14px;color:#334155"></div>
+      </div>
+
+      <div style="margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-ghost" id="aiTipBtn" onclick="getAITip()">🤖 Get today's AI tip</button>
+        <span id="aiTipText" style="font-size:14px;color:#334155"></span>
       </div>
 
       <div id="log" style="margin-top:18px"></div>
@@ -379,6 +393,9 @@
 /* ==== CONFIG: paste your Razorpay Payment Link between the quotes ==== */
 const PAY_LINK = "";
 /* In Razorpay, set the link's redirect URL to: https://dietai.in/?premium=unlocked */
+
+/* ==== CONFIG: paste your deployed Cloudflare Worker URL (see worker/README.md) ==== */
+const AI_ENDPOINT = "";
 
 /* ---------- Food database (per typical serving). t: v=veg, e=egg, n=nonveg ---------- */
 const FOODS = [
@@ -675,6 +692,62 @@ function renderSuggest(left){
   document.getElementById('suggestList').innerHTML='You have <b>'+left.toLocaleString()+' kcal</b> left. Best protein-per-calorie fits: '+picks.map(f=>'<b>'+f.n.replace(/ \(.*?\)/,'')+'</b> ('+f.k+' kcal, '+f.p+'g P)').join(' · ');
 }
 function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ---------- AI food logger ---------- */
+async function logWithAI(){
+  const input=document.getElementById('aiText');
+  const text=input.value.trim();
+  const hint=document.getElementById('aiHint');
+  const btn=document.getElementById('aiLogBtn');
+  if(!text){hint.textContent='Type what you ate first.';return;}
+  if(!AI_ENDPOINT){hint.textContent='AI logging isn\'t set up yet — see worker/README.md.';return;}
+  btn.disabled=true; btn.textContent='🤖 Thinking…'; hint.textContent='';
+  try{
+    const res=await fetch(AI_ENDPOINT+'/api/parse-food',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text,diet})
+    });
+    const data=await res.json();
+    if(!res.ok||!Array.isArray(data.items)||!data.items.length){
+      hint.textContent=data.error||'Could not estimate that — try rephrasing.';
+      return;
+    }
+    data.items.forEach(it=>foods.push({n:it.name,k:it.calories,p:it.protein,id:Date.now()+Math.random()}));
+    localStorage.setItem('dietai_foods',JSON.stringify(foods));
+    input.value='';
+    hint.textContent='Added '+data.items.length+' item'+(data.items.length>1?'s':'')+' from your description.';
+    bumpStreak();
+    renderTracker();
+  }catch(e){
+    hint.textContent='Network error — please try again.';
+  }finally{
+    btn.disabled=false; btn.textContent='🤖 Log with AI';
+  }
+}
+
+/* ---------- AI daily tip ---------- */
+async function getAITip(){
+  const box=document.getElementById('aiTipText');
+  const btn=document.getElementById('aiTipBtn');
+  if(!AI_ENDPOINT){box.textContent='AI tips aren\'t set up yet — see worker/README.md.';return;}
+  const totK=foods.reduce((s,f)=>s+f.k,0), totP=foods.reduce((s,f)=>s+f.p,0);
+  const tgt=parseInt(document.getElementById('targetCal').value)||0;
+  btn.disabled=true; btn.textContent='🤖 Thinking…'; box.textContent='';
+  try{
+    const res=await fetch(AI_ENDPOINT+'/api/insight',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({goal,diet,target:tgt,protein:lastPlan?lastPlan.protein:0,totalCal:totK,totalProtein:totP,itemsCount:foods.length})
+    });
+    const data=await res.json();
+    box.textContent=res.ok&&data.tip? data.tip : (data.error||'Could not get a tip right now.');
+  }catch(e){
+    box.textContent='Network error — please try again.';
+  }finally{
+    btn.disabled=false; btn.textContent='🤖 Get today\'s AI tip';
+  }
+}
 
 document.getElementById('targetCal').value=localStorage.getItem('dietai_target')||'';
 document.getElementById('yr').textContent=new Date().getFullYear();
