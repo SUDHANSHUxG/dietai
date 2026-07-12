@@ -1,5 +1,5 @@
 /* Diet AI service worker — offline-first for the app shell */
-var CACHE = 'dietai-v2';
+var CACHE = 'dietai-v3';
 var ASSETS = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', function (e) {
@@ -34,6 +34,17 @@ self.addEventListener('fetch', function (e) {
       }).catch(function () {
         return caches.match('/index.html').then(function (m) { return m || caches.match('/'); });
       })
+    );
+    return;
+  }
+  // network-first for JS so fixes actually reach users (cache fallback for offline)
+  if (url.pathname.endsWith('.js')) {
+    e.respondWith(
+      fetch(e.request).then(function (r) {
+        var copy = r.clone();
+        caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
+        return r;
+      }).catch(function () { return caches.match(e.request); })
     );
     return;
   }
