@@ -10,8 +10,8 @@
   function log(event, meta) {
     try {
       var payload = JSON.stringify({ product: P, event: event, source: src(), meta: meta || null });
-      if (navigator.sendBeacon) navigator.sendBeacon(WORKER + '/e', new Blob([payload], { type: 'application/json' }));
-      else fetch(WORKER + '/e', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true });
+      if (navigator.sendBeacon) navigator.sendBeacon(WORKER + '/e', payload);
+      else fetch(WORKER + '/e', { method: 'POST', body: payload, keepalive: true });
     } catch (e) {}
   }
   try {
