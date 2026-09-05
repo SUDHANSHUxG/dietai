@@ -97,6 +97,43 @@ attempted.
 that the payment link is live. Per the standing rule about the Pages CDN: fetch the
 live files with a cache-buster after deploying and check before judging.
 
+## Second pass — quality, print, discoverability
+
+**The paid pack was unprintable.** It is sold on "Print / save as PDF — fridge,
+family, or your cook", and the page had no print stylesheet at all: printing gave
+you the nav, the hero, the pricing block, the FAQ and the footer, with the plan
+itself in near-white text on white paper because the generated rows use the dark
+theme's `var(--ink)` inline. There is now a real print stylesheet that redefines
+the tokens for paper, hides every marketing element, keeps days from splitting
+across pages, and stamps a header with the customer's region, targets and date.
+`printPack()` also forces all seven days open before printing and restores them
+after — collapsed `<details>` print collapsed, so six of the seven days were
+missing from the printout.
+
+**Accessibility.** Not one input on the page had an associated label — every
+`<label>` was a bare tag next to its field, so a screen reader announced nothing.
+Fixed with `for`/`id` throughout, plus `aria-label` on the two fields that had no
+label element. Also added: real tablist semantics with arrow-key navigation,
+`aria-pressed` on all the goal/diet/sex/region toggles, named water glasses,
+a live region on the toast, and a visible keyboard focus ring — there was none.
+
+**Discoverability.** Added `robots.txt`, `sitemap.xml`, and JSON-LD
+(`WebApplication` + `FAQPage`). The FAQ markup is generated *from* the page's own
+FAQ text by the build step, so it cannot drift from what visitors actually read —
+mismatched FAQ markup is a manual action risk, not just a wasted opportunity.
+`lang` corrected to `en-IN`.
+
+**Data cost.** The decorative hero orb pulls ~600 KB of Three.js. It now also
+skips on Data Saver, on 2G/3G, and on sub-4-core devices. On an Indian mobile
+plan that is somebody's actual money being spent on a background animation.
+
+## Preview
+
+A working preview of this build is published as a Claude artifact — the real page,
+with analytics stubbed out and the Razorpay link neutralised so it cannot beacon to
+the Worker or reach a payment page. It has a toggle for the visitor view and the
+paying-customer view.
+
 ## Open decisions (not mine to make)
 
 1. **Is 1.8 g/kg the right target?** It is achievable now, but for a heavier veg

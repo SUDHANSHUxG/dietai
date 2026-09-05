@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- Diet AI v2 -->
-<html lang="en">
+<html lang="en-IN">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -214,7 +214,110 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
 .disc{font-size:12px;color:#66738a;margin-top:12px;max-width:760px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:#132218;border:1px solid rgba(52,229,140,.4);color:var(--g1);padding:12px 20px;border-radius:12px;font-weight:700;font-size:14px;transition:.3s;z-index:99;opacity:0}
 .toast.show{transform:translateX(-50%);opacity:1}
+/* keyboard focus — the site had no visible focus ring anywhere */
+:focus-visible{outline:3px solid var(--g1);outline-offset:2px;border-radius:8px}
+.tab:focus-visible,.glass:focus-visible{outline-offset:-3px}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+#printHead{display:none}
+/* PRINT — the ₹99 pack is sold as "print / save as PDF". Without this, printing
+   produced the whole marketing site: nav, hero, pricing, FAQ and all. The dark
+   theme tokens are redefined here because the generated rows use var(--ink)
+   inline, which is near-white and would print invisible on paper. */
+@media print{
+  :root{--ink:#111;--muted:#444;--dim:#666;--g1:#0a7a43;--g2:#0a7a43;--p:#14508c;--c:#8a5a00;--line:#dcdcdc;--line2:#bbb;--card:#fff;--card2:#fff}
+  html,body{background:#fff!important;color:#111!important}
+  body::before,#orbWrap{display:none!important}
+  header,.hero,.app,.features,.faq,footer,.toast,#weekActions,#premLocked,
+  .prem .tag,.prem h2,.prem p.pl,#premUnlocked>.btn,#premUnlocked>.subcard,
+  .prem ul,.price,#payBtn,.paynote{display:none!important}
+  .wrap{max-width:100%!important;padding:0!important}
+  .prem{background:#fff!important;border:none!important;box-shadow:none!important;padding:0!important;margin:0!important}
+  #printHead{display:block!important;border-bottom:2px solid #0a7a43;padding-bottom:8px;margin-bottom:12px}
+  #printHead .ph-t{font-size:22px;font-weight:800;color:#0a7a43}
+  #printHead .ph-s{font-size:13px;color:#444;margin-top:2px}
+  .week-day{border:1px solid #ccc!important;background:#fff!important;border-radius:6px!important;margin-bottom:8px!important;break-inside:avoid;page-break-inside:avoid}
+  .week-day summary{padding:8px 10px!important;font-size:14px!important}
+  .week-day .wd-body{padding:0 10px 8px!important;font-size:12.5px!important}
+  .week-day .wd-body div,.gro-row{border-top:1px solid #eee!important}
+  .gro-cat{color:#0a7a43!important;margin-top:10px!important}
+  .hint{color:#555!important;font-size:11px!important}
+  a[href]::after{content:""!important}
+  @page{margin:14mm}
+}
 </style>
+<script type="application/ld+json">
+[
+ {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Diet AI",
+  "url": "https://dietai.in/",
+  "description": "Free Indian diet planner. Personalised calorie and macro targets using the Mifflin-St Jeor formula, region-wise Indian meal plans, and water and weight tracking. Runs entirely in the browser with no sign-up. An optional one-time Premium Pack adds a 7-day plan and grocery list.",
+  "applicationCategory": "HealthApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript",
+  "inLanguage": "en-IN",
+  "isAccessibleForFree": true,
+  "offers": {
+   "@type": "Offer",
+   "price": "0",
+   "priceCurrency": "INR"
+  },
+  "featureList": [
+   "Calorie and macro targets (Mifflin-St Jeor)",
+   "Region-wise Indian meal plans",
+   "Vegetarian, egg and non-vegetarian options",
+   "Daily food and calorie tracker",
+   "Water tracker",
+   "Weight trend log",
+   "Works offline as a PWA"
+  ],
+  "publisher": {
+   "@type": "Organization",
+   "name": "Diet AI",
+   "url": "https://dietai.in/"
+  }
+ },
+ {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+   {
+    "@type": "Question",
+    "name": "Is it really free?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "Yes. The planner, tracker, water and weight logs are free forever. The optional Premium Pack (₹99 one-time) adds a full 7-day region-matched plan with a grocery list."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Will I have to eat boiled chicken and salads?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "No. Plans are built from your region's everyday meals — dal-roti, idli-sambar, macher jhol, thepla. Fat loss comes from portions and consistency, not exotic food."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Where is my data stored?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "Your age, weight, height, plans, food log, water and weight history are stored only in your own browser and are never uploaded — we couldn't see them even if we wanted to. The one thing we do collect is anonymous usage counts (page views, which buttons get clicked, roughly where visitors came from) so we know which parts of the site are worth improving. No names, no personal data, no advertising trackers."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "How fast will I lose weight?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "The default deficit targets roughly 0.45 kg/week — the pace most dietitians consider sustainable. Slower is fine; consistency beats speed."
+    }
+   }
+  ]
+ }
+]
+</script>
 </head>
 <body>
 
@@ -245,31 +348,31 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
 
 <div class="wrap">
   <div class="app rv" id="planner">
-    <div class="tabs">
-      <button class="tab active" data-tab="planner">🎯 My Plan</button>
-      <button class="tab" data-tab="tracker">📊 Today's Tracker</button>
+    <div class="tabs" role="tablist" aria-label="Diet AI sections">
+      <button class="tab active" data-tab="planner" role="tab" id="tabPlanner" aria-selected="true" aria-controls="panelPlanner">🎯 My Plan</button>
+      <button class="tab" data-tab="tracker" role="tab" id="tabTracker" aria-selected="false" aria-controls="panelTracker">📊 Today's Tracker</button>
     </div>
 
     <!-- PLANNER -->
-    <div class="panel" data-panel="planner">
+    <div class="panel" data-panel="planner" id="panelPlanner" role="tabpanel" aria-labelledby="tabPlanner">
       <h2>Get your personalised plan</h2>
       <p class="lead">Built on the Mifflin-St Jeor formula dietitians use — tuned to your goal, body, region and food preference.</p>
 
       <div style="margin-bottom:16px">
-        <label>Where in India do you eat?</label>
-        <div class="regions" id="regionSeg"></div>
+        <label id="lblRegion">Where in India do you eat?</label>
+        <div class="regions" id="regionSeg" role="group" aria-labelledby="lblRegion"></div>
       </div>
 
       <div class="grid grid-2">
-        <div><label>Your goal</label>
-          <div class="seg" id="goalSeg">
+        <div><label id="lblGoal">Your goal</label>
+          <div class="seg" id="goalSeg" role="group" aria-labelledby="lblGoal">
             <button data-goal="lose" class="on">Lose fat</button>
             <button data-goal="maintain">Maintain</button>
             <button data-goal="gain">Build muscle</button>
           </div>
         </div>
-        <div><label>Food preference</label>
-          <div class="seg" id="dietSeg">
+        <div><label id="lblDiet">Food preference</label>
+          <div class="seg" id="dietSeg" role="group" aria-labelledby="lblDiet">
             <button data-diet="veg" class="on">🌱 Veg</button>
             <button data-diet="egg">🥚 + Egg</button>
             <button data-diet="nonveg">🍗 Non-veg</button>
@@ -278,13 +381,13 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       </div>
 
       <div class="grid grid-2" style="margin-top:14px">
-        <div><label>Sex (for the formula)</label>
-          <div class="seg" id="sexSeg">
+        <div><label id="lblSex">Sex (for the formula)</label>
+          <div class="seg" id="sexSeg" role="group" aria-labelledby="lblSex">
             <button data-sex="male" class="on">Male</button>
             <button data-sex="female">Female</button>
           </div>
         </div>
-        <div><label>Activity level</label>
+        <div><label for="activity">Activity level</label>
           <select id="activity">
             <option value="1.2">Sedentary — desk job</option>
             <option value="1.375" selected>Light — 1–3 workouts/wk</option>
@@ -296,9 +399,9 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       </div>
 
       <div class="grid grid-3" style="margin-top:14px">
-        <div><label>Age (years)</label><input id="age" type="number" min="14" max="100" placeholder="28" value="28" inputmode="numeric"></div>
-        <div><label>Height (cm)</label><input id="height" type="number" min="120" max="230" placeholder="170" value="170" inputmode="numeric"></div>
-        <div><label>Weight (kg)</label><input id="weight" type="number" min="30" max="300" placeholder="72" value="72" inputmode="decimal"></div>
+        <div><label for="age">Age (years)</label><input id="age" type="number" min="14" max="100" placeholder="28" value="28" inputmode="numeric"></div>
+        <div><label for="height">Height (cm)</label><input id="height" type="number" min="120" max="230" placeholder="170" value="170" inputmode="numeric"></div>
+        <div><label for="weight">Weight (kg)</label><input id="weight" type="number" min="30" max="300" placeholder="72" value="72" inputmode="decimal"></div>
       </div>
 
       <div style="margin-top:20px">
@@ -335,23 +438,23 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
     </div>
 
     <!-- TRACKER -->
-    <div class="panel" data-panel="tracker" style="display:none">
+    <div class="panel" data-panel="tracker" id="panelTracker" role="tabpanel" aria-labelledby="tabTracker" style="display:none">
       <h2>Today's dashboard</h2>
       <p class="lead">Food, water and weight in one place. Saved on your device automatically.</p>
 
       <div style="background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
         <label style="margin:0">Calorie target</label>
-        <input id="targetCal" type="number" style="width:110px" placeholder="2000" inputmode="numeric" oninput="saveTarget();renderTracker()">
+        <input id="targetCal" type="number" aria-label="Daily calorie target" style="width:110px" placeholder="2000" inputmode="numeric" oninput="saveTarget();renderTracker()">
         <span class="hint" style="margin:0">Generate a plan and it fills in automatically.</span>
       </div>
 
       <div class="add-row">
-        <div class="full"><label>Food</label>
+        <div class="full"><label for="fName">Food</label>
           <input id="fName" list="foodDB" placeholder="Type… e.g. Roti, Idli, Paneer" oninput="autofill()">
           <datalist id="foodDB"></datalist>
         </div>
-        <div><label>Calories</label><input id="fCal" type="number" min="0" placeholder="0" inputmode="numeric"></div>
-        <div><label>Protein g</label><input id="fProt" type="number" min="0" placeholder="0" inputmode="numeric"></div>
+        <div><label for="fCal">Calories</label><input id="fCal" type="number" min="0" placeholder="0" inputmode="numeric"></div>
+        <div><label for="fProt">Protein g</label><input id="fProt" type="number" min="0" placeholder="0" inputmode="numeric"></div>
         <div><button class="btn btn-primary" style="padding:13px 18px" onclick="addFood()">Add</button></div>
       </div>
 
@@ -375,10 +478,10 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       <div class="subcard">
         <b>⚖️ Weight</b>
         <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
-          <input id="wIn" type="number" min="20" max="400" step="0.1" placeholder="Today's weight (kg)" inputmode="decimal" style="max-width:220px">
+          <input id="wIn" type="number" aria-label="Today's weight in kilograms" min="20" max="400" step="0.1" placeholder="Today's weight (kg)" inputmode="decimal" style="max-width:220px">
           <button class="btn btn-primary" style="padding:12px 18px;font-size:14px" onclick="logWeight()">Log</button>
         </div>
-        <svg class="spark" id="spark" viewBox="0 0 300 56" preserveAspectRatio="none"></svg>
+        <svg class="spark" id="spark" viewBox="0 0 300 56" preserveAspectRatio="none" role="img" aria-label="Weight trend chart"></svg>
         <p class="hint" id="wHint"></p>
       </div>
     </div>
@@ -406,9 +509,10 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       <h2>Your week, decided.</h2>
       <p class="pl">Generate a plan above first (so we know your numbers &amp; region), then build your 7-day pack.</p>
       <button class="btn btn-primary" style="width:100%" onclick="buildWeek()">📅 Build my 7-day plan + grocery list</button>
+      <div id="printHead"></div>
       <div id="weekOut" style="margin-top:18px"></div>
       <div id="weekActions" style="display:none;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
-        <button class="btn btn-ghost" onclick="window.print()">🖨️ Print / PDF</button>
+        <button class="btn btn-ghost" onclick="printPack()">🖨️ Print / PDF</button>
         <button class="btn btn-wa" onclick="shareWeek()">📲 WhatsApp</button>
       </div>
       <div id="cheatSheet" style="margin-top:16px"></div>
@@ -449,7 +553,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
   </div>
 </footer>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
 "use strict";
@@ -534,10 +638,11 @@ try{lastPlan=JSON.parse(localStorage.getItem('dietai_plan')||'null');}catch(e){l
 (function(){
   var host=$('regionSeg');
   host.innerHTML=REGION_ORDER.map(function(id){var r=REGIONS[id];
-    return '<button type="button" data-region="'+id+'" class="'+(id===region?'on':'')+'"><span class="re">'+r.e+'</span><span class="rn">'+r.n+'</span><span class="rf">'+r.f+'</span></button>';}).join('');
+    return '<button type="button" data-region="'+id+'" class="'+(id===region?'on':'')+'" aria-pressed="'+(id===region)+'"><span class="re" aria-hidden="true">'+r.e+'</span><span class="rn">'+r.n+'</span><span class="rf">'+r.f+'</span></button>';}).join('');
   host.querySelectorAll('button').forEach(function(b){b.onclick=function(){
     region=b.dataset.region;localStorage.setItem('dietai_region',region);
-    host.querySelectorAll('button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');
+    host.querySelectorAll('button').forEach(function(x){x.classList.remove('on');x.setAttribute('aria-pressed','false');});
+    b.classList.add('on');b.setAttribute('aria-pressed','true');
     $('premRegion').textContent=REGIONS[region].n==='Pan-India'?"India's":REGIONS[region].n+" India's";
     if(lastPlan&&$('planResults').classList.contains('show'))generatePlan();
     else renderPremium();
@@ -545,9 +650,13 @@ try{lastPlan=JSON.parse(localStorage.getItem('dietai_plan')||'null');}catch(e){l
 })();
 
 /* segments */
-function wireSeg(segId,attr,setter){document.querySelectorAll('#'+segId+' button').forEach(function(b){b.onclick=function(){
-  setter(b.dataset[attr]);
-  document.querySelectorAll('#'+segId+' button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');};});}
+function wireSeg(segId,attr,setter){document.querySelectorAll('#'+segId+' button').forEach(function(b){
+  b.setAttribute('type','button');
+  b.setAttribute('aria-pressed',b.classList.contains('on')?'true':'false');
+  b.onclick=function(){
+    setter(b.dataset[attr]);
+    document.querySelectorAll('#'+segId+' button').forEach(function(x){x.classList.remove('on');x.setAttribute('aria-pressed','false');});
+    b.classList.add('on');b.setAttribute('aria-pressed','true');};});}
 wireSeg('goalSeg','goal',function(v){goal=v;});
 wireSeg('sexSeg','sex',function(v){sex=v;});
 wireSeg('dietSeg','diet',function(v){diet=v;});
@@ -652,9 +761,15 @@ function sendToTracker(){
 /* ---------- tabs ---------- */
 document.querySelectorAll('.tab').forEach(function(t){t.onclick=function(){switchTab(t.dataset.tab);};});
 function switchTab(name){
-  document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab===name);});
+  document.querySelectorAll('.tab').forEach(function(t){
+    var on=t.dataset.tab===name;
+    t.classList.toggle('active',on);t.setAttribute('aria-selected',on?'true':'false');});
   document.querySelectorAll('[data-panel]').forEach(function(p){p.style.display=p.dataset.panel===name?'block':'none';});
 }
+/* left/right arrows move between tabs, as a tablist is expected to */
+document.querySelectorAll('.tab').forEach(function(t,i,all){t.addEventListener('keydown',function(e){
+  var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(!d)return;
+  e.preventDefault();var nx=all[(i+d+all.length)%all.length];switchTab(nx.dataset.tab);nx.focus();});});
 
 /* ---------- tracker (preserves dietai_foods / dietai_day / dietai_target) ---------- */
 var foods=[];
@@ -713,7 +828,7 @@ function waterGoal(){return lastPlan&&lastPlan.water?Math.round(lastPlan.water*4
 function saveWater(){localStorage.setItem('dietai_water',JSON.stringify({date:todayStr,n:waterN}));}
 function renderWater(){
   var g=waterGoal(),host=$('glasses'),html='';
-  for(var i=0;i<g;i++){html+='<button type="button" class="glass'+(i<waterN?' fill':'')+'" onclick="tapWater('+i+')">💧</button>';}
+  for(var i=0;i<g;i++){html+='<button type="button" class="glass'+(i<waterN?' fill':'')+'" onclick="tapWater('+i+')" aria-pressed="'+(i<waterN)+'" aria-label="Glass '+(i+1)+' of '+g+' (250 ml)">💧</button>';}
   host.innerHTML=html;
   $('waterLbl').textContent='— '+(waterN*0.25).toFixed(2).replace(/\.?0+$/,'')+' L of '+(g*0.25)+' L'+(waterN>=g?' ✅ done!':'');
 }
@@ -1044,12 +1159,28 @@ function buildWeek(quiet){
   });
   out+='<div class="week-day" style="margin-top:14px"><div style="padding:14px"><b>🛒 Grocery list — the whole week, one trip</b>'+groRender(bag)+
     '<p class="hint">Raw/uncooked quantities, already scaled to your portions. Round up to the nearest packet. <b>*</b> means the day reaches its protein target once you add that day\'s top-up.</p></div></div>';
+  $('printHead').innerHTML='<div class="ph-t">🥗 Diet AI — your 7-day plan</div><div class="ph-s">'+
+    esc(REGIONS[lastPlan.region].n)+' · '+esc(lastPlan.diet==='veg'?'Vegetarian':lastPlan.diet==='egg'?'Veg + egg':'Non-vegetarian')+
+    ' · '+lastPlan.target.toLocaleString()+' kcal/day · '+lastPlan.protein+'g protein/day · '+lastPlan.water+'L water/day'+
+    '<br>Generated '+new Date().toLocaleDateString()+' · dietai.in · General nutrition estimates, not medical advice.</div>';
   $('weekOut').innerHTML=out;
   $('weekActions').style.display='grid';
   $('cheatSheet').innerHTML='<div class="week-day"><div style="padding:14px"><b>💪 Protein cheat-sheet — cheapest Indian sources</b>'+
     [['Soya chunks (100g)','52g protein'],['Whole moong (100g)','24g'],['Chana (100g)','19g'],['Eggs (2)','12g'],['Toned milk (500ml)','16g'],['Peanuts (100g)','26g'],['Curd (200g)','7g'],['Paneer (100g)','18g'],['Chicken (100g)','27g'],['Masoor dal (100g)','25g']].map(function(r){return '<div style="padding:4px 0;border-top:1px solid var(--line)">'+r[0]+' — <b style="color:var(--g1)">'+r[1]+'</b></div>';}).join('')+
     '<p class="hint">Protein per 100g of the dry/raw ingredient. Cheapest per gram of protein is usually soya, then dals, then eggs.</p></div></div>';
   if(!quiet){toast('Your week is ready 🎉');logEv('week_built',{region:lastPlan.region});}
+}
+/* Collapsed <details> print as collapsed, so a customer printing their pack would
+   get Monday and six closed rows. Force them all open, print, put them back. */
+function printPack(){
+  var ds=[].slice.call(document.querySelectorAll('#weekOut details'));
+  var was=ds.map(function(d){return d.open;});
+  ds.forEach(function(d){d.open=true;});
+  function restore(){ds.forEach(function(d,i){d.open=was[i];});window.removeEventListener('afterprint',restore);}
+  window.addEventListener('afterprint',restore);
+  logEv('pack_printed');
+  window.print();
+  setTimeout(restore,1500); /* Safari/iOS may not fire afterprint */
 }
 function shareWeek(){
   if(!lastWeek||!lastPlan){toast('Build your week first!');return;}
@@ -1112,6 +1243,11 @@ window.addEventListener('beforeinstallprompt',function(e){
     if(!window.WebGLRenderingContext)return;
     if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
     if(navigator.deviceMemory&&navigator.deviceMemory<2)return;
+    if(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<4)return;
+    /* The orb is decoration that costs ~600KB. On Data Saver or a 2G/3G
+       connection that is somebody's actual money, so don't spend it. */
+    var conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+    if(conn&&(conn.saveData===true||/(^|-)(2g|3g)$/.test(conn.effectiveType||'')))return;
     var s=document.createElement('script');
     s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
     s.async=true;s.onload=initOrb;
