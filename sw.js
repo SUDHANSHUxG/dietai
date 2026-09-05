@@ -1,6 +1,6 @@
 /* Diet AI service worker — offline-first for the app shell */
-var CACHE = 'dietai-v3';
-var ASSETS = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
+var CACHE = 'dietai-v4';
+var ASSETS = ['/', '/index.html', '/events.js', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(

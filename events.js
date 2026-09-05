@@ -1,32 +1,79 @@
-/* Diet AI - funnel event logging (safe: every call wrapped, can never break the site).
-   Loaded by index.html before premium.js. Worker: dietai-events (Cloudflare). */
+/* Diet AI — funnel logging.
+   Loaded EARLY (not deferred) in <head> so window.dietaiLog exists before the
+   main script runs. Every call is wrapped: this file can never break the site.
+   Worker: dietai-events (Cloudflare).
+
+   Why not deferred any more: the main script strips ?premium=unlocked from the
+   URL with history.replaceState during parsing. A deferred logger runs AFTER
+   that and can never see the param, so the purchase event was never sent.
+   The main script now calls dietaiLog('premium_unlocked') itself, before it
+   strips the param. */
 (function () {
   var WORKER = 'https://dietai-events.sudhanshuxg.workers.dev';
-  var P = 'dietai';
-  function src() {
-    try { return (new URLSearchParams(location.search).get('utm_source')) || document.referrer.slice(0, 120) || 'direct'; }
-    catch (e) { return 'direct'; }
+  var PRODUCT = 'dietai';
+
+  /* ---- first-touch attribution -------------------------------------------
+     Razorpay bounces the user off-site and back, which destroys document.referrer.
+     So we remember where they originally came from and attach it to every event,
+     including the purchase. Without this, every sale looks like it came from
+     "pages.razorpay.com". */
+  function firstTouch() {
+    try {
+      var saved = localStorage.getItem('dietai_src');
+      if (saved) return saved;
+      var q = new URLSearchParams(location.search);
+      var src = q.get('utm_source') || q.get('source') ||
+                (document.referrer ? document.referrer.slice(0, 120) : '') || 'direct';
+      // don't let the payment round-trip overwrite the real source
+      if (src.indexOf('razorpay') < 0) localStorage.setItem('dietai_src', src);
+      return src;
+    } catch (e) { return 'direct'; }
   }
+
   function log(event, meta) {
     try {
-      var payload = JSON.stringify({ product: P, event: event, source: src(), meta: meta || null });
-      if (navigator.sendBeacon) navigator.sendBeacon(WORKER + '/e', payload);
-      else fetch(WORKER + '/e', { method: 'POST', body: payload, keepalive: true });
-    } catch (e) {}
+      var payload = JSON.stringify({
+        product: PRODUCT,
+        event: String(event),
+        source: firstTouch(),
+        meta: meta || null,
+        ts: Date.now()
+      });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(WORKER + '/e', payload);
+      } else {
+        fetch(WORKER + '/e', { method: 'POST', body: payload, keepalive: true, mode: 'no-cors' });
+      }
+    } catch (e) { /* analytics must never break the app */ }
   }
+
+  /* Fire an event at most once per browser, ever. Used for the purchase event so
+     a refresh of /?premium=unlocked can't inflate the conversion count. */
+  function logOnce(event, meta) {
+    try {
+      var k = 'dietai_ev_' + event;
+      if (localStorage.getItem(k)) return;
+      localStorage.setItem(k, '1');
+    } catch (e) { /* private mode: fall through and log anyway */ }
+    log(event, meta);
+  }
+
+  window.dietaiLog = log;
+  window.dietaiLogOnce = logOnce;
+
+  /* one page_view per tab session */
   try {
-    if (!sessionStorage.getItem('dietai_pv')) { sessionStorage.setItem('dietai_pv', '1'); log('page_view'); }
-  } catch (e) { log('page_view'); }
-  try { if (new URLSearchParams(location.search).get('premium') === 'unlocked') log('premium_unlocked'); } catch (e) {}
-  document.addEventListener('DOMContentLoaded', function () {
-    var orig = window.generatePlan;
-    if (typeof orig === 'function') {
-      window.generatePlan = function () { log('plan_generated'); return orig.apply(this, arguments); };
+    if (!sessionStorage.getItem('dietai_pv')) {
+      sessionStorage.setItem('dietai_pv', '1');
+      log('page_view', { pwa: location.search.indexOf('source=pwa') >= 0 });
     }
-  });
-  document.addEventListener('click', function (ev) {
-    var b = ev.target && ev.target.closest ? ev.target.closest('#premiumBtn, [data-premium-btn]') : null;
-    if (!b) return;
-    try { log(localStorage.getItem('dietai_premium') === '1' ? 'pack_opened' : 'premium_click'); } catch (e) {}
-  }, true);
+  } catch (e) { log('page_view'); }
+
+  /* Backstop: if this browser is premium but the purchase was never reported,
+     report it now. Covers the case where the GitHub Pages CDN is still serving a
+     stale index.html that doesn't call dietaiLog itself. Costs one visit of delay,
+     but a sale gets counted instead of vanishing. */
+  try {
+    if (localStorage.getItem('dietai_premium') === '1') logOnce('premium_unlocked', { via: 'backstop' });
+  } catch (e) {}
 })();
