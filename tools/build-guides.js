@@ -70,11 +70,11 @@ const G = {
   },
   east: {
     slug: 'east-indian-diet-plan',
-    title: 'Bengali, Bihari & Odia Diet Plan for Weight Loss',
+    title: 'Bengali & Bihari Diet Plan for Weight Loss',
     h1: 'East Indian diet plan for weight loss',
     cuisine: 'East Indian',
-    desc: 'A free Bengali, Bihari and Odia diet plan built from macher jhol, dal-bhaat, litti-chokha and sattu — sample 1,500 and 2,000 kcal days with calories and protein.',
-    lede: 'Rice and fish, dal-bhaat, litti-chokha, sattu: the food of Bengal, Bihar and Odisha has excellent cheap protein in it. The two things to manage are the size of the rice mound and the fried sides that come with it.',
+    desc: 'A free Bengali and Bihari diet plan built from macher jhol, dal-bhaat, litti-chokha and sattu — sample 1,500 and 2,000 kcal days with calories and protein.',
+    lede: 'Rice and fish, dal-bhaat, litti-chokha, sattu: the food of Bengal and Bihar has excellent cheap protein in it. The two things to manage are the size of the rice mound and the fried sides that come with it.',
     tips: [
       ['Portion the bhaat', `A cup and a half of cooked rice is about ${Math.round(food('Plain rice (1 cup)').k * 1.5)} kcal. Keep the fish or dal the same and trim the rice first.`],
       ['Fish is your best friend', `Cooked fish is about ${food('Fish, cooked (100g)').p} g of protein per 100 g for roughly ${food('Fish, cooked (100g)').k} kcal. A light macher jhol is close to an ideal weight-loss meal.`],
@@ -102,11 +102,11 @@ const G = {
   },
   central: {
     slug: 'central-indian-diet-plan',
-    title: 'MP & Chhattisgarh Diet Plan for Weight Loss',
+    title: 'Madhya Pradesh Diet Plan for Weight Loss',
     h1: 'Central Indian diet plan for weight loss',
     cuisine: 'Central Indian',
-    desc: 'A free Madhya Pradesh and Chhattisgarh diet plan built from Indori poha, dal bafla, kadhi-chawal and sprouts — sample 1,500 and 2,000 kcal days with calories and protein.',
-    lede: 'Indori poha, dal bafla, kadhi-chawal, bhutte ka kees: central Indian food is simple and filling. The trick is keeping the poha without the jalebi, and the bafla without the bowl of ghee.',
+    desc: 'A free Madhya Pradesh diet plan built from Indori poha, dal bafla, kadhi-chawal and sprouts — sample 1,500 and 2,000 kcal days with calories and protein.',
+    lede: 'Indori poha, dal bafla, kadhi-chawal: central Indian food is simple and filling. The trick is keeping the poha without the jalebi, and the bafla without the bowl of ghee.',
     tips: [
       ['Poha yes, jalebi no', `A plate of poha is about ${food('Poha (1 plate)').k} kcal. It is the jalebi beside it that doubles breakfast.`],
       ['Ask for less ghee on bafla', 'Dal bafla is traditionally soaked in ghee. With a teaspoon instead of a ladle it fits a weight-loss day.'],

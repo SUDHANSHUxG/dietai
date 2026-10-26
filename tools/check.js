@@ -104,6 +104,46 @@ const ok = (cond, label, detail) => {
     ok(r.final >= r.goal - 8, `${c[0]}/${c[1]}/${c[2]}/${c[5]}kg`, `${r.final} g of ${r.goal} g`);
   }
 
+  console.log('\nBad input is rejected, never silently clamped');
+  for (const [age, h, w, field, why] of [[28, 170, 2, 'weight', 'weight 2 (typo for 72)'], [280, 170, 72, 'age', 'age 280 (typo for 28)'],
+      [28, 17, 72, 'height', 'height 17 (typo for 170)'], [28, 1700, 72, 'height', 'height 1700'], [12, 150, 45, 'age', 'age 12 (a child)'],
+      [17, 165, 55, 'age', 'age 17'], [30, 120, 290, 'weight', 'BMI over 80']]) {
+    const r = await page.evaluate(([a, hh, ww]) => { const before = JSON.stringify(lastPlan);
+      document.getElementById('age').value = a; document.getElementById('height').value = hh; document.getElementById('weight').value = ww;
+      generatePlan(); return { changed: JSON.stringify(lastPlan) !== before, invalid: [...document.querySelectorAll('[aria-invalid="true"]')].map(e => e.id),
+        toast: document.getElementById('toast').textContent }; }, [age, h, w]);
+    ok(!r.changed && r.invalid.length === 1 && r.invalid[0] === field, `rejects ${why}, flags only that field`, `flags ${r.invalid.join(',') || 'nothing'}: "${r.toast.slice(0, 60)}"`);
+  }
+  const good = await page.evaluate(() => { document.getElementById('age').value = 18; document.getElementById('height').value = 170; document.getElementById('weight').value = 65;
+    generatePlan(); return { age18: !!lastPlan && lastPlan.w === 65, flagged: document.querySelectorAll('[aria-invalid="true"]').length }; });
+  ok(good.age18 && good.flagged === 0, 'accepts a valid 18-year-old and clears the error state');
+
+  console.log('\nThe paid week uses every dish the data allows');
+  const variety = await page.evaluate(() => {
+    const bad = [];
+    for (const rg of Object.keys(REGIONS)) for (const dt of ['veg', 'egg', 'nonveg']) for (const prot of [80, 140]) {
+      const seen = { B: new Set(), L: new Set(), D: new Set(), S: new Set() }, keys = ['B', 'L', 'D', 'S'];
+      for (let d = 0; d < 7; d++) buildDay(d, 2000, prot, rg, dt).meals.forEach((m, i) => seen[keys[i]].add(m[2].t));
+      const tags = allowedTags(dt);
+      keys.forEach(k => { const avail = Math.min(7, REGIONS[rg].meals[k].filter(m => tags.includes(m.g)).length);
+        if (seen[k].size < avail) bad.push(`${rg}/${dt}/${prot}g ${k}: ${seen[k].size} of ${avail}`); });
+    }
+    return bad;
+  });
+  ok(variety.length === 0, 'every slot rotates through all allowed dishes over 7 days', variety.slice(0, 4).join('; ') || 'all slots full');
+
+  console.log('\nPaying in the Razorpay tab unlocks the tab the customer started in');
+  await page.evaluate(() => { localStorage.removeItem('dietai_premium'); localStorage.removeItem('dietai_ev_premium_unlocked'); });
+  await page.goto(BASE + '/?run=xtab', { waitUntil: 'networkidle' });
+  await page.evaluate(() => { document.getElementById('age').value = 30; document.getElementById('height').value = 170; document.getElementById('weight').value = 70; generatePlan(); });
+  ok(await page.isVisible('#premLocked'), 'offer shown before payment');
+  const payTab = await ctx.newPage();
+  await payTab.goto(BASE + '/?premium=unlocked', { waitUntil: 'networkidle' });
+  await page.bringToFront(); await page.waitForTimeout(700);
+  ok(await page.isVisible('#premUnlocked') && !(await page.isVisible('#payBtn')), 'original tab unlocks, pay button gone');
+  ok(await page.evaluate(() => document.querySelectorAll('#weekOut details').length === 7), 'original tab builds the week');
+  await payTab.close();
+
   console.log('\nGrocery list');
   const junk = await page.evaluate(() => { region = 'east'; diet = 'nonveg'; generatePlan(); lastWeek = null; buildWeek(true);
     return [...document.querySelectorAll('#weekOut .gro-row')].map(r => r.textContent).filter(t => /NaN|undefined|uava|× 0|\b0 g\b/.test(t)); });

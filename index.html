@@ -96,6 +96,7 @@ header{position:sticky;top:0;z-index:50;background:rgba(7,9,15,.72);backdrop-fil
 label{display:block;font-weight:650;font-size:12.5px;margin-bottom:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
 input,select{width:100%;padding:13px 14px;border:1.5px solid var(--line2);border-radius:12px;font-size:16px;font-family:inherit;background:rgba(0,0,0,.25);color:var(--ink);transition:.15s}
 input:focus,select:focus{outline:none;border-color:var(--g1);box-shadow:0 0 0 3px rgba(52,229,140,.15)}
+input[aria-invalid="true"]{border-color:var(--f);box-shadow:0 0 0 3px rgba(255,107,129,.18)}
 select option{background:#0b0f1a;color:var(--ink)}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
 .seg button{flex:1;min-width:80px;padding:12px 8px;border:1.5px solid var(--line2);background:rgba(0,0,0,.2);border-radius:12px;font-weight:700;font-size:13.5px;cursor:pointer;color:var(--muted);transition:.15s;font-family:inherit}
@@ -403,7 +404,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       </div>
 
       <div class="grid grid-3" style="margin-top:14px">
-        <div><label for="age">Age (years)</label><input id="age" type="number" min="14" max="100" placeholder="28" value="28" inputmode="numeric"></div>
+        <div><label for="age">Age (years)</label><input id="age" type="number" min="18" max="100" placeholder="28" value="28" inputmode="numeric"></div>
         <div><label for="height">Height (cm)</label><input id="height" type="number" min="120" max="230" placeholder="170" value="170" inputmode="numeric"></div>
         <div><label for="weight">Weight (kg)</label><input id="weight" type="number" min="30" max="300" placeholder="72" value="72" inputmode="decimal"></div>
       </div>
@@ -496,10 +497,10 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
     <div id="premLocked">
       <span class="tag">🔥 THE PREMIUM PACK</span>
       <h2>Monday is on us.<br/>See it before you pay a rupee.</h2>
-      <p class="pl">This is your real Monday — built from <b id="premRegion" style="color:var(--ink)">your region's</b> everyday food, at your calories and your protein. The other six days work exactly the same way.</p>
+      <p class="pl">This is your real Monday — built from <b id="premRegion" style="color:var(--ink)">your region's</b> everyday food, at your calorie target, with a protein top-up where the meals fall short. The other six days work the same way.</p>
       <div id="previewOut"></div>
       <ul>
-        <li>✅ <span><b>All 7 days</b> — region-matched, veg / egg / non-veg, calories <i>and</i> protein both hit</span></li>
+        <li>✅ <span><b>All 7 days</b> — region-matched, veg / egg / non-veg, on your calorie target with a daily protein top-up</span></li>
         <li>✅ <span><b>A real grocery list</b> — actual quantities in grams and kilos, sorted by aisle</span></li>
         <li>✅ <span><b>Print / save as PDF</b> — fridge, family, or your cook</span></li>
         <li>✅ <span><b>Protein cheat-sheet</b> — the cheapest Indian protein per rupee</span></li>
@@ -558,9 +559,9 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       <a href="/indian-diet-plan-for-weight-loss/">Indian</a>
       <a href="/north-indian-diet-plan/">North Indian</a>
       <a href="/south-indian-diet-plan/">South Indian</a>
-      <a href="/east-indian-diet-plan/">Bengali, Bihari &amp; Odia</a>
+      <a href="/east-indian-diet-plan/">Bengali &amp; Bihari</a>
       <a href="/west-indian-diet-plan/">Gujarati &amp; Maharashtrian</a>
-      <a href="/central-indian-diet-plan/">MP &amp; Chhattisgarh</a>
+      <a href="/central-indian-diet-plan/">Madhya Pradesh</a>
       <a href="/north-east-indian-diet-plan/">North-East</a>
     </nav>
     <p class="disc">Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and macro figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p>
@@ -633,7 +634,7 @@ var FOODS=[
 /* ---------- helpers ---------- */
 function $(id){return document.getElementById(id);}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function toast(msg){var t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show');},2400);}
+function toast(msg){var t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show');},Math.max(2400,String(msg).length*60));} /* long messages stay long enough to read */
 function countUp(el,to,suffix,dur){
   suffix=suffix||'';dur=dur||900;var from=0,t0=null;
   if(!window.requestAnimationFrame){el.textContent=to.toLocaleString()+suffix;return;}
@@ -695,7 +696,12 @@ function pickMeal(slotArr,dayIdx,preferProtein,dt){
   var tags=allowedTags(dt);
   var ok=slotArr.filter(function(m){return tags.indexOf(m.g)>=0;});
   if(!ok.length)ok=slotArr.filter(function(m){return m.g==='v';});
-  if(preferProtein){ok=ok.slice().sort(function(a,b){return b.p-a.p;});return ok[dayIdx%Math.min(2,ok.length)];}
+  /* Protein-first order, but rotate through EVERY allowed dish. This used to
+     cycle only the top two, so for anyone with a protein target of 100g+ (most
+     adults) the paid "7-day" pack was a 2-day rotation for lunch, dinner and
+     snack. The daily protein top-up now closes the gap a lower-protein dish
+     leaves. Day 0 is unchanged, so the free Monday still matches the paid one. */
+  if(preferProtein){ok=ok.slice().sort(function(a,b){return b.p-a.p;});return ok[dayIdx%ok.length];}
   return ok[dayIdx%ok.length];
 }
 function buildDay(dayIdx,target,protein,rg,dt){
@@ -705,11 +711,27 @@ function buildDay(dayIdx,target,protein,rg,dt){
   var scale=Math.max(.75,Math.min(1.35,target/k));
   return {meals:meals,k:k,p:p,scale:scale};
 }
+/* The planner's formulas (Mifflin-St Jeor, a fixed deficit) are adult formulas;
+   the disclaimer already sends under-18s to a doctor. One constant to change. */
+var MIN_AGE=18;
+function markField(id,msg){var el=$(id);if(el){el.setAttribute('aria-invalid','true');el.focus();}toast(msg);}
+function fieldOk(id,v,lo,hi,msg){if(v<lo||v>hi){markField(id,msg);return false;}return true;}
 function generatePlan(){
   var age=parseFloat($('age').value),h=parseFloat($('height').value),w=parseFloat($('weight').value);
   var act=parseFloat($('activity').value)||1.375;
+  ['age','height','weight'].forEach(function(id){$(id).removeAttribute('aria-invalid');}); /* only the field at fault stays red */
   if(!age||!h||!w||age<=0||h<=0||w<=0){toast('Please enter your age, height and weight.');return;}
-  age=Math.min(Math.max(age,10),100);h=Math.min(Math.max(h,100),250);w=Math.min(Math.max(w,25),300);
+  /* Reject, don't clamp. Out-of-range values used to be silently clamped, so a
+     typo became a confident, wrong plan: weight "2" (meant 72) produced a plan
+     for a 25 kg adult with "BMI 8.7"; height "17" showed "BMI 72". And because
+     age was clamped to >=10, a 12-year-old got a calorie-deficit plan. */
+  if(!fieldOk('age',age,MIN_AGE,100,age<MIN_AGE
+      ?"Diet AI's calorie formulas are for adults. If you're under 18, please ask a doctor or dietitian — growing bodies need different targets."
+      :'Please enter an age between 18 and 100.'))return;
+  if(!fieldOk('height',h,120,230,'Height looks off — enter it in centimetres, e.g. 170.'))return;
+  if(!fieldOk('weight',w,30,300,'Weight looks off — enter it in kilograms, e.g. 72.'))return;
+  var bmiChk=w/Math.pow(h/100,2);
+  if(bmiChk<12||bmiChk>80){markField('weight','Those height and weight numbers don\'t fit together — please check both.');return;}
   var bmr=10*w+6.25*h-5*age+(sex==='male'?5:-161);
   var tdee=bmr*act,target=tdee,lbl="calories to maintain";
   if(goal==='lose'){target=tdee-500;lbl="calories/day to lose fat (~0.45 kg/week)";}
@@ -933,6 +955,20 @@ function logEv(ev,meta){try{if(window.dietaiLog)window.dietaiLog(ev,meta);}catch
     }
   }
 })();
+/* The pay button opens Razorpay in a new tab, and Razorpay redirects THAT tab
+   back unlocked. The tab the customer started in kept showing the ₹99 offer
+   with a live pay button — "did my payment fail?", a second payment, a refund
+   request. Unlock this tab as soon as another tab records the purchase. */
+function syncPremium(){
+  if(isPremium()&&$('premLocked').style.display!=='none'){
+    renderPremium();
+    toast('🎉 Payment received — your week is unlocked below.');
+    var p=$('premium');if(p)p.scrollIntoView({behavior:'smooth'});
+  }
+}
+window.addEventListener('storage',function(e){if(e.key==='dietai_premium'&&e.newValue==='1')syncPremium();});
+window.addEventListener('focus',syncPremium);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)syncPremium();});
 /* Copy the restore link so a customer who clears their browser, or switches
    phone, can get their purchase back. Without this, "yours forever" is a promise
    the site cannot keep. */
@@ -1158,7 +1194,7 @@ function renderPremium(){
     '<div class="pv"><div class="pv-head"><span>\ud83c\udf05 Monday \u00b7 '+lastPlan.target.toLocaleString()+' kcal \u00b7 '+lastPlan.protein+'g protein</span><span class="free">FREE</span></div>'+
     previewRows(day)+
     (pvTu?'<div class="pv-row" style="border-color:rgba(90,162,255,.35)"><div class="ic">➕</div><div class="tx"><div class="tt">Protein top-up</div><div class="td">'+esc(topUpText(pvTu))+'</div></div><div class="kk" style="color:var(--p)">'+(pvP+pvTu.got)+'g P<br>total</div></div>':'')+
-    '<div class="pv-locked"><div class="blur">'+rest+'</div>'+
+    '<div class="pv-locked"><div class="blur" aria-hidden="true">'+rest+'</div>'+
     '<div class="cap"><div><b>\ud83d\udd12 Tuesday to Sunday</b><span>24 more meals, plus the grocery list to cook them</span></div></div></div></div>';
 }
 

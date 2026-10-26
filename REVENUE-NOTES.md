@@ -191,6 +191,27 @@ under its own URL, only on success.
 
 **Guide tables fit a 360 px phone** — no sideways scroll to see calories and protein.
 
+## Fourth pass — critic review before merge (attacked in a browser)
+
+| | finding | fix |
+|---|---|---|
+| P0 | Typos became confident wrong plans: weight "2" → plan for a 25 kg adult, "BMI 8.7"; height "17" → "BMI 72". Inputs were clamped, not rejected. | Out-of-range values are rejected with a message naming the field; impossible height/weight combinations (BMI < 12 or > 80) too. Only the field at fault is flagged. |
+| P0 | A 12-year-old got a 1,500 kcal weight-loss plan (field said min 14, code accepted 10+). | Minimum age **18** — the formulas are adult formulas and the disclaimer already says so. One constant, `MIN_AGE`, if you decide otherwise. |
+| P1 | The "7-day" pack rotated only two dishes for lunch, dinner and snack for anyone with a protein target ≥ 100 g (most adults) — in all 21 region×diet combinations. | Rotate through every allowed dish, highest-protein first; the daily top-up covers the gap. Monday is unchanged, so the free preview still matches. |
+| P1 | After paying in the Razorpay tab, the tab the customer started in still showed the ₹99 offer and a live pay button. | That tab now unlocks itself when the purchase is recorded (storage event, plus a re-check on focus). |
+| P1 | "Odia" and "Chhattisgarh" in guide titles with no dish from either on the page. | Titles now name only what's there: Bengali & Bihari; Madhya Pradesh. |
+| P2 | Screen readers read the blurred locked days aloud. | Hidden from assistive tech; the lock caption still reads. |
+| P2 | "Free AI Diet Plan" title vs "No fake AI magic" on the same page. | **Not changed** — that title is what Google ranks right now. Decide with Search Console data. |
+
+**Protein, honestly.** Checked every day of every week (735 plan-days across 7 regions,
+3 diets, 5 body types): before the variety fix 32 days ended > 8 g short of target even
+with the maximum top-up; after it, 38 (5%) — mostly heavy vegetarians, worst 28 g. Those
+days already say so on the page. The offer copy no longer claims protein is always hit;
+it promises the calorie target with a daily protein top-up, which is true on every day.
+
+Every fix has a check in `tools/check.js`, and the new checks were run against the
+previous commit to prove they fail there (10 failures) and pass here.
+
 ## Tools (not part of the site)
 
 - `tools/check.js` — end-to-end checks in headless Chromium: funnel events, protein
