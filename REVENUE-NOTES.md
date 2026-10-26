@@ -24,15 +24,51 @@ the stale-CDN case.
 
 ## Event contract (Worker `dietai-events`)
 
-| event | when |
-|---|---|
-| `page_view` | once per tab session |
-| `plan_generated` | every plan build — meta: region, diet, goal, target |
-| `premium_click` | the real ₹99 CTA — meta: whether a plan existed |
-| `premium_unlocked` | **the sale.** Fired before the URL is stripped. Once per browser, ever. |
-| `week_built` | a paying customer built their 7 days |
-| `share_plan` / `share_week` | WhatsApp share — the only real distribution channel |
-| `restore_copied` | customer saved their restore link |
+The Worker only stores events on its allow-list (read from its live source,
+2026-10-26). Anything else gets a 400 and is dropped silently.
+
+| event | when | stored today? |
+|---|---|---|
+| `page_view` | once per tab session — meta: page path | yes |
+| `plan_generated` | every plan build — meta: region, diet, goal, target | yes |
+| `premium_click` | the real ₹99 CTA — meta: whether a plan existed | yes |
+| `premium_unlocked` | **the sale.** Fired before the URL is stripped. Once per browser, ever. | yes |
+| `pack_opened` | a paying customer built their 7 days | yes |
+| `share_plan` / `share_week` | WhatsApp share | **no — needs Worker change** |
+| `pack_printed` | customer printed the pack | **no — needs Worker change** |
+| `restore_copied` | customer saved their restore link | **no — needs Worker change** |
+
+The whole purchase funnel is on the allow-list. The four secondary events need
+one line changed in the Worker — a code change, not a key:
+Cloudflare dashboard → Workers & Pages → `dietai-events` → Edit code → replace line 3 with
+
+```js
+const ALLOWED_EVENTS = ['page_view', 'plan_generated', 'premium_click', 'premium_unlocked', 'pack_opened', 'share_plan', 'share_week', 'pack_printed', 'restore_copied'];
+```
+
+→ Deploy.
+
+## What the data actually says (D1 + Razorpay, read 2026-10-26)
+
+| | Jul | Aug | Sep | Oct |
+|---|---|---|---|---|
+| page views | 23 | 17 | 19 | 63 |
+| plans built | 0* | 9 | 12 | 47 |
+
+\* plan logging started 9 Aug.
+
+- **Search is the only channel that works, and it converts.** Google: 45 views →
+  43 plans. Bing: 19 views → 20 plans (plans can repeat in one visit). "Direct": 46
+  views → 2 plans — that bucket is the owner, tests, bots and PWA opens; ignore it.
+  No social, no WhatsApp, no ads.
+- **October tripled.** Whatever Google started doing in October, it is the growth.
+- **Razorpay, Jul–Oct: two ₹99 attempts.** 21 Oct — a real customer (not the owner)
+  tried to pay; UPI **timed out** on the customer side, no money taken. 26 Oct — the
+  owner's own test payment, captured; one minute later D1 recorded a visit referred
+  by `pages.razorpay.com` and **no `premium_unlocked`** — the tracking bug reproduced
+  live with real money. Neither attempt produced a `premium_click` either.
+- So: a stranger found the site through search, built a plan, and tried to pay. n=1,
+  so it proves the path exists, not a conversion rate.
 
 `source` is **first-touch** and survives the Razorpay round-trip. Without that,
 every sale would be attributed to `pages.razorpay.com`. Shares carry
@@ -127,12 +163,49 @@ mismatched FAQ markup is a manual action risk, not just a wasted opportunity.
 skips on Data Saver, on 2G/3G, and on sub-4-core devices. On an Indian mobile
 plan that is somebody's actual money being spent on a background animation.
 
+## Third pass — more doors from search, and a trust bug
+
+**Seven regional guide pages** (`/south-indian-diet-plan/`, `/west-indian-diet-plan/`
+for Gujarati & Maharashtrian, etc., plus a pan-India one). Each has two sample days
+(1,500 kcal veg and 2,000 kcal higher-protein), cuisine-specific tips, every meal the
+planner uses with calories and protein, and a FAQ mirrored in JSON-LD. Every number
+is read from the app's own meal data by `tools/build-guides.js`, so a guide can never
+contradict the planner. Each CTA opens the planner already set to that region. The
+homepage footer links to all of them; `sitemap.xml` lists them. This is distribution,
+not features: search is the only channel with evidence behind it.
+
+**Returning visitors could get the wrong diet.** Rebuilding a saved plan (the free
+preview, the paid week, the share text) wrote the saved plan's region and diet into
+the live selection without updating the buttons. A non-veg plan saved on a phone,
+then a vegetarian opens the site: "Veg" highlighted, chicken in the plan. The paid
+week always had this; the preview made it hit every returning visitor. Now region and
+diet are passed into the meal builder, never written back. The share text had an
+older version of the same bug (named the saved region, built from the current one).
+`tools/check.js` covers it for both free and paying visitors, and was proven to fail
+when the bug is put back on either path.
+
+**Service worker cached every page as `/index.html`.** Harmless with one page, wrong
+the moment guides existed: visiting one would have overwritten the installed app's
+offline copy, and a 404 would have been cached as the app. Each page is now cached
+under its own URL, only on success.
+
+**Guide tables fit a 360 px phone** — no sideways scroll to see calories and protein.
+
+## Tools (not part of the site)
+
+- `tools/check.js` — end-to-end checks in headless Chromium: funnel events, protein
+  targets across regions, grocery list, the saved-plan bug (free + paid), accessibility,
+  print output, guides, sitemap. Intercepts the Worker and blocks Razorpay, so it can't
+  pollute data or take money. `npx http-server -p 8099 -s . & node tools/check.js`
+- `tools/build-guides.js` — regenerates the guides and sitemap from the meal data.
+- `tools/build-preview.py <dir>` — builds the Claude-artifact preview (analytics
+  stubbed, payments off, links made relative).
+
 ## Preview
 
-A working preview of this build is published as a Claude artifact — the real page,
-with analytics stubbed out and the Razorpay link neutralised so it cannot beacon to
-the Worker or reach a payment page. It has a toggle for the visitor view and the
-paying-customer view.
+A working preview of this build is published as a Claude artifact — homepage plus all
+seven guides, with analytics stubbed out and the Razorpay link neutralised. It has a
+toggle for the visitor view and the paying-customer view.
 
 ## Open decisions (not mine to make)
 

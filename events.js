@@ -65,7 +65,7 @@
   try {
     if (!sessionStorage.getItem('dietai_pv')) {
       sessionStorage.setItem('dietai_pv', '1');
-      log('page_view', { pwa: location.search.indexOf('source=pwa') >= 0 });
+      log('page_view', { page: location.pathname, pwa: location.search.indexOf('source=pwa') >= 0 });
     }
   } catch (e) { log('page_view'); }
 

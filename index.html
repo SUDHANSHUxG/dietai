@@ -212,6 +212,10 @@ datalist{display:none}
 footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var(--muted);font-size:13.5px}
 .foot{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
 .disc{font-size:12px;color:#66738a;margin-top:12px;max-width:760px}
+.guides{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:14px;font-size:13px}
+.guides b{color:var(--ink);font-weight:700;width:100%}
+.guides a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+.guides a:hover{color:var(--g1)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:#132218;border:1px solid rgba(52,229,140,.4);color:var(--g1);padding:12px 20px;border-radius:12px;font-weight:700;font-size:14px;transition:.3s;z-index:99;opacity:0}
 .toast.show{transform:translateX(-50%);opacity:1}
 /* keyboard focus — the site had no visible focus ring anywhere */
@@ -549,6 +553,16 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       <div class="logo" style="font-size:17px"><span class="dot" style="width:28px;height:28px;font-size:15px">🥗</span> Diet AI</div>
       <div>© <span id="yr"></span> dietai.in · Made with care for healthier eating</div>
     </div>
+    <nav class="guides" aria-label="Diet plans by region">
+      <b>Diet plans by region:</b>
+      <a href="/indian-diet-plan-for-weight-loss/">Indian</a>
+      <a href="/north-indian-diet-plan/">North Indian</a>
+      <a href="/south-indian-diet-plan/">South Indian</a>
+      <a href="/east-indian-diet-plan/">Bengali, Bihari &amp; Odia</a>
+      <a href="/west-indian-diet-plan/">Gujarati &amp; Maharashtrian</a>
+      <a href="/central-indian-diet-plan/">MP &amp; Chhattisgarh</a>
+      <a href="/north-east-indian-diet-plan/">North-East</a>
+    </nav>
     <p class="disc">Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and macro figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p>
   </div>
 </footer>
@@ -631,6 +645,13 @@ function countUp(el,to,suffix,dur){
 
 /* ---------- state ---------- */
 var goal="lose",sex="male",diet="veg",region=localStorage.getItem('dietai_region')||"pan";
+/* Guide pages link here as /?region=south&diet=veg#planner so the planner opens
+   already set to what the visitor was reading about. Unknown values are ignored. */
+try{
+  var qp=new URLSearchParams(location.search);
+  var qr=qp.get('region');if(qr&&REGIONS[qr]){region=qr;try{localStorage.setItem('dietai_region',qr);}catch(e){}}
+  var qd=qp.get('diet');if(qd==='veg'||qd==='egg'||qd==='nonveg')diet=qd;
+}catch(e){}
 var lastPlan=null;
 try{lastPlan=JSON.parse(localStorage.getItem('dietai_plan')||'null');}catch(e){lastPlan=null;}
 
@@ -660,18 +681,26 @@ function wireSeg(segId,attr,setter){document.querySelectorAll('#'+segId+' button
 wireSeg('goalSeg','goal',function(v){goal=v;});
 wireSeg('sexSeg','sex',function(v){sex=v;});
 wireSeg('dietSeg','diet',function(v){diet=v;});
+/* reflect a diet passed in from a guide page (markup defaults to Veg) */
+document.querySelectorAll('#dietSeg button').forEach(function(b){
+  var on=b.dataset.diet===diet;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');});
 
 /* ---------- planner ---------- */
-function allowedTags(){return diet==='veg'?['v']:diet==='egg'?['v','e']:['v','e','n'];}
-function pickMeal(slotArr,dayIdx,preferProtein){
-  var ok=slotArr.filter(function(m){return allowedTags().indexOf(m.g)>=0;});
+/* region and diet are passed in, never written back. Rebuilding a saved plan
+   (the free preview, the paid week, the share text) used to assign the saved
+   plan's region/diet to these globals, which desynced them from the buttons on
+   screen: a returning visitor saw "Veg" highlighted and got a non-veg plan. */
+function allowedTags(dt){dt=dt||diet;return dt==='veg'?['v']:dt==='egg'?['v','e']:['v','e','n'];}
+function pickMeal(slotArr,dayIdx,preferProtein,dt){
+  var tags=allowedTags(dt);
+  var ok=slotArr.filter(function(m){return tags.indexOf(m.g)>=0;});
   if(!ok.length)ok=slotArr.filter(function(m){return m.g==='v';});
   if(preferProtein){ok=ok.slice().sort(function(a,b){return b.p-a.p;});return ok[dayIdx%Math.min(2,ok.length)];}
   return ok[dayIdx%ok.length];
 }
-function buildDay(dayIdx,target,protein){
-  var R=REGIONS[region].meals,highP=protein>=100;
-  var meals=[["Breakfast","🌅",pickMeal(R.B,dayIdx,false)],["Lunch","☀️",pickMeal(R.L,dayIdx,highP)],["Dinner","🌙",pickMeal(R.D,dayIdx+1,highP)],["Snack","🍎",pickMeal(R.S,dayIdx,highP)]];
+function buildDay(dayIdx,target,protein,rg,dt){
+  var R=REGIONS[rg||region].meals,highP=protein>=100;
+  var meals=[["Breakfast","🌅",pickMeal(R.B,dayIdx,false,dt)],["Lunch","☀️",pickMeal(R.L,dayIdx,highP,dt)],["Dinner","🌙",pickMeal(R.D,dayIdx+1,highP,dt)],["Snack","🍎",pickMeal(R.S,dayIdx,highP,dt)]];
   var k=0,p=0;meals.forEach(function(m){k+=m[2].k;p+=m[2].p;});
   var scale=Math.max(.75,Math.min(1.35,target/k));
   return {meals:meals,k:k,p:p,scale:scale};
@@ -739,7 +768,7 @@ function generatePlan(){
 }
 function planText(){
   if(!lastPlan)return'';
-  var day=buildDay(0,lastPlan.target,lastPlan.protein);
+  var day=buildDay(0,lastPlan.target,lastPlan.protein,lastPlan.region,lastPlan.diet);
   var lines=['🥗 *My Diet AI plan* ('+REGIONS[lastPlan.region].n+', '+(lastPlan.diet==='veg'?'veg':lastPlan.diet==='egg'?'veg+egg':'non-veg')+')',
    '🎯 '+lastPlan.target.toLocaleString()+' kcal · '+lastPlan.protein+'g protein · '+lastPlan.water+'L water',''];
   day.meals.forEach(function(m){lines.push(m[1]+' *'+m[0]+'*: '+m[2].t+' — '+m[2].d+' ('+Math.round(m[2].k*day.scale)+' kcal)');});
@@ -1117,13 +1146,12 @@ function renderPremium(){
     host.innerHTML='<div class="pv-empty">Fill in your age, height and weight above and hit <b>Get my plan</b> \u2014 your free Monday appears here.</div>';
     return;
   }
-  region=lastPlan.region;diet=lastPlan.diet;
-  $('premRegion').textContent=REGIONS[region].n==='Pan-India'?"India's":REGIONS[region].n+" India's";
-  var day=buildDay(0,lastPlan.target,lastPlan.protein);
+  $('premRegion').textContent=REGIONS[lastPlan.region].n==='Pan-India'?"India's":REGIONS[lastPlan.region].n+" India's";
+  var day=buildDay(0,lastPlan.target,lastPlan.protein,lastPlan.region,lastPlan.diet);
   var pvP=0;day.meals.forEach(function(m){pvP+=Math.round(m[2].p*day.scale);});
   var pvTu=topUp(lastPlan.protein-pvP,lastPlan.diet);
   var rest=['Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(function(dn,i){
-    var d=buildDay(i+1,lastPlan.target,lastPlan.protein);
+    var d=buildDay(i+1,lastPlan.target,lastPlan.protein,lastPlan.region,lastPlan.diet);
     return '<div>'+esc(dn)+' \u2014 '+esc(d.meals.map(function(m){return m[2].t;}).join(' \u00b7 '))+'</div>';
   }).join('');
   host.innerHTML=
@@ -1138,11 +1166,10 @@ var lastWeek=null;
 function buildWeek(quiet){
   if(!lastPlan){toast('Generate your plan above first — takes 10 seconds!');
     document.querySelector('.app').scrollIntoView({behavior:'smooth'});return;}
-  region=lastPlan.region;diet=lastPlan.diet;
   var days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   var out='',bag={};lastWeek=[];
   days.forEach(function(dn,di){
-    var day=buildDay(di,lastPlan.target,lastPlan.protein);lastWeek.push({d:dn,day:day});
+    var day=buildDay(di,lastPlan.target,lastPlan.protein,lastPlan.region,lastPlan.diet);lastWeek.push({d:dn,day:day});
     var dk=0,dp=0;
     var rows=day.meals.map(function(m){
       groAdd(bag,m[2].d,day.scale);
@@ -1168,7 +1195,7 @@ function buildWeek(quiet){
   $('cheatSheet').innerHTML='<div class="week-day"><div style="padding:14px"><b>💪 Protein cheat-sheet — cheapest Indian sources</b>'+
     [['Soya chunks (100g)','52g protein'],['Whole moong (100g)','24g'],['Chana (100g)','19g'],['Eggs (2)','12g'],['Toned milk (500ml)','16g'],['Peanuts (100g)','26g'],['Curd (200g)','7g'],['Paneer (100g)','18g'],['Chicken (100g)','27g'],['Masoor dal (100g)','25g']].map(function(r){return '<div style="padding:4px 0;border-top:1px solid var(--line)">'+r[0]+' — <b style="color:var(--g1)">'+r[1]+'</b></div>';}).join('')+
     '<p class="hint">Protein per 100g of the dry/raw ingredient. Cheapest per gram of protein is usually soya, then dals, then eggs.</p></div></div>';
-  if(!quiet){toast('Your week is ready 🎉');logEv('week_built',{region:lastPlan.region});}
+  if(!quiet){toast('Your week is ready 🎉');logEv('pack_opened',{region:lastPlan.region});}
 }
 /* Collapsed <details> print as collapsed, so a customer printing their pack would
    get Monday and six closed rows. Force them all open, print, put them back. */
