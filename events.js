@@ -12,6 +12,17 @@
   var WORKER = 'https://dietai-events.sudhanshuxg.workers.dev';
   var PRODUCT = 'dietai';
 
+  /* Only the real site may write to the funnel. The repo also deploys to
+     Vercel, and its deployment bots and preview URLs were landing in D1 as
+     "direct" page views at the exact moment of every deploy. The Worker accepts
+     any origin, so the guard has to live here. localhost stays allowed so the
+     end-to-end checks (which intercept the Worker) can see events. */
+  var host = location.hostname;
+  if (!/^(www\.)?dietai\.in$|^localhost$|^127\.0\.0\.1$/.test(host)) {
+    window.dietaiLog = window.dietaiLogOnce = function () {};
+    return;
+  }
+
   /* ---- first-touch attribution -------------------------------------------
      Razorpay bounces the user off-site and back, which destroys document.referrer.
      So we remember where they originally came from and attach it to every event,
