@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- Diet AI v2 -->
-<html lang="en">
+<html lang="en-IN">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -23,6 +23,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%97%3C/text%3E%3C/svg%3E"/>
+<!-- Loaded here, NOT deferred: it must define dietaiLog() before the main script
+     runs, because the main script strips ?premium=unlocked from the URL. -->
+<script src="/events.js"></script>
 <style>
 :root{
   --bg:#07090f; --bg2:#0b0f1a; --card:rgba(255,255,255,.045); --card2:rgba(255,255,255,.07);
@@ -93,6 +96,7 @@ header{position:sticky;top:0;z-index:50;background:rgba(7,9,15,.72);backdrop-fil
 label{display:block;font-weight:650;font-size:12.5px;margin-bottom:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
 input,select{width:100%;padding:13px 14px;border:1.5px solid var(--line2);border-radius:12px;font-size:16px;font-family:inherit;background:rgba(0,0,0,.25);color:var(--ink);transition:.15s}
 input:focus,select:focus{outline:none;border-color:var(--g1);box-shadow:0 0 0 3px rgba(52,229,140,.15)}
+input[aria-invalid="true"]{border-color:var(--f);box-shadow:0 0 0 3px rgba(255,107,129,.18)}
 select option{background:#0b0f1a;color:var(--ink)}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
 .seg button{flex:1;min-width:80px;padding:12px 8px;border:1.5px solid var(--line2);background:rgba(0,0,0,.2);border-radius:12px;font-weight:700;font-size:13.5px;cursor:pointer;color:var(--muted);transition:.15s;font-family:inherit}
@@ -147,6 +151,26 @@ select option{background:#0b0f1a;color:var(--ink)}
 .week-day summary::-webkit-details-marker{display:none}
 .week-day .wd-body{padding:0 14px 14px;color:var(--muted);font-size:14px}
 .week-day .wd-body div{padding:5px 0;border-top:1px solid var(--line)}
+/* free preview + locked days */
+.pv{margin:0 0 20px}
+.pv-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px;font-weight:800;font-size:15px}
+.pv-head .free{background:rgba(52,229,140,.14);border:1px solid rgba(52,229,140,.35);color:var(--g1);font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;letter-spacing:.5px}
+.pv-row{display:flex;gap:11px;align-items:flex-start;padding:11px 13px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--card)}
+.pv-row .ic{font-size:17px;flex-shrink:0;width:26px;text-align:center}
+.pv-row .tx{flex:1;min-width:0}
+.pv-row .tt{font-weight:700;font-size:14px}
+.pv-row .td{color:var(--muted);font-size:12.5px;margin-top:1px}
+.pv-row .kk{margin-left:auto;font-weight:800;color:var(--g1);font-size:12.5px;white-space:nowrap;text-align:right}
+.pv-locked{position:relative;margin-top:6px;border:1px dashed var(--line2);border-radius:14px;overflow:hidden}
+.pv-locked .blur{filter:blur(5px);opacity:.5;pointer-events:none;user-select:none;padding:12px 13px}
+.pv-locked .blur div{padding:5px 0;font-size:13.5px;color:var(--muted)}
+.pv-locked .cap{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:12px;background:linear-gradient(180deg,rgba(11,15,26,.35),rgba(11,15,26,.8))}
+.pv-locked .cap b{display:block;font-size:15px}
+.pv-locked .cap span{font-size:12.5px;color:var(--muted)}
+.pv-empty{text-align:center;padding:22px 16px;border:1px dashed var(--line2);border-radius:14px;color:var(--muted);font-size:14px}
+.gro-cat{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--c);margin:14px 0 2px}
+.gro-row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-top:1px solid var(--line);font-size:13.5px}
+.gro-row b{color:var(--ink);font-weight:700;white-space:nowrap}
 /* tracker */
 .add-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end}
 @media(max-width:640px){.add-row{grid-template-columns:1fr 1fr}.add-row .full{grid-column:1/-1}}
@@ -189,9 +213,116 @@ datalist{display:none}
 footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var(--muted);font-size:13.5px}
 .foot{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
 .disc{font-size:12px;color:#66738a;margin-top:12px;max-width:760px}
+.guides{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:14px;font-size:13px}
+.guides b{color:var(--ink);font-weight:700;width:100%}
+.guides a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+.guides a:hover{color:var(--g1)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:#132218;border:1px solid rgba(52,229,140,.4);color:var(--g1);padding:12px 20px;border-radius:12px;font-weight:700;font-size:14px;transition:.3s;z-index:99;opacity:0}
 .toast.show{transform:translateX(-50%);opacity:1}
+/* keyboard focus — the site had no visible focus ring anywhere */
+:focus-visible{outline:3px solid var(--g1);outline-offset:2px;border-radius:8px}
+.tab:focus-visible,.glass:focus-visible{outline-offset:-3px}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+#printHead{display:none}
+/* PRINT — the ₹99 pack is sold as "print / save as PDF". Without this, printing
+   produced the whole marketing site: nav, hero, pricing, FAQ and all. The dark
+   theme tokens are redefined here because the generated rows use var(--ink)
+   inline, which is near-white and would print invisible on paper. */
+@media print{
+  :root{--ink:#111;--muted:#444;--dim:#666;--g1:#0a7a43;--g2:#0a7a43;--p:#14508c;--c:#8a5a00;--line:#dcdcdc;--line2:#bbb;--card:#fff;--card2:#fff}
+  html,body{background:#fff!important;color:#111!important}
+  body::before,#orbWrap{display:none!important}
+  header,.hero,.app,.features,.faq,footer,.toast,#weekActions,#premLocked,
+  .prem .tag,.prem h2,.prem p.pl,#premUnlocked>.btn,#premUnlocked>.subcard,
+  .prem ul,.price,#payBtn,.paynote{display:none!important}
+  .wrap{max-width:100%!important;padding:0!important}
+  .prem{background:#fff!important;border:none!important;box-shadow:none!important;padding:0!important;margin:0!important}
+  #printHead{display:block!important;border-bottom:2px solid #0a7a43;padding-bottom:8px;margin-bottom:12px}
+  #printHead .ph-t{font-size:22px;font-weight:800;color:#0a7a43}
+  #printHead .ph-s{font-size:13px;color:#444;margin-top:2px}
+  .week-day{border:1px solid #ccc!important;background:#fff!important;border-radius:6px!important;margin-bottom:8px!important;break-inside:avoid;page-break-inside:avoid}
+  .week-day summary{padding:8px 10px!important;font-size:14px!important}
+  .week-day .wd-body{padding:0 10px 8px!important;font-size:12.5px!important}
+  .week-day .wd-body div,.gro-row{border-top:1px solid #eee!important}
+  .gro-cat{color:#0a7a43!important;margin-top:10px!important}
+  .hint{color:#555!important;font-size:11px!important}
+  a[href]::after{content:""!important}
+  @page{margin:14mm}
+}
 </style>
+<script type="application/ld+json">
+[
+ {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Diet AI",
+  "url": "https://dietai.in/",
+  "description": "Free Indian diet planner. Personalised calorie and macro targets using the Mifflin-St Jeor formula, region-wise Indian meal plans, and water and weight tracking. Runs entirely in the browser with no sign-up. An optional one-time Premium Pack adds a 7-day plan and grocery list.",
+  "applicationCategory": "HealthApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript",
+  "inLanguage": "en-IN",
+  "isAccessibleForFree": true,
+  "offers": {
+   "@type": "Offer",
+   "price": "0",
+   "priceCurrency": "INR"
+  },
+  "featureList": [
+   "Calorie and macro targets (Mifflin-St Jeor)",
+   "Region-wise Indian meal plans",
+   "Vegetarian, egg and non-vegetarian options",
+   "Daily food and calorie tracker",
+   "Water tracker",
+   "Weight trend log",
+   "Works offline as a PWA"
+  ],
+  "publisher": {
+   "@type": "Organization",
+   "name": "Diet AI",
+   "url": "https://dietai.in/"
+  }
+ },
+ {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+   {
+    "@type": "Question",
+    "name": "Is it really free?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "Yes. The planner, tracker, water and weight logs are free forever. The optional Premium Pack (₹99 one-time) adds a full 7-day region-matched plan with a grocery list."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Will I have to eat boiled chicken and salads?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "No. Plans are built from your region's everyday meals — dal-roti, idli-sambar, macher jhol, thepla. Fat loss comes from portions and consistency, not exotic food."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Where is my data stored?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "Your age, weight, height, plans, food log, water and weight history are stored only in your own browser and are never uploaded — we couldn't see them even if we wanted to. The one thing we do collect is anonymous usage counts (page views, which buttons get clicked, roughly where visitors came from) so we know which parts of the site are worth improving. No names, no personal data, no advertising trackers."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "How fast will I lose weight?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "The default deficit targets roughly 0.45 kg/week — the pace most dietitians consider sustainable. Slower is fine; consistency beats speed."
+    }
+   }
+  ]
+ }
+]
+</script>
 </head>
 <body>
 
@@ -222,31 +353,31 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
 
 <div class="wrap">
   <div class="app rv" id="planner">
-    <div class="tabs">
-      <button class="tab active" data-tab="planner">🎯 My Plan</button>
-      <button class="tab" data-tab="tracker">📊 Today's Tracker</button>
+    <div class="tabs" role="tablist" aria-label="Diet AI sections">
+      <button class="tab active" data-tab="planner" role="tab" id="tabPlanner" aria-selected="true" aria-controls="panelPlanner">🎯 My Plan</button>
+      <button class="tab" data-tab="tracker" role="tab" id="tabTracker" aria-selected="false" aria-controls="panelTracker">📊 Today's Tracker</button>
     </div>
 
     <!-- PLANNER -->
-    <div class="panel" data-panel="planner">
+    <div class="panel" data-panel="planner" id="panelPlanner" role="tabpanel" aria-labelledby="tabPlanner">
       <h2>Get your personalised plan</h2>
       <p class="lead">Built on the Mifflin-St Jeor formula dietitians use — tuned to your goal, body, region and food preference.</p>
 
       <div style="margin-bottom:16px">
-        <label>Where in India do you eat?</label>
-        <div class="regions" id="regionSeg"></div>
+        <label id="lblRegion">Where in India do you eat?</label>
+        <div class="regions" id="regionSeg" role="group" aria-labelledby="lblRegion"></div>
       </div>
 
       <div class="grid grid-2">
-        <div><label>Your goal</label>
-          <div class="seg" id="goalSeg">
+        <div><label id="lblGoal">Your goal</label>
+          <div class="seg" id="goalSeg" role="group" aria-labelledby="lblGoal">
             <button data-goal="lose" class="on">Lose fat</button>
             <button data-goal="maintain">Maintain</button>
             <button data-goal="gain">Build muscle</button>
           </div>
         </div>
-        <div><label>Food preference</label>
-          <div class="seg" id="dietSeg">
+        <div><label id="lblDiet">Food preference</label>
+          <div class="seg" id="dietSeg" role="group" aria-labelledby="lblDiet">
             <button data-diet="veg" class="on">🌱 Veg</button>
             <button data-diet="egg">🥚 + Egg</button>
             <button data-diet="nonveg">🍗 Non-veg</button>
@@ -255,13 +386,13 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       </div>
 
       <div class="grid grid-2" style="margin-top:14px">
-        <div><label>Sex (for the formula)</label>
-          <div class="seg" id="sexSeg">
+        <div><label id="lblSex">Sex (for the formula)</label>
+          <div class="seg" id="sexSeg" role="group" aria-labelledby="lblSex">
             <button data-sex="male" class="on">Male</button>
             <button data-sex="female">Female</button>
           </div>
         </div>
-        <div><label>Activity level</label>
+        <div><label for="activity">Activity level</label>
           <select id="activity">
             <option value="1.2">Sedentary — desk job</option>
             <option value="1.375" selected>Light — 1–3 workouts/wk</option>
@@ -273,9 +404,9 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       </div>
 
       <div class="grid grid-3" style="margin-top:14px">
-        <div><label>Age (years)</label><input id="age" type="number" min="14" max="100" placeholder="28" value="28" inputmode="numeric"></div>
-        <div><label>Height (cm)</label><input id="height" type="number" min="120" max="230" placeholder="170" value="170" inputmode="numeric"></div>
-        <div><label>Weight (kg)</label><input id="weight" type="number" min="30" max="300" placeholder="72" value="72" inputmode="decimal"></div>
+        <div><label for="age">Age (years)</label><input id="age" type="number" min="18" max="100" placeholder="28" value="28" inputmode="numeric"></div>
+        <div><label for="height">Height (cm)</label><input id="height" type="number" min="120" max="230" placeholder="170" value="170" inputmode="numeric"></div>
+        <div><label for="weight">Weight (kg)</label><input id="weight" type="number" min="30" max="300" placeholder="72" value="72" inputmode="decimal"></div>
       </div>
 
       <div style="margin-top:20px">
@@ -312,23 +443,23 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
     </div>
 
     <!-- TRACKER -->
-    <div class="panel" data-panel="tracker" style="display:none">
+    <div class="panel" data-panel="tracker" id="panelTracker" role="tabpanel" aria-labelledby="tabTracker" style="display:none">
       <h2>Today's dashboard</h2>
       <p class="lead">Food, water and weight in one place. Saved on your device automatically.</p>
 
       <div style="background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
         <label style="margin:0">Calorie target</label>
-        <input id="targetCal" type="number" style="width:110px" placeholder="2000" inputmode="numeric" oninput="saveTarget();renderTracker()">
+        <input id="targetCal" type="number" aria-label="Daily calorie target" style="width:110px" placeholder="2000" inputmode="numeric" oninput="saveTarget();renderTracker()">
         <span class="hint" style="margin:0">Generate a plan and it fills in automatically.</span>
       </div>
 
       <div class="add-row">
-        <div class="full"><label>Food</label>
+        <div class="full"><label for="fName">Food</label>
           <input id="fName" list="foodDB" placeholder="Type… e.g. Roti, Idli, Paneer" oninput="autofill()">
           <datalist id="foodDB"></datalist>
         </div>
-        <div><label>Calories</label><input id="fCal" type="number" min="0" placeholder="0" inputmode="numeric"></div>
-        <div><label>Protein g</label><input id="fProt" type="number" min="0" placeholder="0" inputmode="numeric"></div>
+        <div><label for="fCal">Calories</label><input id="fCal" type="number" min="0" placeholder="0" inputmode="numeric"></div>
+        <div><label for="fProt">Protein g</label><input id="fProt" type="number" min="0" placeholder="0" inputmode="numeric"></div>
         <div><button class="btn btn-primary" style="padding:13px 18px" onclick="addFood()">Add</button></div>
       </div>
 
@@ -352,10 +483,10 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       <div class="subcard">
         <b>⚖️ Weight</b>
         <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
-          <input id="wIn" type="number" min="20" max="400" step="0.1" placeholder="Today's weight (kg)" inputmode="decimal" style="max-width:220px">
+          <input id="wIn" type="number" aria-label="Today's weight in kilograms" min="20" max="400" step="0.1" placeholder="Today's weight (kg)" inputmode="decimal" style="max-width:220px">
           <button class="btn btn-primary" style="padding:12px 18px;font-size:14px" onclick="logWeight()">Log</button>
         </div>
-        <svg class="spark" id="spark" viewBox="0 0 300 56" preserveAspectRatio="none"></svg>
+        <svg class="spark" id="spark" viewBox="0 0 300 56" preserveAspectRatio="none" role="img" aria-label="Weight trend chart"></svg>
         <p class="hint" id="wHint"></p>
       </div>
     </div>
@@ -365,30 +496,36 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
   <div class="prem rv" id="premium">
     <div id="premLocked">
       <span class="tag">🔥 THE PREMIUM PACK</span>
-      <h2>Never think about "what do I eat?"<br/>again. Your whole week — decided.</h2>
-      <p class="pl">In 10 seconds, get 7 full days of meals from <b id="premRegion" style="color:var(--ink)">your region's</b> everyday food, every day hitting your calories and protein — plus the exact grocery list to cook it all.</p>
+      <h2>Monday is on us.<br/>See it before you pay a rupee.</h2>
+      <p class="pl">This is your real Monday — built from <b id="premRegion" style="color:var(--ink)">your region's</b> everyday food, at your calorie target, with a protein top-up where the meals fall short. The other six days work the same way.</p>
+      <div id="previewOut"></div>
       <ul>
-        <li>✅ <span><b>Your 7-day plan</b> — region-matched, veg / egg / non-veg, every day on target</span></li>
-        <li>✅ <span><b>One grocery list</b> for the week — one shopping trip, zero guesswork</span></li>
+        <li>✅ <span><b>All 7 days</b> — region-matched, veg / egg / non-veg, on your calorie target with a daily protein top-up</span></li>
+        <li>✅ <span><b>A real grocery list</b> — actual quantities in grams and kilos, sorted by aisle</span></li>
         <li>✅ <span><b>Print / save as PDF</b> — fridge, family, or your cook</span></li>
-        <li>✅ <span><b>Protein cheat-sheet</b> — the 10 cheapest Indian protein sources</span></li>
-        <li>✅ <span><b>Yours forever</b> on this device — regenerate anytime your weight changes</span></li>
+        <li>✅ <span><b>Protein cheat-sheet</b> — the cheapest Indian protein per rupee</span></li>
       </ul>
-      <div class="price"><span class="old">₹499</span><span class="new">₹99</span><span class="lp">LAUNCH PRICE</span></div>
-      <a class="btn btn-primary" style="width:100%;background:linear-gradient(135deg,#ffb84d,#ff8a3d);box-shadow:0 8px 28px rgba(255,184,77,.3);color:#241303" id="payBtn" href="https://pages.razorpay.com/dietai-premium" target="_blank" rel="noopener">⚡ Unlock Premium — ₹99</a>
-      <p class="paynote">One-time payment · Secure via Razorpay · UPI, cards, netbanking. After paying you'll get your unlock link.</p>
+      <div class="price"><span class="new">₹99</span><span class="lp">ONE-TIME · NOT A SUBSCRIPTION</span></div>
+      <a class="btn btn-primary" style="width:100%;background:linear-gradient(135deg,#ffb84d,#ff8a3d);box-shadow:0 8px 28px rgba(255,184,77,.3);color:#241303" id="payBtn" href="https://pages.razorpay.com/dietai-premium" target="_blank" rel="noopener">⚡ Unlock all 7 days — ₹99</a>
+      <p class="paynote">28 meals planned · one shopping list · yours to print. Secure via Razorpay — UPI, cards, netbanking. You'll come back here unlocked.</p>
     </div>
     <div id="premUnlocked" style="display:none">
       <span class="tag">⭐ PREMIUM UNLOCKED</span>
       <h2>Your week, decided.</h2>
       <p class="pl">Generate a plan above first (so we know your numbers &amp; region), then build your 7-day pack.</p>
       <button class="btn btn-primary" style="width:100%" onclick="buildWeek()">📅 Build my 7-day plan + grocery list</button>
+      <div id="printHead"></div>
       <div id="weekOut" style="margin-top:18px"></div>
       <div id="weekActions" style="display:none;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
-        <button class="btn btn-ghost" onclick="window.print()">🖨️ Print / PDF</button>
+        <button class="btn btn-ghost" onclick="printPack()">🖨️ Print / PDF</button>
         <button class="btn btn-wa" onclick="shareWeek()">📲 WhatsApp</button>
       </div>
       <div id="cheatSheet" style="margin-top:16px"></div>
+      <div class="subcard" style="margin-top:16px">
+        <b>🔑 Keep your access</b>
+        <p class="hint" style="margin-top:4px">Your unlock lives in this browser. If you clear your browsing data or switch phone, it's gone — unless you save your restore link now.</p>
+        <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="copyRestore()">📋 Copy my restore link</button>
+      </div>
     </div>
   </div>
 
@@ -398,7 +535,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
     <div class="fcards">
       <div class="fcard"><div class="ic">🗺️</div><h3>Knows your region</h3><p>Idli in the South, thepla in the West, momos in the North-East. Plans built from what your kitchen already cooks.</p></div>
       <div class="fcard"><div class="ic">🧮</div><h3>Honest numbers</h3><p>Mifflin-St Jeor + 1.8g protein/kg — the same formulas dietitians use. No fake "AI magic" overnight promises.</p></div>
-      <div class="fcard"><div class="ic">🔒</div><h3>Private &amp; free, forever</h3><p>No account, no ads, no uploads. Everything runs in your browser and your data stays on your device.</p></div>
+      <div class="fcard"><div class="ic">🔒</div><h3>Private &amp; free, forever</h3><p>No account, no ads, no tracking cookies. Your weight, meals and logs are computed in your browser and never leave your device.</p></div>
     </div>
   </section>
 
@@ -406,7 +543,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
     <h2>Questions people ask</h2>
     <details><summary>Is it really free?</summary><div class="fa">Yes. The planner, tracker, water and weight logs are free forever. The optional Premium Pack (₹99 one-time) adds a full 7-day region-matched plan with a grocery list.</div></details>
     <details><summary>Will I have to eat boiled chicken and salads?</summary><div class="fa">No. Plans are built from your region's everyday meals — dal-roti, idli-sambar, macher jhol, thepla. Fat loss comes from portions and consistency, not exotic food.</div></details>
-    <details><summary>Where is my data stored?</summary><div class="fa">Only on your own device (browser storage). Nothing is uploaded — we couldn't see your data even if we wanted to.</div></details>
+    <details><summary>Where is my data stored?</summary><div class="fa">Your age, weight, height, plans, food log, water and weight history are stored only in your own browser and are never uploaded — we couldn't see them even if we wanted to. The one thing we do collect is anonymous usage counts (page views, which buttons get clicked, roughly where visitors came from) so we know which parts of the site are worth improving. No names, no personal data, no advertising trackers.</div></details>
     <details><summary>How fast will I lose weight?</summary><div class="fa">The default deficit targets roughly 0.45 kg/week — the pace most dietitians consider sustainable. Slower is fine; consistency beats speed.</div></details>
   </section>
 </div>
@@ -417,11 +554,21 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       <div class="logo" style="font-size:17px"><span class="dot" style="width:28px;height:28px;font-size:15px">🥗</span> Diet AI</div>
       <div>© <span id="yr"></span> dietai.in · Made with care for healthier eating</div>
     </div>
+    <nav class="guides" aria-label="Diet plans by region">
+      <b>Diet plans by region:</b>
+      <a href="/indian-diet-plan-for-weight-loss/">Indian</a>
+      <a href="/north-indian-diet-plan/">North Indian</a>
+      <a href="/south-indian-diet-plan/">South Indian</a>
+      <a href="/east-indian-diet-plan/">Bengali &amp; Bihari</a>
+      <a href="/west-indian-diet-plan/">Gujarati &amp; Maharashtrian</a>
+      <a href="/central-indian-diet-plan/">Madhya Pradesh</a>
+      <a href="/north-east-indian-diet-plan/">North-East</a>
+    </nav>
     <p class="disc">Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and macro figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p>
   </div>
 </footer>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
 "use strict";
@@ -487,7 +634,7 @@ var FOODS=[
 /* ---------- helpers ---------- */
 function $(id){return document.getElementById(id);}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function toast(msg){var t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show');},2400);}
+function toast(msg){var t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show');},Math.max(2400,String(msg).length*60));} /* long messages stay long enough to read */
 function countUp(el,to,suffix,dur){
   suffix=suffix||'';dur=dur||900;var from=0,t0=null;
   if(!window.requestAnimationFrame){el.textContent=to.toLocaleString()+suffix;return;}
@@ -499,6 +646,13 @@ function countUp(el,to,suffix,dur){
 
 /* ---------- state ---------- */
 var goal="lose",sex="male",diet="veg",region=localStorage.getItem('dietai_region')||"pan";
+/* Guide pages link here as /?region=south&diet=veg#planner so the planner opens
+   already set to what the visitor was reading about. Unknown values are ignored. */
+try{
+  var qp=new URLSearchParams(location.search);
+  var qr=qp.get('region');if(qr&&REGIONS[qr]){region=qr;try{localStorage.setItem('dietai_region',qr);}catch(e){}}
+  var qd=qp.get('diet');if(qd==='veg'||qd==='egg'||qd==='nonveg')diet=qd;
+}catch(e){}
 var lastPlan=null;
 try{lastPlan=JSON.parse(localStorage.getItem('dietai_plan')||'null');}catch(e){lastPlan=null;}
 
@@ -506,43 +660,78 @@ try{lastPlan=JSON.parse(localStorage.getItem('dietai_plan')||'null');}catch(e){l
 (function(){
   var host=$('regionSeg');
   host.innerHTML=REGION_ORDER.map(function(id){var r=REGIONS[id];
-    return '<button type="button" data-region="'+id+'" class="'+(id===region?'on':'')+'"><span class="re">'+r.e+'</span><span class="rn">'+r.n+'</span><span class="rf">'+r.f+'</span></button>';}).join('');
+    return '<button type="button" data-region="'+id+'" class="'+(id===region?'on':'')+'" aria-pressed="'+(id===region)+'"><span class="re" aria-hidden="true">'+r.e+'</span><span class="rn">'+r.n+'</span><span class="rf">'+r.f+'</span></button>';}).join('');
   host.querySelectorAll('button').forEach(function(b){b.onclick=function(){
     region=b.dataset.region;localStorage.setItem('dietai_region',region);
-    host.querySelectorAll('button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');
+    host.querySelectorAll('button').forEach(function(x){x.classList.remove('on');x.setAttribute('aria-pressed','false');});
+    b.classList.add('on');b.setAttribute('aria-pressed','true');
     $('premRegion').textContent=REGIONS[region].n==='Pan-India'?"India's":REGIONS[region].n+" India's";
     if(lastPlan&&$('planResults').classList.contains('show'))generatePlan();
+    else renderPremium();
   };});
 })();
 
 /* segments */
-function wireSeg(segId,attr,setter){document.querySelectorAll('#'+segId+' button').forEach(function(b){b.onclick=function(){
-  setter(b.dataset[attr]);
-  document.querySelectorAll('#'+segId+' button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');};});}
+function wireSeg(segId,attr,setter){document.querySelectorAll('#'+segId+' button').forEach(function(b){
+  b.setAttribute('type','button');
+  b.setAttribute('aria-pressed',b.classList.contains('on')?'true':'false');
+  b.onclick=function(){
+    setter(b.dataset[attr]);
+    document.querySelectorAll('#'+segId+' button').forEach(function(x){x.classList.remove('on');x.setAttribute('aria-pressed','false');});
+    b.classList.add('on');b.setAttribute('aria-pressed','true');};});}
 wireSeg('goalSeg','goal',function(v){goal=v;});
 wireSeg('sexSeg','sex',function(v){sex=v;});
 wireSeg('dietSeg','diet',function(v){diet=v;});
+/* reflect a diet passed in from a guide page (markup defaults to Veg) */
+document.querySelectorAll('#dietSeg button').forEach(function(b){
+  var on=b.dataset.diet===diet;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');});
 
 /* ---------- planner ---------- */
-function allowedTags(){return diet==='veg'?['v']:diet==='egg'?['v','e']:['v','e','n'];}
-function pickMeal(slotArr,dayIdx,preferProtein){
-  var ok=slotArr.filter(function(m){return allowedTags().indexOf(m.g)>=0;});
+/* region and diet are passed in, never written back. Rebuilding a saved plan
+   (the free preview, the paid week, the share text) used to assign the saved
+   plan's region/diet to these globals, which desynced them from the buttons on
+   screen: a returning visitor saw "Veg" highlighted and got a non-veg plan. */
+function allowedTags(dt){dt=dt||diet;return dt==='veg'?['v']:dt==='egg'?['v','e']:['v','e','n'];}
+function pickMeal(slotArr,dayIdx,preferProtein,dt){
+  var tags=allowedTags(dt);
+  var ok=slotArr.filter(function(m){return tags.indexOf(m.g)>=0;});
   if(!ok.length)ok=slotArr.filter(function(m){return m.g==='v';});
-  if(preferProtein){ok=ok.slice().sort(function(a,b){return b.p-a.p;});return ok[dayIdx%Math.min(2,ok.length)];}
+  /* Protein-first order, but rotate through EVERY allowed dish. This used to
+     cycle only the top two, so for anyone with a protein target of 100g+ (most
+     adults) the paid "7-day" pack was a 2-day rotation for lunch, dinner and
+     snack. The daily protein top-up now closes the gap a lower-protein dish
+     leaves. Day 0 is unchanged, so the free Monday still matches the paid one. */
+  if(preferProtein){ok=ok.slice().sort(function(a,b){return b.p-a.p;});return ok[dayIdx%ok.length];}
   return ok[dayIdx%ok.length];
 }
-function buildDay(dayIdx,target,protein){
-  var R=REGIONS[region].meals,highP=protein>=100;
-  var meals=[["Breakfast","🌅",pickMeal(R.B,dayIdx,false)],["Lunch","☀️",pickMeal(R.L,dayIdx,highP)],["Dinner","🌙",pickMeal(R.D,dayIdx+1,highP)],["Snack","🍎",pickMeal(R.S,dayIdx,highP)]];
+function buildDay(dayIdx,target,protein,rg,dt){
+  var R=REGIONS[rg||region].meals,highP=protein>=100;
+  var meals=[["Breakfast","🌅",pickMeal(R.B,dayIdx,false,dt)],["Lunch","☀️",pickMeal(R.L,dayIdx,highP,dt)],["Dinner","🌙",pickMeal(R.D,dayIdx+1,highP,dt)],["Snack","🍎",pickMeal(R.S,dayIdx,highP,dt)]];
   var k=0,p=0;meals.forEach(function(m){k+=m[2].k;p+=m[2].p;});
   var scale=Math.max(.75,Math.min(1.35,target/k));
   return {meals:meals,k:k,p:p,scale:scale};
 }
+/* The planner's formulas (Mifflin-St Jeor, a fixed deficit) are adult formulas;
+   the disclaimer already sends under-18s to a doctor. One constant to change. */
+var MIN_AGE=18;
+function markField(id,msg){var el=$(id);if(el){el.setAttribute('aria-invalid','true');el.focus();}toast(msg);}
+function fieldOk(id,v,lo,hi,msg){if(v<lo||v>hi){markField(id,msg);return false;}return true;}
 function generatePlan(){
   var age=parseFloat($('age').value),h=parseFloat($('height').value),w=parseFloat($('weight').value);
   var act=parseFloat($('activity').value)||1.375;
+  ['age','height','weight'].forEach(function(id){$(id).removeAttribute('aria-invalid');}); /* only the field at fault stays red */
   if(!age||!h||!w||age<=0||h<=0||w<=0){toast('Please enter your age, height and weight.');return;}
-  age=Math.min(Math.max(age,10),100);h=Math.min(Math.max(h,100),250);w=Math.min(Math.max(w,25),300);
+  /* Reject, don't clamp. Out-of-range values used to be silently clamped, so a
+     typo became a confident, wrong plan: weight "2" (meant 72) produced a plan
+     for a 25 kg adult with "BMI 8.7"; height "17" showed "BMI 72". And because
+     age was clamped to >=10, a 12-year-old got a calorie-deficit plan. */
+  if(!fieldOk('age',age,MIN_AGE,100,age<MIN_AGE
+      ?"Diet AI's calorie formulas are for adults. If you're under 18, please ask a doctor or dietitian — growing bodies need different targets."
+      :'Please enter an age between 18 and 100.'))return;
+  if(!fieldOk('height',h,120,230,'Height looks off — enter it in centimetres, e.g. 170.'))return;
+  if(!fieldOk('weight',w,30,300,'Weight looks off — enter it in kilograms, e.g. 72.'))return;
+  var bmiChk=w/Math.pow(h/100,2);
+  if(bmiChk<12||bmiChk>80){markField('weight','Those height and weight numbers don\'t fit together — please check both.');return;}
   var bmr=10*w+6.25*h-5*age+(sex==='male'?5:-161);
   var tdee=bmr*act,target=tdee,lbl="calories to maintain";
   if(goal==='lose'){target=tdee-500;lbl="calories/day to lose fat (~0.45 kg/week)";}
@@ -550,10 +739,20 @@ function generatePlan(){
   var floor=sex==='male'?1500:1200,floored=false;
   if(target<floor){target=floor;floored=true;}
   target=Math.round(target/10)*10;
-  var protein=Math.round(1.8*w);
+  var bmi=w/Math.pow(h/100,2);
+  /* Protein is set per kg of ADJUSTED body weight, not scale weight. Fat mass
+     needs very little protein, so 1.8g/kg of a 110kg body asks for ~200g/day —
+     unreachable, and it squeezes carbs down to nothing. Above BMI 25 we count
+     the weight at BMI 25 plus 40% of the excess (the standard adjusted-body-
+     weight correction), then cap protein at 35% of calories so the split stays
+     something a person can actually eat. */
+  var refW=w;
+  if(bmi>25){var idealW=25*Math.pow(h/100,2);refW=idealW+0.4*(w-idealW);}
+  var protein=Math.round(1.8*refW);
+  protein=Math.min(protein,Math.round(target*0.35/4));
+  protein=Math.max(protein,Math.round(1.2*refW));
   var fat=Math.round((target*0.25)/9);
   var carbs=Math.max(0,Math.round((target-protein*4-fat*9)/4));
-  var bmi=w/Math.pow(h/100,2);
   var hwLo=(18.5*Math.pow(h/100,2)).toFixed(0),hwHi=(24.9*Math.pow(h/100,2)).toFixed(0);
   var waterL=Math.min(6,Math.max(2,Math.round(w*35/250)*0.25)); // ~35ml/kg rounded to 250ml
 
@@ -570,10 +769,13 @@ function generatePlan(){
 
   var day=buildDay(0,target,protein);
   var host=$('mealPlan');host.innerHTML='';
+  var dayP=0;
   day.meals.forEach(function(m,i){
-    var sk=Math.round(m[2].k*day.scale),sp=Math.round(m[2].p*day.scale);
+    var sk=Math.round(m[2].k*day.scale),sp=Math.round(m[2].p*day.scale);dayP+=sp;
     host.innerHTML+='<div class="meal" style="animation-delay:'+(i*90)+'ms"><div class="ic">'+m[1]+'</div><div><div class="mt">'+esc(m[0])+' — '+esc(m[2].t)+'</div><div class="mi">'+esc(m[2].d)+'</div></div><div class="mk">'+sk+' kcal<br><span style="color:var(--p)">'+sp+'g P</span></div></div>';
   });
+  var tu=topUp(protein-dayP,diet);
+  if(tu)host.innerHTML+='<div class="meal" style="animation-delay:400ms;border-color:rgba(90,162,255,.35)"><div class="ic" style="background:rgba(90,162,255,.14)">➕</div><div><div class="mt">Protein top-up</div><div class="mi">'+esc(topUpText(tu))+'</div></div><div class="mk" style="color:var(--p)">'+(dayP+tu.got)+'g P<br>total</div></div>';
   $('mealHead').textContent='🍽️ Your day — '+REGIONS[region].n+(region==='pan'?'':' India')+' style';
   var pct=Math.round(Math.abs(1-day.scale)*100);
   $('portionNote').textContent=day.scale.toFixed(2)==='1.00'?'Portions shown hit your target as-is.':'Portions scaled ×'+day.scale.toFixed(2)+' to fit your '+target.toLocaleString()+' kcal target — adjust rice/roti up or down ~'+pct+'%.';
@@ -583,18 +785,21 @@ function generatePlan(){
   $('planResults').classList.add('show');
   $('planResults').scrollIntoView({behavior:'smooth',block:'nearest'});
   renderWater();
+  renderPremium();
+  logEv('plan_generated',{region:region,diet:diet,goal:goal,target:target});
 }
 function planText(){
   if(!lastPlan)return'';
-  var day=buildDay(0,lastPlan.target,lastPlan.protein);
+  var day=buildDay(0,lastPlan.target,lastPlan.protein,lastPlan.region,lastPlan.diet);
   var lines=['🥗 *My Diet AI plan* ('+REGIONS[lastPlan.region].n+', '+(lastPlan.diet==='veg'?'veg':lastPlan.diet==='egg'?'veg+egg':'non-veg')+')',
    '🎯 '+lastPlan.target.toLocaleString()+' kcal · '+lastPlan.protein+'g protein · '+lastPlan.water+'L water',''];
   day.meals.forEach(function(m){lines.push(m[1]+' *'+m[0]+'*: '+m[2].t+' — '+m[2].d+' ('+Math.round(m[2].k*day.scale)+' kcal)');});
-  lines.push('','Get yours free → https://dietai.in');
+  lines.push('','Get yours free → https://dietai.in/?utm_source=whatsapp');
   return lines.join('\n');
 }
 function sharePlan(){
   if(!lastPlan){toast('Generate a plan first!');return;}
+  logEv('share_plan',{region:lastPlan.region});
   window.open('https://wa.me/?text='+encodeURIComponent(planText()),'_blank');
 }
 function sendToTracker(){
@@ -607,9 +812,15 @@ function sendToTracker(){
 /* ---------- tabs ---------- */
 document.querySelectorAll('.tab').forEach(function(t){t.onclick=function(){switchTab(t.dataset.tab);};});
 function switchTab(name){
-  document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab===name);});
+  document.querySelectorAll('.tab').forEach(function(t){
+    var on=t.dataset.tab===name;
+    t.classList.toggle('active',on);t.setAttribute('aria-selected',on?'true':'false');});
   document.querySelectorAll('[data-panel]').forEach(function(p){p.style.display=p.dataset.panel===name?'block':'none';});
 }
+/* left/right arrows move between tabs, as a tablist is expected to */
+document.querySelectorAll('.tab').forEach(function(t,i,all){t.addEventListener('keydown',function(e){
+  var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(!d)return;
+  e.preventDefault();var nx=all[(i+d+all.length)%all.length];switchTab(nx.dataset.tab);nx.focus();});});
 
 /* ---------- tracker (preserves dietai_foods / dietai_day / dietai_target) ---------- */
 var foods=[];
@@ -668,7 +879,7 @@ function waterGoal(){return lastPlan&&lastPlan.water?Math.round(lastPlan.water*4
 function saveWater(){localStorage.setItem('dietai_water',JSON.stringify({date:todayStr,n:waterN}));}
 function renderWater(){
   var g=waterGoal(),host=$('glasses'),html='';
-  for(var i=0;i<g;i++){html+='<button type="button" class="glass'+(i<waterN?' fill':'')+'" onclick="tapWater('+i+')">💧</button>';}
+  for(var i=0;i<g;i++){html+='<button type="button" class="glass'+(i<waterN?' fill':'')+'" onclick="tapWater('+i+')" aria-pressed="'+(i<waterN)+'" aria-label="Glass '+(i+1)+' of '+g+' (250 ml)">💧</button>';}
   host.innerHTML=html;
   $('waterLbl').textContent='— '+(waterN*0.25).toFixed(2).replace(/\.?0+$/,'')+' L of '+(g*0.25)+' L'+(waterN>=g?' ✅ done!':'');
 }
@@ -708,57 +919,338 @@ function renderWeight(){
 }
 
 /* ---------- premium (dietai_premium + ?premium=unlocked) ---------- */
+function isPremium(){try{return localStorage.getItem('dietai_premium')==='1';}catch(e){return false;}}
+function logEv(ev,meta){try{if(window.dietaiLog)window.dietaiLog(ev,meta);}catch(e){}}
 (function(){
   try{
     var q=new URLSearchParams(location.search);
     if(q.get('premium')==='unlocked'){
       var firstUnlock=localStorage.getItem('dietai_premium')!=='1';
+      /* Log the sale BEFORE replaceState wipes the query string. This is the
+         single event that tells us whether the product earns anything. */
+      try{if(window.dietaiLogOnce)window.dietaiLogOnce('premium_unlocked',{first:firstUnlock});}catch(e){}
       localStorage.setItem('dietai_premium','1');
+      if(firstUnlock)localStorage.setItem('dietai_premium_at',new Date().toISOString());
       if(history.replaceState)history.replaceState(null,'',location.pathname);
       if(firstUnlock)setTimeout(function(){
-        toast('🎉 Premium unlocked — yours forever on this device!');
+        toast('🎉 Premium unlocked. Build your week below.');
         var p=$('premium');if(p)p.scrollIntoView({behavior:'smooth'});
       },600);
     }
   }catch(e){}
-  if(localStorage.getItem('dietai_premium')==='1'){
+  if(isPremium()){
     $('premLocked').style.display='none';$('premUnlocked').style.display='block';
   }
   var pay=$('payBtn');
-  if(pay&&(!pay.getAttribute('href')||pay.getAttribute('href').indexOf('razorpay')<0)){
-    pay.removeAttribute('href');pay.onclick=function(e){e.preventDefault();toast('Payments not set up yet — check back soon!');};
+  if(pay){
+    if(!pay.getAttribute('href')||pay.getAttribute('href').indexOf('razorpay')<0){
+      pay.removeAttribute('href');
+      pay.onclick=function(e){e.preventDefault();toast('Payments not set up yet — check back soon!');};
+    }else{
+      /* The real CTA. The old tracker listened for #premiumBtn, which only ever
+         existed in the retired premium.js — so no CTA click was ever recorded. */
+      pay.addEventListener('click',function(){
+        logEv('premium_click',{hasPlan:!!lastPlan,region:lastPlan?lastPlan.region:null});
+      });
+    }
   }
 })();
+/* The pay button opens Razorpay in a new tab, and Razorpay redirects THAT tab
+   back unlocked. The tab the customer started in kept showing the ₹99 offer
+   with a live pay button — "did my payment fail?", a second payment, a refund
+   request. Unlock this tab as soon as another tab records the purchase. */
+function syncPremium(){
+  if(isPremium()&&$('premLocked').style.display!=='none'){
+    renderPremium();
+    toast('🎉 Payment received — your week is unlocked below.');
+    var p=$('premium');if(p)p.scrollIntoView({behavior:'smooth'});
+  }
+}
+window.addEventListener('storage',function(e){if(e.key==='dietai_premium'&&e.newValue==='1')syncPremium();});
+window.addEventListener('focus',syncPremium);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)syncPremium();});
+/* Copy the restore link so a customer who clears their browser, or switches
+   phone, can get their purchase back. Without this, "yours forever" is a promise
+   the site cannot keep. */
+function copyRestore(){
+  var url='https://dietai.in/?premium=unlocked';
+  function done(){toast('Restore link copied — send it to yourself on WhatsApp.');logEv('restore_copied');}
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(done,function(){prompt('Copy your restore link:',url);});return;}
+  }catch(e){}
+  prompt('Copy your restore link:',url);
+}
+/* ---------- protein top-up ----------
+   Portions are scaled to hit the CALORIE target, which says nothing about
+   protein. A South-Indian veg day lands near 65g against a 147g target, so the
+   promise "every day hits your calories and protein" was not true — the single
+   most checkable claim in the paid pack. Rather than quietly drop the claim,
+   close the gap: work out the shortfall and name cheap Indian ways to fill it. */
+/* Greedy fill from cheap Indian sources, each capped at an amount a person will
+   actually eat in a day. 150g of dry soya closes the arithmetic and nobody eats
+   it, so the caps matter more than the maths. If the caps can't close the gap we
+   say so instead of pretending. */
+var PBOOST=[
+  {n:'soya chunks',k:'soya',per:0.52,step:10,max:60,unit:'g',tag:'v'},
+  {n:'paneer',k:'paneer',per:0.18,step:25,max:200,unit:'g',tag:'v'},
+  {n:'boiled eggs',k:'egg',per:6,step:1,max:4,unit:'no',tag:'e'},
+  {n:'curd',k:'curd',per:0.035,step:50,max:400,unit:'g',tag:'v'}
+];
+function topUp(gapG,dietTag){
+  if(!(gapG>8))return null;
+  var allow=dietTag==='veg'?['v']:['v','e'];
+  var left=gapG,combo=[],items=[],got=0;
+  PBOOST.forEach(function(b){
+    if(left<=4||allow.indexOf(b.tag)<0)return;
+    var amt=Math.min(b.max,Math.ceil((left/b.per)/b.step)*b.step);
+    if(amt<=0)return;
+    var gives=amt*b.per;
+    combo.push(b.unit==='no'?amt+' '+b.n:amt+'g '+b.n);
+    items.push({k:b.k,amt:amt});
+    got+=gives;left-=gives;
+  });
+  return {gap:Math.round(gapG),combo:combo,items:items,got:Math.round(got),short:Math.max(0,Math.round(gapG-got))};
+}
+function topUpText(t){
+  return t.combo.join(' + ')+' (+'+t.got+'g)'+(t.short>6?' — still ~'+t.short+'g short; that is the honest ceiling for these meals':'');
+}
+function topUpHTML(gapG,dietTag){
+  var t=topUp(gapG,dietTag); if(!t)return'';
+  return '<div style="border-top:1px solid var(--line);padding-top:6px;margin-top:2px"><b style="color:var(--p)">➕ Protein top-up:</b> <span style="color:var(--muted)">'+esc(topUpText(t))+'</span></div>';
+}
+
+/* ---------- grocery engine ----------
+   The old list was built by splitting the meal description on "+" and stripping
+   a leading quantity with a loose regex. It produced entries like "-egg curry",
+   "paneer paratha, 1 cup curd", and — because the unit alternation matched the
+   "g" in "guava" — an item literally called "uava". For the one thing people
+   pay for, that is the whole product.
+   Now: parse the quantity properly, map each phrase to a real shopping item,
+   and sum actual weights, scaled by the same portion factor as the plan. */
+var GRO_CANON={
+  atta:{n:'Atta / wheat flour',c:'Grains & flour',q:45,u:'g'},
+  rice:{n:'Rice',c:'Grains & flour',q:75,u:'g'},
+  poha:{n:'Poha (flattened rice)',c:'Grains & flour',q:60,u:'g'},
+  puffedrice:{n:'Murmura (puffed rice)',c:'Grains & flour',q:25,u:'g'},
+  oats:{n:'Oats',c:'Grains & flour',q:40,u:'g'},
+  dalia:{n:'Dalia (broken wheat)',c:'Grains & flour',q:50,u:'g'},
+  sooji:{n:'Sooji / rava',c:'Grains & flour',q:50,u:'g'},
+  ragi:{n:'Ragi flour',c:'Grains & flour',q:60,u:'g'},
+  bajra:{n:'Bajra flour',c:'Grains & flour',q:60,u:'g'},
+  besan:{n:'Besan (gram flour)',c:'Grains & flour',q:40,u:'g'},
+  dal:{n:'Dal (toor / moong / masoor)',c:'Pulses',q:40,u:'g'},
+  chana:{n:'Chana / chhole',c:'Pulses',q:50,u:'g'},
+  rajma:{n:'Rajma',c:'Pulses',q:50,u:'g'},
+  sprouts:{n:'Whole moong (to sprout)',c:'Pulses',q:50,u:'g'},
+  soya:{n:'Soya chunks (for protein top-ups)',c:'Pulses',q:1,u:'g'},
+  sattu:{n:'Sattu',c:'Pulses',q:40,u:'g'},
+  curd:{n:'Curd / dahi',c:'Dairy & eggs',q:150,u:'g'},
+  milk:{n:'Toned milk',c:'Dairy & eggs',q:200,u:'ml'},
+  paneer:{n:'Paneer',c:'Dairy & eggs',q:100,u:'g'},
+  tofu:{n:'Tofu',c:'Dairy & eggs',q:100,u:'g'},
+  cheese:{n:'Cheese slices',c:'Dairy & eggs',q:1,u:'no'},
+  egg:{n:'Eggs',c:'Dairy & eggs',q:2,u:'no'},
+  chicken:{n:'Chicken',c:'Meat & fish',q:150,u:'g'},
+  fish:{n:'Fish',c:'Meat & fish',q:150,u:'g'},
+  veg:{n:'Mixed vegetables',c:'Vegetables & fruit',q:150,u:'g'},
+  salad:{n:'Salad veg (cucumber, tomato, onion)',c:'Vegetables & fruit',q:120,u:'g'},
+  greens:{n:'Leafy greens (palak / lai / methi)',c:'Vegetables & fruit',q:100,u:'g'},
+  onion:{n:'Onion',c:'Vegetables & fruit',q:60,u:'g'},
+  potato:{n:'Potato',c:'Vegetables & fruit',q:100,u:'g'},
+  banana:{n:'Banana',c:'Vegetables & fruit',q:1,u:'no'},
+  fruit:{n:'Seasonal fruit',c:'Vegetables & fruit',q:1,u:'no'},
+  peanuts:{n:'Peanuts',c:'Nuts & snacks',q:30,u:'g'},
+  almonds:{n:'Almonds',c:'Nuts & snacks',q:12,u:'g'},
+  makhana:{n:'Makhana (fox nuts)',c:'Nuts & snacks',q:25,u:'g'},
+  chikki:{n:'Peanut chikki',c:'Nuts & snacks',q:1,u:'no'},
+  batter:{n:'Idli / dosa batter',c:'Ready-made',q:60,u:'g'},
+  bread:{n:'Bread / pav',c:'Ready-made',q:1,u:'no'},
+  momos:{n:'Momos',c:'Ready-made',q:1,u:'no'},
+  papad:{n:'Papad',c:'Pantry',q:1,u:'no'},
+  pantry:{n:'Chutney, herbs, lemon, oil, masala',c:'Pantry',q:0,u:'staple'}
+};
+/* ordered; stop:true means "this phrase is fully explained, look no further" */
+var GRO_RULES=[
+  {r:/chana dal/,k:'dal',stop:true},
+  {r:/puffed rice|murmura|jhalmuri/,k:'puffedrice',stop:true},
+  {r:/poha|flattened-rice|chirer/,k:'poha',stop:true},
+  {r:/paneer/,k:'paneer'},
+  {r:/tofu/,k:'tofu'},
+  {r:/cheese/,k:'cheese'},
+  {r:/egg|anda|dim'er/,k:'egg'},
+  {r:/chicken|tandoori pieces/,k:'chicken'},
+  {r:/fish|macher/,k:'fish'},
+  {r:/idli|dosa|uttapam|appam/,k:'batter'},
+  {r:/momo/,k:'momos'},
+  {r:/toast|bread|pav\b|luchi/,k:'bread'},
+  {r:/roti|chapati|paratha|thepla|khakhra|bhakri|rotla|litti|bafla|dhokli|kulcha/,k:'atta'},
+  {r:/rice|bhaat|pulao|khichdi|khichuri|biryani/,k:'rice'},
+  {r:/khichdi|khichuri|dal|sambar|rasam|kadhi|thukpa/,k:'dal'},
+  {r:/chana|chole|chhole|sundal/,k:'chana'},
+  {r:/rajma/,k:'rajma'},
+  {r:/sprout/,k:'sprouts'},
+  {r:/sattu/,k:'sattu'},
+  {r:/oats/,k:'oats'},
+  {r:/dalia/,k:'dalia'},
+  {r:/upma|rava|sooji|suji/,k:'sooji'},
+  {r:/ragi/,k:'ragi'},
+  {r:/bajra/,k:'bajra'},
+  {r:/besan|zunka|dhokla|khaman/,k:'besan'},
+  {r:/curd|dahi|chaas|buttermilk|lassi|neer mor|solkadhi|raita/,k:'curd'},
+  {r:/milk/,k:'milk'},
+  {r:/aloo|potato/,k:'potato'},
+  {r:/greens|xaak|palak|spinach/,k:'greens'},
+  {r:/salad|kachumber/,k:'salad'},
+  {r:/onion/,k:'onion'},
+  {r:/banana/,k:'banana'},
+  {r:/guava|apple|fruit|pineapple|orange/,k:'fruit'},
+  {r:/sabzi|veg|bhindi|lauki|squash|bamboo|kurma|eromba|labra|tameta|chokha|baingan|misal|poriyal|bhaja|dum/,k:'veg'},
+  {r:/peanut/,k:'peanuts'},
+  {r:/almond/,k:'almonds'},
+  {r:/makhana|fox nut/,k:'makhana'},
+  {r:/chikki/,k:'chikki'},
+  {r:/papad/,k:'papad'},
+  {r:/chutney|herb|lemon|nimbu|coriander|mustard oil|pepper|coconut|sev\b|masala/,k:'pantry'}
+];
+var GRO_UNIT=/^(cups?|glass(es)?|plates?|bowls?|pieces?|pcs|slices?|tbsp|tsp|ball|scoop)\b/i;
+/* returns {mult, grams, rest} — grams set only when the text states a weight */
+function groQty(t){
+  var m=t.match(/^([\d.]+|½|¼|¾)\s*/);
+  var mult=1,grams=null,rest=t;
+  if(m){
+    var v=m[1]==='½'?0.5:m[1]==='¼'?0.25:m[1]==='¾'?0.75:parseFloat(m[1]);
+    if(!isNaN(v)){
+      rest=t.slice(m[0].length);
+      var gm=rest.match(/^(gm|grams?|g|ml)\b\s*/i);
+      if(gm){grams=v;rest=rest.slice(gm[0].length);}
+      else{mult=v;var um=rest.match(GRO_UNIT);if(um)rest=rest.slice(um[0].length);}
+    }
+  }
+  return {mult:mult,grams:grams,rest:rest.trim()};
+}
+function groAdd(bag,desc,scale){
+  String(desc).split(/[+,]/).forEach(function(raw){
+    var t=raw.trim().toLowerCase().replace(/\(.*?\)/g,'').trim();
+    if(!t)return;
+    var q=groQty(t),txt=q.rest||t,seen={};
+    for(var i=0;i<GRO_RULES.length;i++){
+      var ru=GRO_RULES[i];
+      if(!ru.r.test(txt))continue;
+      if(!seen[ru.k]){
+        seen[ru.k]=1;
+        var it=GRO_CANON[ru.k];
+        var amt=(q.grams!=null)?q.grams:(it.q*q.mult);
+        bag[ru.k]=(bag[ru.k]||0)+amt*scale;
+      }
+      if(ru.stop)break;
+    }
+  });
+}
+function groFmt(it,total){
+  if(it.u==='staple')return'as needed';
+  if(it.u==='no')return'\u00d7 '+Math.max(1,Math.ceil(total));
+  if(it.u==='ml')return total>=1000?(total/1000).toFixed(1)+' L':Math.round(total/50)*50+' ml';
+  return total>=1000?(total/1000).toFixed(1)+' kg':Math.max(10,Math.round(total/10)*10)+' g';
+}
+function groRender(bag){
+  var cats={},order=['Grains & flour','Pulses','Dairy & eggs','Meat & fish','Vegetables & fruit','Nuts & snacks','Ready-made','Pantry'];
+  Object.keys(bag).forEach(function(k){
+    var it=GRO_CANON[k];if(!it)return;
+    (cats[it.c]=cats[it.c]||[]).push('<div class="gro-row"><span>'+esc(it.n)+'</span><b>'+groFmt(it,bag[k])+'</b></div>');
+  });
+  return order.filter(function(c){return cats[c];}).map(function(c){
+    return '<div class="gro-cat">'+esc(c)+'</div>'+cats[c].join('');
+  }).join('');
+}
+
+/* ---------- free Monday preview, locked rest ----------
+   People do not buy a described plan; they buy one they have already seen work
+   for them. Monday is rendered in full from their own numbers and region. */
+function previewRows(day){
+  return day.meals.map(function(m){
+    return '<div class="pv-row"><div class="ic">'+m[1]+'</div><div class="tx"><div class="tt">'+esc(m[0])+' \u2014 '+esc(m[2].t)+'</div><div class="td">'+esc(m[2].d)+'</div></div><div class="kk">'+Math.round(m[2].k*day.scale)+' kcal<br>'+Math.round(m[2].p*day.scale)+'g P</div></div>';
+  }).join('');
+}
+function renderPremium(){
+  if(isPremium()){
+    $('premLocked').style.display='none';$('premUnlocked').style.display='block';
+    if(lastPlan&&!lastWeek)buildWeek(true);
+    return;
+  }
+  var host=$('previewOut');if(!host)return;
+  if(!lastPlan){
+    host.innerHTML='<div class="pv-empty">Fill in your age, height and weight above and hit <b>Get my plan</b> \u2014 your free Monday appears here.</div>';
+    return;
+  }
+  $('premRegion').textContent=REGIONS[lastPlan.region].n==='Pan-India'?"India's":REGIONS[lastPlan.region].n+" India's";
+  var day=buildDay(0,lastPlan.target,lastPlan.protein,lastPlan.region,lastPlan.diet);
+  var pvP=0;day.meals.forEach(function(m){pvP+=Math.round(m[2].p*day.scale);});
+  var pvTu=topUp(lastPlan.protein-pvP,lastPlan.diet);
+  var rest=['Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(function(dn,i){
+    var d=buildDay(i+1,lastPlan.target,lastPlan.protein,lastPlan.region,lastPlan.diet);
+    return '<div>'+esc(dn)+' \u2014 '+esc(d.meals.map(function(m){return m[2].t;}).join(' \u00b7 '))+'</div>';
+  }).join('');
+  host.innerHTML=
+    '<div class="pv"><div class="pv-head"><span>\ud83c\udf05 Monday \u00b7 '+lastPlan.target.toLocaleString()+' kcal \u00b7 '+lastPlan.protein+'g protein</span><span class="free">FREE</span></div>'+
+    previewRows(day)+
+    (pvTu?'<div class="pv-row" style="border-color:rgba(90,162,255,.35)"><div class="ic">➕</div><div class="tx"><div class="tt">Protein top-up</div><div class="td">'+esc(topUpText(pvTu))+'</div></div><div class="kk" style="color:var(--p)">'+(pvP+pvTu.got)+'g P<br>total</div></div>':'')+
+    '<div class="pv-locked"><div class="blur" aria-hidden="true">'+rest+'</div>'+
+    '<div class="cap"><div><b>\ud83d\udd12 Tuesday to Sunday</b><span>24 more meals, plus the grocery list to cook them</span></div></div></div></div>';
+}
+
 var lastWeek=null;
-function buildWeek(){
+function buildWeek(quiet){
   if(!lastPlan){toast('Generate your plan above first — takes 10 seconds!');
     document.querySelector('.app').scrollIntoView({behavior:'smooth'});return;}
-  region=lastPlan.region;diet=lastPlan.diet;
   var days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-  var out='',grocery={};lastWeek=[];
+  var out='',bag={};lastWeek=[];
   days.forEach(function(dn,di){
-    var day=buildDay(di,lastPlan.target,lastPlan.protein);lastWeek.push({d:dn,day:day});
+    var day=buildDay(di,lastPlan.target,lastPlan.protein,lastPlan.region,lastPlan.diet);lastWeek.push({d:dn,day:day});
+    var dk=0,dp=0;
     var rows=day.meals.map(function(m){
-      m[2].d.split('+').forEach(function(ing){ing=ing.trim().replace(/^[\d.½¼]+ ?(cup|glass|plate|bowl|pieces|pcs|g|slices)? ?/i,'').replace(/\(.*?\)/,'').trim();
-        if(ing)grocery[ing]=(grocery[ing]||0)+1;});
-      return '<div>'+m[1]+' <b style="color:var(--ink)">'+esc(m[0])+':</b> '+esc(m[2].t)+' — '+esc(m[2].d)+' <span style="color:var(--g1)">('+Math.round(m[2].k*day.scale)+' kcal / '+Math.round(m[2].p*day.scale)+'g P)</span></div>';
+      groAdd(bag,m[2].d,day.scale);
+      var k=Math.round(m[2].k*day.scale),p=Math.round(m[2].p*day.scale);dk+=k;dp+=p;
+      return '<div>'+m[1]+' <b style="color:var(--ink)">'+esc(m[0])+':</b> '+esc(m[2].t)+' — '+esc(m[2].d)+' <span style="color:var(--g1)">('+k+' kcal / '+p+'g P)</span></div>';
     }).join('');
-    out+='<details class="week-day"'+(di===0?' open':'')+'><summary>'+dn+'<span style="color:var(--g1);font-weight:800">'+lastPlan.target.toLocaleString()+' kcal</span></summary><div class="wd-body">'+rows+'</div></details>';
+    var tu=topUp(lastPlan.protein-dp,lastPlan.diet);
+    if(tu){
+      rows+=topUpHTML(lastPlan.protein-dp,lastPlan.diet);
+      tu.items.forEach(function(it){bag[it.k]=(bag[it.k]||0)+it.amt;});
+    }
+    var shownP=tu?dp+tu.got:dp;
+    out+='<details class="week-day"'+(di===0?' open':'')+'><summary>'+dn+'<span style="color:var(--g1);font-weight:800">'+dk+' kcal · '+shownP+'g P'+(tu?'*':'')+'</span></summary><div class="wd-body">'+rows+'</div></details>';
   });
-  var gItems=Object.keys(grocery).sort().map(function(g){return '<div style="padding:4px 0;border-top:1px solid var(--line)">'+esc(g)+' <span style="color:var(--muted)">× '+grocery[g]+' meals</span></div>';}).join('');
-  out+='<div class="week-day" style="margin-top:14px"><div style="padding:14px"><b>🛒 Grocery list for the week</b>'+gItems+'</div></div>';
+  out+='<div class="week-day" style="margin-top:14px"><div style="padding:14px"><b>🛒 Grocery list — the whole week, one trip</b>'+groRender(bag)+
+    '<p class="hint">Raw/uncooked quantities, already scaled to your portions. Round up to the nearest packet. <b>*</b> means the day reaches its protein target once you add that day\'s top-up.</p></div></div>';
+  $('printHead').innerHTML='<div class="ph-t">🥗 Diet AI — your 7-day plan</div><div class="ph-s">'+
+    esc(REGIONS[lastPlan.region].n)+' · '+esc(lastPlan.diet==='veg'?'Vegetarian':lastPlan.diet==='egg'?'Veg + egg':'Non-vegetarian')+
+    ' · '+lastPlan.target.toLocaleString()+' kcal/day · '+lastPlan.protein+'g protein/day · '+lastPlan.water+'L water/day'+
+    '<br>Generated '+new Date().toLocaleDateString()+' · dietai.in · General nutrition estimates, not medical advice.</div>';
   $('weekOut').innerHTML=out;
   $('weekActions').style.display='grid';
   $('cheatSheet').innerHTML='<div class="week-day"><div style="padding:14px"><b>💪 Protein cheat-sheet — cheapest Indian sources</b>'+
-    [['Soya chunks (100g)','52g protein · ~₹15'],['Whole moong (100g)','24g · ~₹12'],['Chana (100g)','19g · ~₹10'],['Eggs (2)','12g · ~₹14'],['Toned milk (500ml)','16g · ~₹27'],['Peanuts (100g)','26g · ~₹18'],['Curd (200g)','7g · ~₹20'],['Paneer (100g)','18g · ~₹40'],['Chicken (100g)','27g · ~₹30'],['Masoor dal (100g)','25g · ~₹13']].map(function(r){return '<div style="padding:4px 0;border-top:1px solid var(--line)">'+r[0]+' — <b style="color:var(--g1)">'+r[1]+'</b></div>';}).join('')+
-    '<p class="hint">Prices are rough market estimates — they vary by city.</p></div></div>';
-  toast('Your week is ready 🎉');
+    [['Soya chunks (100g)','52g protein'],['Whole moong (100g)','24g'],['Chana (100g)','19g'],['Eggs (2)','12g'],['Toned milk (500ml)','16g'],['Peanuts (100g)','26g'],['Curd (200g)','7g'],['Paneer (100g)','18g'],['Chicken (100g)','27g'],['Masoor dal (100g)','25g']].map(function(r){return '<div style="padding:4px 0;border-top:1px solid var(--line)">'+r[0]+' — <b style="color:var(--g1)">'+r[1]+'</b></div>';}).join('')+
+    '<p class="hint">Protein per 100g of the dry/raw ingredient. Cheapest per gram of protein is usually soya, then dals, then eggs.</p></div></div>';
+  if(!quiet){toast('Your week is ready 🎉');logEv('pack_opened',{region:lastPlan.region});}
+}
+/* Collapsed <details> print as collapsed, so a customer printing their pack would
+   get Monday and six closed rows. Force them all open, print, put them back. */
+function printPack(){
+  var ds=[].slice.call(document.querySelectorAll('#weekOut details'));
+  var was=ds.map(function(d){return d.open;});
+  ds.forEach(function(d){d.open=true;});
+  function restore(){ds.forEach(function(d,i){d.open=was[i];});window.removeEventListener('afterprint',restore);}
+  window.addEventListener('afterprint',restore);
+  logEv('pack_printed');
+  window.print();
+  setTimeout(restore,1500); /* Safari/iOS may not fire afterprint */
 }
 function shareWeek(){
   if(!lastWeek||!lastPlan){toast('Build your week first!');return;}
   var lines=['🥗 *My 7-day Diet AI plan* ('+REGIONS[lastPlan.region].n+')','🎯 '+lastPlan.target.toLocaleString()+' kcal/day · '+lastPlan.protein+'g protein',''];
   lastWeek.forEach(function(w){lines.push('*'+w.d+'*: '+w.day.meals.map(function(m){return m[2].t;}).join(' · '));});
-  lines.push('','Get yours → https://dietai.in');
+  lines.push('','Get yours → https://dietai.in/?utm_source=whatsapp');
+  logEv('share_week');
   window.open('https://wa.me/?text='+encodeURIComponent(lines.join('\n')),'_blank');
 }
 
@@ -787,7 +1279,7 @@ function shareWeek(){
 $('targetCal').value=localStorage.getItem('dietai_target')||'';
 $('yr').textContent=new Date().getFullYear();
 $('premRegion').textContent=REGIONS[region].n==='Pan-India'?"India's":REGIONS[region].n+" India's";
-renderTracker();renderWater();renderWeight();
+renderTracker();renderWater();renderWeight();renderPremium();
 window.addEventListener('pageshow',function(){}); // no-op; keeps bfcache happy
 
 /* ---------- PWA: service worker + install nudge ---------- */
@@ -814,6 +1306,11 @@ window.addEventListener('beforeinstallprompt',function(e){
     if(!window.WebGLRenderingContext)return;
     if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
     if(navigator.deviceMemory&&navigator.deviceMemory<2)return;
+    if(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<4)return;
+    /* The orb is decoration that costs ~600KB. On Data Saver or a 2G/3G
+       connection that is somebody's actual money, so don't spend it. */
+    var conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+    if(conn&&(conn.saveData===true||/(^|-)(2g|3g)$/.test(conn.effectiveType||'')))return;
     var s=document.createElement('script');
     s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
     s.async=true;s.onload=initOrb;
@@ -881,7 +1378,5 @@ document.querySelectorAll('a[href="#tracker-sec"]').forEach(function(a){a.onclic
   e.preventDefault();switchTab('tracker');
   document.querySelector('.app').scrollIntoView({behavior:'smooth'});};});
 </script>
-<script src="events.js" defer></script>
-  <script src="premium.js" defer></script>
 </body>
 </html>

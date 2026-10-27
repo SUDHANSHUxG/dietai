@@ -1,0 +1,6 @@
+# dietai.in
+User-agent: *
+Allow: /
+Disallow: /*?premium=
+
+Sitemap: https://dietai.in/sitemap.xml

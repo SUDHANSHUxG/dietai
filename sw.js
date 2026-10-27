@@ -1,6 +1,6 @@
 /* Diet AI service worker — offline-first for the app shell */
-var CACHE = 'dietai-v3';
-var ASSETS = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
+var CACHE = 'dietai-v5';
+var ASSETS = ['/', '/index.html', '/events.js', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(
@@ -25,14 +25,23 @@ self.addEventListener('fetch', function (e) {
   // never intercept payments or external calls
   if (url.origin !== location.origin) return;
   // network-first for the page itself (so updates land), cache fallback for offline
-  if (e.request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('index.html')) {
+  // network-first for pages (so updates land), cache fallback for offline.
+  // Each page is cached under its OWN URL. This used to store every navigation
+  // as '/index.html', which was harmless with one page and wrong the moment a
+  // second page existed: visiting a guide would overwrite the cached app shell,
+  // and a 404 would be cached as the app. Only successful responses are stored.
+  if (e.request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html')) {
     e.respondWith(
       fetch(e.request).then(function (r) {
-        var copy = r.clone();
-        caches.open(CACHE).then(function (c) { c.put('/index.html', copy); });
+        if (r && r.ok) {
+          var copy = r.clone();
+          caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
+        }
         return r;
       }).catch(function () {
-        return caches.match('/index.html').then(function (m) { return m || caches.match('/'); });
+        return caches.match(e.request, { ignoreSearch: true }).then(function (m) {
+          return m || caches.match('/index.html').then(function (x) { return x || caches.match('/'); });
+        });
       })
     );
     return;
