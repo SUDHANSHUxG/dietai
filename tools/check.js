@@ -13,6 +13,7 @@
    key secret generated fresh for this run. Nothing can reach the live Worker, the live
    funnel data or a real payment. Exits non-zero if any check fails. */
 'use strict';
+const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { pathToFileURL } = require('url');
@@ -620,6 +621,49 @@ async function section(title, fn) {
     ok(/Disallow: \/\*\?restore=/.test(robots), 'robots.txt keeps restore links out of search');
     for (const f of ['/robots.txt', '/sitemap.xml']) ok((await page.request.get(BASE + f)).status() === 200, f + ' served');
     await ctx.close();
+  });
+  await section('Only served on https://dietai.in (GitHub Pages still answers on http://)', async () => {
+    // A separate browser with Chrome's own http->https upgrade turned off, so a pass means the page did it.
+    const b = await chromium.launch({ args: ['--disable-features=HttpsUpgrades,HttpsFirstBalancedModeAutoEnable'] });
+    const ROOT = path.join(__dirname, '..');
+    const files = { '/': 'index.html', '/south-indian-diet-plan/': 'south-indian-diet-plan/index.html', '/1500-calorie-indian-diet-plan/': '1500-calorie-indian-diet-plan/index.html' };
+    async function visit(url, js = true) {
+      const c = await b.newContext({ javaScriptEnabled: js });
+      const httpHits = [];
+      await c.route(/^http:\/\/(www\.)?dietai\.in\//, (r) => {
+        const u = new URL(r.request().url());
+        httpHits.push(u.pathname);
+        const f = files[u.pathname];
+        return f ? r.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: fs.readFileSync(path.join(ROOT, f)) }) : r.fulfill({ status: 404, body: '' });
+      });
+      await c.route(/^https:\/\/dietai\.in\//, (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>https</title><p>landed</p>' }));
+      await c.route(/^https:\/\/(?!dietai\.in\/)/, (r) => r.abort());
+      const p = await c.newPage();
+      await p.goto(url, { waitUntil: 'domcontentloaded' }).catch(() => {});
+      if (js) await p.waitForURL(/^https:\/\//, { timeout: 4000 }).catch(() => {}); else await sleep(400);
+      const out = { url: p.url(), httpHits };
+      await c.close();
+      return out;
+    }
+    let v = await visit('http://dietai.in/?restore=v1.pay_X.1.ab#week');
+    ok(v.httpHits.includes('/') && v.url === 'https://dietai.in/?restore=v1.pay_X.1.ab#week', 'http://dietai.in moves to https and keeps a restore link intact', v.url);
+    v = await visit('http://www.dietai.in/south-indian-diet-plan/');
+    ok(v.httpHits.length > 0 && v.url === 'https://dietai.in/south-indian-diet-plan/', 'http://www.dietai.in guide page moves to https://dietai.in', v.url);
+    v = await visit('http://dietai.in/1500-calorie-indian-diet-plan/');
+    ok(v.httpHits.length > 0 && v.url === 'https://dietai.in/1500-calorie-indian-diet-plan/', 'calorie page moves to https too', v.url);
+    v = await visit('http://dietai.in/', false);
+    ok(v.url === 'http://dietai.in/', 'the move comes from the page itself (with JavaScript off nothing moves)', v.url);
+    const c2 = await b.newContext(); const p2 = await c2.newPage();
+    await c2.route(/^https:\/\//, (r) => r.abort());
+    await p2.goto(BASE + '/', { waitUntil: 'domcontentloaded' }); await sleep(500);
+    ok(p2.url().startsWith(BASE), 'local and preview hosts are left alone', p2.url());
+    await c2.close(); await b.close();
+    const cfg = fs.readFileSync(path.join(ROOT, '_config.yml'), 'utf8');
+    const ex = ((cfg.match(/^exclude:\n((?:[ \t]+-[^\n]*\n?)+)/m) || [])[1] || '').split('\n').map((l) => l.replace(/^\s*-\s*/, '').trim()).filter(Boolean);
+    ok(['REVENUE-NOTES.md', 'README.md', 'worker', 'tools'].every((x) => ex.includes(x)), 'GitHub Pages build leaves out the notes, README, Worker source and tools', ex.join(', '));
+    const site = ['index.html', 'sitemap.xml', 'robots.txt', 'sw.js', 'events.js', 'premium.js', 'manifest.json', 'og.png', 'CNAME', 'googlea16ee8de3adc33ae.html', '2cae93f145dcf1d71723273726fad40a.txt', ...GUIDES, ...CAL_PAGES.map((k) => k + '-calorie-indian-diet-plan')];
+    ok(site.every((f) => !ex.includes(f) && fs.existsSync(path.join(ROOT, f))), 'every page and file the site needs is still published (' + site.length + ')');
+    ok(!/^(include|baseurl|permalink|plugins):/m.test(cfg), 'the config changes nothing else about the build');
   });
   console.log('\nEvents the pages sent, as the Worker answered them');
   const byEv = {}; eventStatus.forEach((e) => { byEv[e.ev] = byEv[e.ev] || new Set(); byEv[e.ev].add(e.status); });

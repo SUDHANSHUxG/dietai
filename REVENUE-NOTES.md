@@ -2,6 +2,28 @@
 
 Written 2026-09-05. Conclusions live here, not in a chat transcript.
 
+## 15 Nov 2026 — sixth pass: https only, and internal files off the site
+
+**http:// was a live path.** GitHub Pages "Enforce HTTPS" is off (the certificate is ready
+and the DNS check passes), so `http://dietai.in` serves the site too. That would have
+broken the new payments in two ways: the Worker accepts only `https://` origins, so
+checkout fails with `origin_not_allowed` for anyone on http; and browser storage is kept
+per origin, so an unlock or a saved plan made on http is invisible on https. Fix in code:
+the first script on every page sends http visitors to `https://dietai.in`, keeping the
+path, the query (restore links) and the hash. Ticking the setting is step 9 in
+`worker/README.md` and needs a yes.
+
+**Internal notes were public pages.** With no `_config.yml`, Jekyll rendered this file as
+a page at `https://dietai.in/REVENUE-NOTES` (status 200, checked 15 Nov) and served
+`tools/*.js` and `build-preview.py`; after the merge it would also have served the Worker
+source and its runbook. `_config.yml` now leaves `REVENUE-NOTES.md`, `README.md`,
+`worker/` and `tools/` out of the build. The repo itself is public, so these files stay
+readable on GitHub: keys and anything secret never go in the repo.
+
+**Checks:** 178, all passing. New: http → https on the planner, a guide and a calorie page,
+a restore link survives the move, nothing moves with JavaScript off or on localhost, and
+the build config leaves out the internal files while keeping all 22 files the site needs.
+
 ## 14 Nov 2026 — fifth pass: verified payments, honest day totals, toned-down claims
 
 Supersedes the "honour-based paywall" and "every day hits protein" lines further down.
@@ -306,9 +328,9 @@ toggle for the visitor view and the paying-customer view.
 
 ## Open decisions (not mine to make)
 
-1. **Is 1.8 g/kg the right target?** It is achievable now, but for a heavier veg
-   customer it means ~800 g curd + 200 g paneer daily, which is expensive. 1.6 g/kg
-   would be gentler and cheaper. This is a nutrition position, so it needs a human.
+1. **Protein target.** Now 1.6 g/kg, the top of the ISSN general-population range (it was
+   1.8). A qualified nutritionist should still sign off on it and on the "BMI 18.5–25"
+   wording before either is stated as advice.
 2. **The grocery list is the wedge to real money.** It is now a clean, quantified
    list of Indian staples — one step from a Blinkit/Zepto basket. That is a
    commission on something the customer was going to buy anyway, and it recurs,

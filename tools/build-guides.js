@@ -20,6 +20,9 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const SITE = 'https://dietai.in';
+// GitHub Pages also answers on http:// until "Enforce HTTPS" is ticked. Payments, the
+// unlock and saved plans live on https://dietai.in, so http visitors are sent there.
+const HTTPS_JS = String.raw`<script>/* http:// visitors go to https://dietai.in */(function(l){if(l.protocol==='http:'&&/(^|\.)dietai\.in$/i.test(l.hostname))l.replace('https://dietai.in'+l.pathname+l.search+l.hash)})(location);</script>`;
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 
 // ---- pull the meal data straight out of the app -------------------------
@@ -275,6 +278,7 @@ function page(rid) {
 <html lang="en-IN">
 <head>
 <meta charset="UTF-8">
+${HTTPS_JS}
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(g.title)} | Diet AI</title>
 <meta name="description" content="${esc(g.desc)}">
@@ -411,6 +415,7 @@ function calPage(kcal) {
 <html lang="en-IN">
 <head>
 <meta charset="UTF-8">
+${HTTPS_JS}
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)} | Diet AI</title>
 <meta name="description" content="${esc(desc)}">
