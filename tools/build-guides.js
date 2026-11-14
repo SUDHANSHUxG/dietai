@@ -333,7 +333,7 @@ ${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></de
 </section>
 
 <h2>Diet plans for other regions</h2>
-<div class="others">${others}</div>
+<div class="others">${others}<a href="/${VEG_SLUG}/">Vegetarian diet plan</a></div>
 </main>
 <footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans
 <p>Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and protein figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p></div></footer>
@@ -463,6 +463,124 @@ ${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></de
 <h2>Other calorie levels</h2>
 <div class="others">${otherCal}</div>
 <h2>Diet plans by region</h2>
+<div class="others">${regions}<a href="/${VEG_SLUG}/">Vegetarian diet plan</a></div>
+</main>
+<footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans
+<p>Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and protein figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p></div></footer>
+</body>
+</html>
+`;
+}
+
+// ---- the vegetarian page ---------------------------------------------------
+// "vegetarian diet plan for weight loss" is one of the largest diet searches in India.
+// Three vegetarian days (no egg, no meat) at 1,500 kcal: the highest-protein vegetarian
+// day each region's meals allow, skipping the two regions the 1,500 kcal page already
+// shows, so the two pages never carry the same tables. Every figure comes from the app.
+const VEG_SLUG = 'vegetarian-indian-diet-plan';
+const VEG_KCAL = 1500;
+const PBOOST = grab('PBOOST');
+const PROTEIN_PER_KG = Number((html.match(/var PROTEIN_PER_KG=([\d.]+);/) || [])[1]);
+if (!(PROTEIN_PER_KG > 0)) throw new Error('could not find PROTEIN_PER_KG in index.html');
+function vegPage() {
+  const url = `${SITE}/${VEG_SLUG}/`;
+  const K = VEG_KCAL.toLocaleString('en-IN');
+  const name = (rid) => rid === 'pan' ? 'pan-Indian' : G[rid].cuisine;
+  const days = ORDER.filter((rid) => rid !== 'north' && rid !== 'south')
+    .map((rid) => ({ rid, d: sampleDay(rid, ['v'], VEG_KCAL, 'protein') }))
+    .filter((x) => Math.abs(x.d.k - VEG_KCAL) <= VEG_KCAL * 0.03 && x.d.rows.every((r) => r.g === 'v'))
+    .sort((a, b) => b.d.p - a.d.p).slice(0, 3);
+  if (days.length !== 3) throw new Error('vegetarian page: fewer than 3 vegetarian days fit ' + VEG_KCAL + ' kcal');
+  const ps = days.map((x) => x.d.p);
+  const soya = PBOOST.find((x) => x.k === 'soya');
+  const SOYA_G = 30;
+  const proteins = ['Tofu (100g)', 'Greek yogurt (150g)', 'Dal cooked (1 cup)', 'Sprouts (1 cup)', 'Paneer (100g)', 'Milk, toned (1 cup)',
+    'Rajma cooked (1 cup)', 'Sattu drink (1 glass)', 'Curd / Yogurt (1 cup)', 'Chole cooked (1 cup)', 'Peanuts (30g)']
+    .map((n) => { const f = food(n); return { n: f.n, k: f.k, p: f.p }; })
+    .concat([{ n: `Soya chunks (${SOYA_G} g dry)`, k: Math.round(soya.kc * SOYA_G), p: Math.round(soya.per * SOYA_G) }])
+    .map((f) => Object.assign(f, { per: f.p / f.k * 100 }))
+    .sort((a, b) => b.per - a.per);
+  const top = proteins[0];
+  const topName = top.n.replace(/ \(.*\)$/, '');
+  const paneer = food('Paneer (100g)'), tofu = food('Tofu (100g)'), dal = food('Dal cooked (1 cup)'), curd = food('Curd / Yogurt (1 cup)');
+  const faq = [
+    ['Can a vegetarian Indian diet give enough protein?', `Yes, with some planning. The three days above give ${Math.min(...ps)}–${Math.max(...ps)} g of protein from meals alone at ${K} kcal. Dal, rajma, chole, paneer, curd, tofu, sprouts and soya chunks are the main sources. The free planner sets your own protein goal from your weight and, where the meals fall short, suggests a top-up counted inside your calories.`],
+    ['How many calories should a vegetarian eat to lose weight?', 'The same as anyone else: it depends on your age, height, weight, sex and how active you are, not on whether you eat meat. The free planner works it out with the Mifflin-St Jeor formula and subtracts 500 kcal a day. It never goes below 1,500 kcal for men or 1,200 kcal for women.'],
+    ['Is paneer good for weight loss?', `Paneer is high in protein — about ${paneer.p} g per 100 g — but also about ${paneer.k} kcal per 100 g, more than most other vegetarian proteins. It fits in measured portions. Tofu gives similar protein for fewer calories: ${tofu.p} g for ${tofu.k} kcal per 100 g.`],
+  ];
+  const ld = [
+    { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Diet AI', item: SITE + '/' },
+      { '@type': 'ListItem', position: 2, name: 'Vegetarian Indian diet plan', item: url } ] },
+    { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) },
+  ];
+  const planner = '/?diet=veg&utm_source=veg#planner';
+  const cal = CAL.map((x) => `<a href="/${calSlug(x)}/">${x.toLocaleString('en-IN')} kcal</a>`).join('');
+  const regions = ORDER.map((x) => `<a href="/${G[x].slug}/">${esc(G[x].h1.replace(/ for weight loss$/, ''))}</a>`).join('');
+  const title = 'Vegetarian Indian Diet Plan for Weight Loss — 3 Free Sample Days';
+  const desc = `A free vegetarian Indian diet plan for weight loss: three full ${K} kcal days of dal, roti, paneer, curd and sabzi — no egg or meat — with calories and protein for every meal.`;
+  const lede = `No meat, no eggs — just dal, roti, rice, paneer, curd and sabzi. Below are three full vegetarian days at ${K} kcal, each the highest-protein vegetarian day a region's everyday meals allow, built from the same meal data the free planner uses.`;
+  return `<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+${HTTPS_JS}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)} | Diet AI</title>
+<meta name="description" content="${esc(desc)}">
+<link rel="canonical" href="${url}">
+<meta name="theme-color" content="#07090f">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Diet AI">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(desc)}">
+<meta property="og:url" content="${url}">
+<meta property="og:image" content="${SITE}/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%97%3C/text%3E%3C/svg%3E">
+<script src="/events.js"></script>
+<style>${CSS}</style>
+<script type="application/ld+json">${JSON.stringify(ld)}</script>
+</head>
+<body>
+<header><div class="wrap nav"><a class="logo" href="/"><i aria-hidden="true">🥗</i> Diet AI</a><a class="btn sm" href="${planner}">Get my plan — free</a></div></header>
+<main class="wrap">
+<nav class="crumb" aria-label="Breadcrumb"><a href="/">Diet AI</a> › Vegetarian Indian diet plan</nav>
+<h1>Vegetarian Indian diet plan for weight loss</h1>
+<p class="lede">${esc(lede)}</p>
+<div class="cta"><a class="btn" href="${planner}">Make my vegetarian plan</a><small>Free · no sign-up · 10 seconds</small></div>
+${days.map(({ rid, d }) => { const cap = 'Vegetarian · ' + name(rid); return `<h2>${esc(cap)} — ${d.k.toLocaleString('en-IN')} kcal, ${d.p} g protein</h2>
+${dayTable(d, `${cap} · ${d.k.toLocaleString('en-IN')} kcal · ${d.p} g protein`)}`; }).join('\n')}
+<p class="note">These are meals only. The planner's protein goal — ${PROTEIN_PER_KG} g per kg of body weight, using an adjusted weight above a BMI of 25 — is higher than these days for most adults, so the planner adds a top-up (soya chunks, paneer or curd) and counts its calories inside your target.</p>
+
+<h2>Vegetarian protein, per serving</h2>
+<div class="tbl"><table>
+<caption>Sorted by protein per 100 kcal</caption>
+<thead><tr><th scope="col">Food</th><th scope="col" class="n">kcal</th><th scope="col" class="n">Protein</th><th scope="col" class="n">Per 100 kcal</th></tr></thead>
+<tbody>${proteins.map((f) => `<tr><th scope="row">${esc(f.n)}</th><td class="n">${f.k}</td><td class="n">${f.p} g</td><td class="n">${f.per.toFixed(1)} g</td></tr>`).join('')}</tbody>
+</table></div>
+
+<h2>How to make a vegetarian day work</h2>
+<ul class="tips">
+<li><b>Put a pulse at the centre of two meals</b><span>A cup of cooked dal is about ${dal.p} g of protein, rajma ${food('Rajma cooked (1 cup)').p} g, chole ${food('Chole cooked (1 cup)').p} g. Two cups of them across lunch and dinner give about ${2 * Math.min(food('Rajma cooked (1 cup)').p, food('Chole cooked (1 cup)').p)}–${2 * dal.p} g before anything else on the plate.</span></li>
+<li><b>Add curd or chaas to one meal</b><span>A cup of curd is about ${curd.p} g of protein for ${curd.k} kcal, and it goes with almost every Indian meal.</span></li>
+<li><b>Measure the paneer</b><span>100 g of paneer is about ${paneer.p} g of protein but ${paneer.k} kcal. It is a good protein; just weigh it for a week so it doesn't quietly double.</span></li>
+<li><b>${esc(topName)} ${/s$/.test(topName) ? 'top' : 'tops'} the table</b><span>${esc(top.n)}: about ${top.p} g of protein for ${top.k} kcal — more protein per calorie than anything else in the table above.</span></li>
+<li><b>Count the cooking fat</b><span>A teaspoon of oil or ghee is roughly 45 kcal. A heavy tadka can add 100–200 kcal that no recipe card shows.</span></li>
+</ul>
+
+<h2>Questions people ask</h2>
+${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('\n')}
+
+<section class="final">
+<h2>Your vegetarian plan, at your own calories</h2>
+<p>These days are examples at ${K} kcal. Enter your age, height and weight and the free planner builds a vegetarian day of your region's food at your own target, with a protein top-up counted inside it.</p>
+<div class="cta"><a class="btn" href="${planner}">Get my free vegetarian plan</a><small>Private — nothing you enter leaves your phone.</small></div>
+</section>
+
+<h2>Diet plans by calories</h2>
+<div class="others">${cal}</div>
+<h2>Diet plans by region</h2>
 <div class="others">${regions}</div>
 </main>
 <footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans
@@ -487,6 +605,9 @@ for (const kcal of CAL) {
   fs.writeFileSync(path.join(dir, 'index.html'), calPage(kcal));
   written.push(calSlug(kcal));
 }
+fs.mkdirSync(path.join(ROOT, VEG_SLUG), { recursive: true });
+fs.writeFileSync(path.join(ROOT, VEG_SLUG, 'index.html'), vegPage());
+written.push(VEG_SLUG);
 
 const today = new Date().toISOString().slice(0, 10);
 const urls = [['/', '1.0'], ...written.map(s => ['/' + s + '/', '0.8'])];

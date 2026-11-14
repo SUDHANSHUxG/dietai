@@ -26,7 +26,15 @@ and not tagged for another product (your 21 Oct ₹99 payment, untagged, still r
 test-key payments were logged as `payment_verified`, the real sale count; they are now
 `payment_verified_test`, so the coming test payment can't show up as a sale.
 
-**Checks:** 182, all passing. New: http → https on the planner, a guide and a calorie page,
+**One more door from search: `/vegetarian-indian-diet-plan/`.** "Vegetarian diet plan for
+weight loss" is one of the biggest diet searches in India, and no page answered it. Three
+vegetarian days (no egg or meat) at 1,500 kcal — the highest-protein vegetarian day each
+region's meals allow, skipping the two regions the 1,500 kcal page already shows, so no table
+is duplicated — plus a vegetarian protein table sorted by protein per 100 kcal (soya chunks
+first). Every figure, including the 1.6 g/kg protein goal, is read from `index.html`. Linked
+from the homepage footer, the guides and the calorie pages; the sitemap now has 13 URLs.
+
+**Checks:** 186, all passing. New: http → https on the planner, a guide and a calorie page,
 a restore link survives the move, nothing moves with JavaScript off or on localhost, and
 the build config leaves out the internal files while keeping all 22 files the site needs.
 

@@ -628,6 +628,28 @@ async function section(title, fn) {
       await g.close();
     }
     ok(CAL_PAGES.every((k) => sm.includes(`https://dietai.in/${k}-calorie-indian-diet-plan/`)), 'sitemap lists every calorie page');
+    {
+      const g = await newPage(ctx);
+      const res = await g.goto(`${BASE}/vegetarian-indian-diet-plan/`, { waitUntil: 'networkidle' });
+      const i = await g.evaluate(() => {
+        const ld = JSON.parse(document.querySelector('script[type="application/ld+json"]').textContent);
+        const dayTables = [...document.querySelectorAll('table')].filter((t) => t.querySelector('tfoot'));
+        return { faqMatch: ld.find((x) => x['@type'] === 'FAQPage').mainEntity.length === document.querySelectorAll('details').length,
+          tables: document.querySelectorAll('table').length,
+          totals: dayTables.map((t) => Number(t.querySelector('tfoot td.n:nth-of-type(2)').textContent.replace(/,/g, ''))),
+          meat: /\b(eggs?|omelette|chicken|fish|mutton|prawns?|keema)\b/i.test(dayTables.map((t) => t.querySelector('tbody').innerText).join(' ')),
+          junk: /NaN|undefined|\[object/.test(document.body.innerText),
+          canonical: document.querySelector('link[rel=canonical]').href };
+      });
+      ok(res.status() === 200 && i.faqMatch && i.tables === 4 && !i.junk && !i.meat && i.canonical === 'https://dietai.in/vegetarian-indian-diet-plan/'
+        && i.totals.length === 3 && i.totals.every((t) => Math.abs(t - 1500) <= 45), '/vegetarian-indian-diet-plan/: 3 days within 3% of 1,500 kcal, no egg or meat', i.totals.join(', '));
+      await g.click('.cta .btn'); await g.waitForLoadState('networkidle');
+      ok(await g.evaluate(() => diet === 'veg'), 'vegetarian page button opens the planner set to vegetarian');
+      await g.close();
+    }
+    ok(sm.includes('https://dietai.in/vegetarian-indian-diet-plan/'), 'sitemap lists the vegetarian page');
+    const linksVeg = async (u) => (await (await page.request.get(BASE + u)).text()).includes('href="/vegetarian-indian-diet-plan/"');
+    ok(await linksVeg('/') && await linksVeg('/1500-calorie-indian-diet-plan/') && await linksVeg('/north-indian-diet-plan/'), 'homepage, calorie pages and guides link to the vegetarian page');
     ok((await (await page.request.get(BASE + '/googlea16ee8de3adc33ae.html')).text()).trim() === 'google-site-verification: googlea16ee8de3adc33ae.html', 'Google Search Console verification file served');
     const robots = await (await page.request.get(BASE + '/robots.txt')).text();
     ok(/Disallow: \/\*\?restore=/.test(robots), 'robots.txt keeps restore links out of search');
@@ -673,7 +695,7 @@ async function section(title, fn) {
     const cfg = fs.readFileSync(path.join(ROOT, '_config.yml'), 'utf8');
     const ex = ((cfg.match(/^exclude:\n((?:[ \t]+-[^\n]*\n?)+)/m) || [])[1] || '').split('\n').map((l) => l.replace(/^\s*-\s*/, '').trim()).filter(Boolean);
     ok(['REVENUE-NOTES.md', 'README.md', 'worker', 'tools'].every((x) => ex.includes(x)), 'GitHub Pages build leaves out the notes, README, Worker source and tools', ex.join(', '));
-    const site = ['index.html', 'sitemap.xml', 'robots.txt', 'sw.js', 'events.js', 'premium.js', 'manifest.json', 'og.png', 'CNAME', 'googlea16ee8de3adc33ae.html', '2cae93f145dcf1d71723273726fad40a.txt', ...GUIDES, ...CAL_PAGES.map((k) => k + '-calorie-indian-diet-plan')];
+    const site = ['index.html', 'sitemap.xml', 'robots.txt', 'sw.js', 'events.js', 'premium.js', 'manifest.json', 'og.png', 'CNAME', 'googlea16ee8de3adc33ae.html', '2cae93f145dcf1d71723273726fad40a.txt', ...GUIDES, ...CAL_PAGES.map((k) => k + '-calorie-indian-diet-plan'), 'vegetarian-indian-diet-plan'];
     ok(site.every((f) => !ex.includes(f) && fs.existsSync(path.join(ROOT, f))), 'every page and file the site needs is still published (' + site.length + ')');
     ok(!/^(include|baseurl|permalink|plugins):/m.test(cfg), 'the config changes nothing else about the build');
   });
