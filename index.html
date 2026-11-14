@@ -165,7 +165,7 @@ select option{background:#0b0f1a;color:var(--ink)}
 .restore-row .btn{padding:12px 16px;font-size:14px}
 .daytot{display:flex;justify-content:space-between;gap:10px;margin:2px 0 8px;padding:10px 13px;border-radius:12px;background:rgba(52,229,140,.07);border:1px solid rgba(52,229,140,.25);font-size:13.5px;font-weight:700}
 .daytot span:last-child{color:var(--g1);white-space:nowrap}
-.daytot i{display:block;font-style:normal;font-weight:600;font-size:11.5px;color:var(--muted)}
+.daytot i{display:block;font-style:normal;font-weight:600;font-size:11.5px;color:var(--muted);white-space:nowrap}
 .daynote{font-size:12.5px;color:var(--c);margin:-2px 0 8px}
 .week-day .wd-body .daytot{padding:10px 13px;margin:10px 0 2px;border:1px solid rgba(52,229,140,.25)}
 .week-day{border:1px solid var(--line);border-radius:14px;margin-bottom:10px;background:var(--card);overflow:hidden}
@@ -1306,7 +1306,7 @@ function dayTotalHTML(day){
   var diff=day.totK-day.target,note='';
   if(diff>Math.max(60,day.target*0.05))note='Even with the smallest portions we suggest, this day is ~'+diff+' kcal over your target. Skip part of the top-up if you\'d rather stay on target.';
   else if(-diff>Math.max(60,day.target*0.05))note='This day comes to ~'+(-diff)+' kcal under your target — add a roti or a little rice to make it up.';
-  return '<div class="daytot"><span>Day total'+(day.tu&&day.tu.kcal?'<i>meals + protein top-up</i>':'')+'</span><span>'+day.totK.toLocaleString()+' kcal · '+day.totP+'g protein</span></div>'+
+  return '<div class="daytot"><span>Day total'+(day.tu&&day.tu.kcal?'<i>incl. top-up</i>':'')+'</span><span>'+day.totK.toLocaleString()+' kcal · '+day.totP+'g protein</span></div>'+
     (note?'<p class="daynote">'+esc(note)+'</p>':'');
 }
 
