@@ -2,5 +2,6 @@
 User-agent: *
 Allow: /
 Disallow: /*?premium=
+Disallow: /*?restore=
 
 Sitemap: https://dietai.in/sitemap.xml

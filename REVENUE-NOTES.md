@@ -2,6 +2,59 @@
 
 Written 2026-09-05. Conclusions live here, not in a chat transcript.
 
+## 14 Nov 2026 — fifth pass: verified payments, honest day totals, toned-down claims
+
+Supersedes the "honour-based paywall" and "every day hits protein" lines further down.
+
+**Payments.** The pack unlocked from a URL anyone could type (`/?premium=unlocked`), the
+restore link was that same URL, and `premium_unlocked` fired whenever it was opened. Now
+the page opens Razorpay's checkout itself (UPI first), the Worker (`worker/index.js`,
+deployed as `dietai-events`) creates the order at a fixed ₹99, checks Razorpay's signature
+and the payment, and issues a signed unlock token. The URL does nothing; the legacy
+`dietai_premium` flag is ignored. A UPI app that kills the browser tab no longer loses the
+sale: the order ID is saved first and checked on return. Customers restore on a new phone
+with their payment ID or a personal restore link. Razorpay data, 14 Nov: the one stranger
+who tried to pay (21 Oct) failed with `payment_timed_out` at `payment_authentication` —
+the UPI request was never approved in their app. Checkout now says exactly that, says no
+money was taken, and offers the retry.
+
+**The authoritative sale metric is now `payment_verified`**, written by the Worker after
+Razorpay confirms the money (one row per payment). `premium_unlocked` is secondary.
+
+**Calories.** Top-up calories were never counted: across 735 plan-days (7 regions × 3
+diets × 5 body types × 7 days) the real day ran a median **+667 kcal** over target, worst
++1,087 — the whole fat-loss deficit and more. Now meals shrink to make room (to the usual
+75% floor), the top-up is capped by the calories left (+3% slack), and every total shown —
+planner, free Monday, the 7 days, print, WhatsApp text — is meals + top-up. After: median
++29 kcal, worst +67, none hidden. Top-up order is now by protein per calorie (soya, eggs,
+paneer, curd).
+
+**The trade-off this exposes — a decision for a nutrition expert, not code.** With
+calories honest, the 1.8 g/kg protein target is out of reach on most weight-loss days, and
+the day now says so ("still ~X g short of your protein goal"):
+
+| protein target | weight-loss plan-days >8 g short (of 441) |
+|---|---|
+| 1.8 g/kg (current) | 426 (97%) |
+| 1.6 g/kg | 248 (56%) |
+| 1.4 g/kg | 64 (15%) |
+
+Delivered protein on those days is still ~1.5 g/kg of adjusted weight (median).
+
+**Claims removed or softened** (no qualified person has checked them): "the formula
+dietitians use", "same formulas dietitians use" (1.8 g/kg is not that), "the pace most
+dietitians consider sustainable", "safe minimum", "exact calorie targets", "AI nutrition
+coach", "Healthy weight" (now "BMI 18.5–25 range" — Indian guidelines use a lower upper
+cut-off; also a decision for an expert), guide lines such as "makes sure most of it comes
+from fat", "ideal weight-loss meal", "what most adults should aim for". The page `<title>`
+still says "Free AI Diet Plan" — left alone on purpose (it is what ranks; decide with
+Search Console data).
+
+**Checks.** `tools/check.js` now runs the real Worker code against a fake Razorpay that
+signs payments exactly as Razorpay does (fresh secret per run): 156 checks, all passing.
+The same checks against the previous `main`: 36 fail, including the free URL unlock and
+every unchecked claim. Deploy steps: `worker/README.md`.
+
 ## The finding that matters most
 
 **Until this change, dietai.in could not report a sale.** Two independent bugs:

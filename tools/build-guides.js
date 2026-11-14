@@ -64,7 +64,7 @@ const G = {
       ['Keep sambar and rasam', `They are low in calories and add volume. A cup of sambar is about ${food('Sambar (1 cup)').k} kcal with ${food('Sambar (1 cup)').p} g of protein.`],
       ['Go easy on coconut chutney', 'Coconut is calorie-dense. One or two spoons of chutney is fine; a katori of it is a meal on its own.'],
       ['Idli and dosa need a protein partner', `Two idlis are about ${food('Idli (2)').k} kcal but only ${food('Idli (2)').p} g of protein. Pair them with sambar, curd or a sundal.`],
-      ['Ragi is a good swap', 'Ragi mudde or ragi dosa in place of some rice adds fibre and keeps you full longer.'],
+      ['Ragi is a good swap', 'Ragi mudde or ragi dosa in place of some rice adds fibre and variety.'],
     ],
     faq3: ['Is idli good for weight loss?', `Yes, it is low in fat — two idlis are about ${food('Idli (2)').k} kcal. The catch is protein: only about ${food('Idli (2)').p} g. Eat idli with sambar or curd, and add a protein-rich lunch.`],
   },
@@ -77,7 +77,7 @@ const G = {
     lede: 'Rice and fish, dal-bhaat, litti-chokha, sattu: the food of Bengal and Bihar has excellent cheap protein in it. The two things to manage are the size of the rice mound and the fried sides that come with it.',
     tips: [
       ['Portion the bhaat', `A cup and a half of cooked rice is about ${Math.round(food('Plain rice (1 cup)').k * 1.5)} kcal. Keep the fish or dal the same and trim the rice first.`],
-      ['Fish is your best friend', `Cooked fish is about ${food('Fish, cooked (100g)').p} g of protein per 100 g for roughly ${food('Fish, cooked (100g)').k} kcal. A light macher jhol is close to an ideal weight-loss meal.`],
+      ['Fish is your best friend', `Cooked fish is about ${food('Fish, cooked (100g)').p} g of protein per 100 g for roughly ${food('Fish, cooked (100g)').k} kcal. A light macher jhol is a filling, protein-rich meal.`],
       ['One fried side, not three', 'Bhaja, fries and pakoras in mustard oil add up fast. Pick one per meal.'],
       ['Sattu is cheap protein', `A glass of sattu drink is about ${food('Sattu drink (1 glass)').k} kcal with ${food('Sattu drink (1 glass)').p} g of protein — one of the best-value breakfasts in India.`],
       ['Count the mishti', 'Sweets are fine; just count them as the calories they are rather than as an extra.'],
@@ -95,7 +95,7 @@ const G = {
       ['Notice the sugar', 'Many Gujarati dals and kadhis are cooked with sugar or jaggery. Asking for it to be halved changes very little in taste and a lot in calories over a week.'],
       ['Steamed farsan over fried', `Dhokla is steamed — two pieces are about ${food('Dhokla (2 pcs)').k} kcal. Khakhra is also light. Fried farsan is the expensive one.`],
       ['Bajra and jowar rotla', 'Millet rotlas and bhakri are filling and fit well; keep the ghee on them small.'],
-      ['Chaas with every meal', `A glass of buttermilk is about ${food('Buttermilk / Chaas (1 glass)').k} kcal and helps with fullness.`],
+      ['Chaas with every meal', `A glass of buttermilk is about ${food('Buttermilk / Chaas (1 glass)').k} kcal — a light drink to have with meals.`],
       ['Konkan fish for protein', 'If you eat fish, a fish fry or curry with solkadhi is a strong, high-protein lunch.'],
     ],
     faq3: ['Is dhokla good for weight loss?', `Yes, it is steamed rather than fried — two pieces are about ${food('Dhokla (2 pcs)').k} kcal with ${food('Dhokla (2 pcs)').p} g of protein. Watch the sweet chutney and the tempering oil.`],
@@ -122,13 +122,13 @@ const G = {
     h1: 'North-East Indian diet plan for weight loss',
     cuisine: 'North-East Indian',
     desc: 'A free North-East Indian diet plan built from thukpa, steamed momos, river fish, greens and sticky rice — sample 1,500 and 2,000 kcal days with calories and protein.',
-    lede: 'Food across the North-East is often boiled, steamed or fermented, with little oil — which already makes it one of the easiest cuisines in India to lose weight on. The rice portion and the fried versions of dishes are the things to keep an eye on.',
+    lede: 'Food across the North-East is often boiled, steamed or fermented, with little oil — so less of the day\'s calories come from cooking fat. The rice portion and the fried versions of dishes are the things to keep an eye on.',
     tips: [
       ['It is already lean', 'Boiled greens, steamed fish and bamboo-shoot curries are low in oil. Keep cooking the way you already do.'],
       ['Steamed momos, not fried', `Six steamed veg momos are about ${food('Momos, steamed veg (6)').k} kcal. Fried momos are far more.`],
       ['Thukpa is a full meal', 'A big bowl of thukpa with chicken or tofu covers carbohydrate, vegetables and protein in one dish.'],
       ['Portion the sticky rice', 'Sticky rice is dense; half a cup goes further than it looks.'],
-      ['Fish and greens', 'River fish with lai xaak or other greens is about as good as a weight-loss lunch gets.'],
+      ['Fish and greens', 'River fish with lai xaak or other greens makes a filling, high-protein lunch that is light on oil.'],
     ],
     faq3: ['Are momos healthy for weight loss?', `Steamed momos can fit: six steamed veg momos are about ${food('Momos, steamed veg (6)').k} kcal with ${food('Momos, steamed veg (6)').p} g of protein. Choose steamed over fried, and go easy on the mayo.`],
   },
@@ -138,15 +138,15 @@ const G = {
     h1: 'Indian diet plan for weight loss',
     cuisine: 'Indian',
     desc: 'A free Indian diet plan for weight loss built from everyday food — dal-roti, idli, poha, rajma-chawal — with sample 1,500 and 2,000 kcal days, calories and protein for every meal.',
-    lede: 'You can lose weight on ordinary Indian home food. Dal, roti, rice, sabzi, curd, eggs and paneer are all fine — weight loss comes from eating a little less than you burn, consistently, and getting enough protein so it is fat you lose and not muscle.',
+    lede: 'You can lose weight on ordinary Indian home food. Dal, roti, rice, sabzi, curd, eggs and paneer are all fine — weight loss comes from eating a little less than you burn, consistently. Getting enough protein helps you hold on to muscle while you lose.',
     tips: [
-      ['Calories decide weight; protein decides what you lose', 'A steady deficit of about 500 kcal a day is roughly 0.45 kg a week. Enough protein makes sure most of it comes from fat.'],
+      ['Calories drive weight loss; protein helps protect muscle', 'On paper, a steady deficit of about 500 kcal a day is roughly 0.45 kg a week; real loss varies and usually slows over time. Enough protein helps you keep muscle while you lose.'],
       ['Portion the grains first', `A roti is about ${food('Roti / Chapati (1)').k} kcal and a cup of rice about ${food('Plain rice (1 cup)').k} kcal. Trimming grains is easier than cutting anything else.`],
       ['Cheap vegetarian protein', `Dal (${food('Dal cooked (1 cup)').p} g a cup), chana (${food('Chole cooked (1 cup)').p} g a cup), paneer (${food('Paneer (100g)').p} g per 100 g) and curd all count. Soya chunks are the cheapest of all.`],
       ['Watch the oil and ghee', 'Cooking fat is the hidden calorie in Indian food. Measure it for a week and you will see where the extra calories were.'],
       ['Chai adds up', `A cup of chai with milk and sugar is about ${food('Chai with milk & sugar').k} kcal. Four a day is a small meal.`],
     ],
-    faq3: ['Do I need to eat chicken to get enough protein?', `No. Dal, rajma, chole, paneer, curd, sprouts and soya chunks can cover it. A cup of dal is about ${food('Dal cooked (1 cup)').p} g of protein and 100 g of paneer about ${food('Paneer (100g)').p} g. The free planner works out your target and fills any gap.`],
+    faq3: ['Do I need to eat chicken to get enough protein?', `No. Dal, rajma, chole, paneer, curd, sprouts and soya chunks can cover it. A cup of dal is about ${food('Dal cooked (1 cup)').p} g of protein and 100 g of paneer about ${food('Paneer (100g)').p} g. The free planner works out your target and suggests a top-up for the gap.`],
   },
 };
 const ORDER = ['pan', 'north', 'south', 'east', 'west', 'central', 'northeast'];
@@ -194,7 +194,7 @@ function faqFor(rid) {
   const g = G[rid];
   return [
     [`Can I lose weight eating ${g.cuisine} food?`, `Yes. Weight loss comes from eating somewhat fewer calories than you burn, consistently — not from a particular cuisine. Keep the ${g.cuisine} meals you like, control the portion of rice or roti and the cooking fat, and get enough protein.`],
-    ['How many calories should I eat to lose weight?', 'It depends on your age, height, weight, sex and how active you are. The free planner works it out with the Mifflin-St Jeor formula and subtracts 500 kcal a day, which is roughly 0.45 kg a week. It never goes below 1,500 kcal for men or 1,200 kcal for women.'],
+    ['How many calories should I eat to lose weight?', 'It depends on your age, height, weight, sex and how active you are. The free planner works it out with the Mifflin-St Jeor formula and subtracts 500 kcal a day — roughly 0.45 kg a week on paper, though real results vary. It never goes below 1,500 kcal for men or 1,200 kcal for women.'],
     g.faq3,
   ];
 }
@@ -303,10 +303,10 @@ function page(rid) {
 <h2>A sample vegetarian day</h2>
 <p>Built from ${esc(g.cuisine)} everyday meals, choosing the option with the most protein per calorie at each meal and scaling portions to about 1,500 kcal.</p>
 ${dayTable(veg, `Vegetarian · ${veg.k.toLocaleString('en-IN')} kcal · ${veg.p} g protein`)}
-<p class="note">${veg.p < 90 ? `${veg.p} g of protein is below what most adults should aim for while losing weight. The free planner works out your own target from your weight and adds a top-up — soya chunks, paneer or curd — to close the gap.` : 'Protein here is in a healthy range for most adults losing weight.'}</p>
+<p class="note">${veg.p < 90 ? `${veg.p} g of protein is below the planner's usual target for someone losing weight. The free planner works out your own target from your weight and suggests a top-up — soya chunks, paneer or curd — counted inside your calories.` : 'Protein here is close to the planner\'s usual target for weight loss.'}</p>
 
 <h2>A sample higher-protein day</h2>
-<p>The same region with eggs, chicken or fish allowed, choosing the highest-protein option at each meal, scaled to about 2,000 kcal — closer to what many men need while losing weight.</p>
+<p>The same region with eggs, chicken or fish allowed, choosing the highest-protein option at each meal, scaled to about 2,000 kcal — closer to the planner's target for many men losing weight.</p>
 ${dayTable(nonveg, `With egg, chicken or fish · ${nonveg.k.toLocaleString('en-IN')} kcal · ${nonveg.p} g protein`)}
 
 <h2>What makes the difference in ${esc(g.cuisine)} food</h2>
@@ -317,14 +317,14 @@ ${dayTable(nonveg, `With egg, chicken or fish · ${nonveg.k.toLocaleString('en-I
 <div class="mls">${mealList(rid)}</div>
 
 <h2>How the numbers are worked out</h2>
-<p>Your daily calorie need is estimated with the Mifflin-St Jeor equation, adjusted for activity. For weight loss we subtract 500 kcal a day — roughly 0.45 kg a week — and never go below 1,500 kcal for men or 1,200 kcal for women. Protein is set at 1.8 g per kg of body weight, using an adjusted weight above a BMI of 25 so the target stays realistic. Every calorie figure is an approximation of a typical home-cooked portion.</p>
+<p>Your daily calorie need is estimated with the Mifflin-St Jeor equation, adjusted for activity. For weight loss we subtract 500 kcal a day — roughly 0.45 kg a week on paper; real results vary — and never go below 1,500 kcal for men or 1,200 kcal for women. Protein is set at 1.8 g per kg of body weight, using an adjusted weight above a BMI of 25 so the target stays realistic. Every calorie figure is an approximation of a typical home-cooked portion.</p>
 
 <h2>Questions people ask</h2>
 ${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('\n')}
 
 <section class="final">
 <h2>Your plan, at your calories</h2>
-<p>These sample days are for an average person. Enter your age, height and weight and the planner builds a ${esc(g.cuisine)} day at your exact calorie and protein targets, with a water goal and a tracker.</p>
+<p>These sample days are for an average person. Enter your age, height and weight and the planner builds a ${esc(g.cuisine)} day at your calorie target, with a protein top-up counted inside it, a water goal and a tracker.</p>
 <div class="cta"><a class="btn" href="${planner}">Get my free plan</a><small>Private — nothing you enter leaves your phone.</small></div>
 </section>
 

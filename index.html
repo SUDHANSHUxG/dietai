@@ -5,17 +5,17 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Diet AI — Free AI Diet Plan, Indian Meal Plans & Calorie Tracker</title>
-<meta name="description" content="India's free AI nutrition coach. Personalised calorie & macro targets, region-wise Indian meal plans (North, South, East, West, North-East), water & weight tracking — private, in your browser, no sign-up."/>
+<meta name="description" content="Free Indian diet planner. Personalised calorie & protein estimates, region-wise Indian meal plans (North, South, East, West, North-East), water & weight tracking — private, in your browser, no sign-up."/>
 <meta name="theme-color" content="#07090f"/>
 <link rel="canonical" href="https://dietai.in/"/>
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="Diet AI"/>
-<meta property="og:title" content="Diet AI — Your free AI nutrition coach"/>
+<meta property="og:title" content="Diet AI — Free Indian diet plans for your region"/>
 <meta property="og:description" content="Personalised calorie & macro targets, region-wise Indian meal plans, water & weight tracker. Free and private."/>
 <meta property="og:url" content="https://dietai.in/"/>
 <meta property="og:image" content="https://dietai.in/og.png"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="Diet AI — Your free AI nutrition coach"/>
+<meta name="twitter:title" content="Diet AI — Free Indian diet plans for your region"/>
 <meta name="twitter:description" content="Personalised calorie & macro targets, region-wise Indian meal plans, and trackers. Free and private."/>
 <meta name="twitter:image" content="https://dietai.in/og.png"/>
 <link rel="manifest" href="/manifest.json"/>
@@ -24,8 +24,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%97%3C/text%3E%3C/svg%3E"/>
 <!-- Loaded here, NOT deferred: it must define dietaiLog() before the main script
-     runs, because the main script strips ?premium=unlocked from the URL. -->
+     runs and logs the unlock. -->
 <script src="/events.js"></script>
+<link rel="preconnect" href="https://dietai-events.sudhanshuxg.workers.dev" crossorigin/>
+<link rel="preconnect" href="https://checkout.razorpay.com"/>
 <style>
 :root{
   --bg:#07090f; --bg2:#0b0f1a; --card:rgba(255,255,255,.045); --card2:rgba(255,255,255,.07);
@@ -146,6 +148,26 @@ select option{background:#0b0f1a;color:var(--ink)}
 .price .new{font-size:40px;font-weight:850;color:var(--c)}
 .price .lp{background:rgba(255,184,77,.15);color:var(--c);font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;letter-spacing:.5px}
 .prem .paynote{font-size:12.5px;color:var(--muted);margin-top:10px}
+.btn-pay{width:100%;background:linear-gradient(135deg,#ffb84d,#ff8a3d);box-shadow:0 8px 28px rgba(255,184,77,.3);color:#241303}
+.btn-pay[disabled]{opacity:.75;cursor:progress}
+.paystatus{margin-top:12px;padding:12px 14px;border-radius:12px;font-size:13.5px;line-height:1.5;border:1px solid var(--line2);background:rgba(0,0,0,.22)}
+.paystatus.ok{border-color:rgba(52,229,140,.4);color:#c9f7df}
+.paystatus.err{border-color:rgba(255,107,129,.45);color:#ffd0d8}
+.paystatus.warn{border-color:rgba(255,184,77,.45);color:#ffe2b3}
+.paystatus b{color:var(--ink)}
+.paystatus a,.paystatus button.linkish{color:var(--c);font-weight:700;background:none;border:none;padding:0;font:inherit;text-decoration:underline;cursor:pointer}
+.restore{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.15)}
+.restore summary{padding:11px 14px;cursor:pointer;font-size:13.5px;font-weight:700;color:var(--muted);list-style:none}
+.restore summary::-webkit-details-marker{display:none}
+.restore .restore-in{padding:0 14px 14px}
+.restore-row{display:flex;gap:8px}
+.restore-row input{flex:1;min-width:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:15px}
+.restore-row .btn{padding:12px 16px;font-size:14px}
+.daytot{display:flex;justify-content:space-between;gap:10px;margin:2px 0 8px;padding:10px 13px;border-radius:12px;background:rgba(52,229,140,.07);border:1px solid rgba(52,229,140,.25);font-size:13.5px;font-weight:700}
+.daytot span:last-child{color:var(--g1);white-space:nowrap}
+.daytot i{display:block;font-style:normal;font-weight:600;font-size:11.5px;color:var(--muted)}
+.daynote{font-size:12.5px;color:var(--c);margin:-2px 0 8px}
+.week-day .wd-body .daytot{padding:10px 13px;margin:10px 0 2px;border:1px solid rgba(52,229,140,.25)}
 .week-day{border:1px solid var(--line);border-radius:14px;margin-bottom:10px;background:var(--card);overflow:hidden}
 .week-day summary{padding:14px;font-weight:750;cursor:pointer;display:flex;justify-content:space-between;list-style:none}
 .week-day summary::-webkit-details-marker{display:none}
@@ -244,6 +266,8 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
   .week-day summary{padding:8px 10px!important;font-size:14px!important}
   .week-day .wd-body{padding:0 10px 8px!important;font-size:12.5px!important}
   .week-day .wd-body div,.gro-row{border-top:1px solid #eee!important}
+  .daytot,.week-day .wd-body .daytot{background:#fff!important;border:1px solid #bbb!important;color:#111!important}
+  .daynote{color:#8a5a00!important}
   .gro-cat{color:#0a7a43!important;margin-top:10px!important}
   .hint{color:#555!important;font-size:11px!important}
   a[href]::after{content:""!important}
@@ -308,7 +332,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
     "name": "Where is my data stored?",
     "acceptedAnswer": {
      "@type": "Answer",
-     "text": "Your age, weight, height, plans, food log, water and weight history are stored only in your own browser and are never uploaded — we couldn't see them even if we wanted to. The one thing we do collect is anonymous usage counts (page views, which buttons get clicked, roughly where visitors came from) so we know which parts of the site are worth improving. No names, no personal data, no advertising trackers."
+     "text": "Your age, weight, height, plans, food log, water and weight history are stored only in your own browser and are never uploaded — we couldn't see them even if we wanted to. The one thing we do collect is anonymous usage counts (page views, which buttons get clicked, roughly where visitors came from) so we know which parts of the site are worth improving. No names, no personal data, no advertising trackers. If you buy the Premium Pack, Razorpay handles the payment; we keep only the payment ID so your purchase can be confirmed and restored."
     }
    },
    {
@@ -316,7 +340,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
     "name": "How fast will I lose weight?",
     "acceptedAnswer": {
      "@type": "Answer",
-     "text": "The default deficit targets roughly 0.45 kg/week — the pace most dietitians consider sustainable. Slower is fine; consistency beats speed."
+     "text": "The plan sets your calories about 500 kcal a day below your estimated maintenance. On paper that is roughly 0.45 kg a week, but real results vary from person to person and usually slow down over time. Slower is fine; consistency matters more than speed."
     }
    }
   ]
@@ -341,7 +365,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
   <div class="wrap stage">
     <span class="pill"><span class="pulse"></span> 100% free · no sign-up · made for India 🇮🇳</span>
     <h1>The diet plan that knows<br/><span class="hl" id="heroDish">your region's food</span></h1>
-    <p class="sub">Pick your part of India. Diet AI builds your exact calorie &amp; protein targets and a full day of <b style="color:var(--ink)">your</b> food — idli-sambar in the South, rajma-chawal in the North, macher jhol in the East. Private, in your browser.</p>
+    <p class="sub">Pick your part of India. Diet AI works out your calorie &amp; protein targets and builds a full day of <b style="color:var(--ink)">your</b> food — idli-sambar in the South, rajma-chawal in the North, macher jhol in the East. Private, in your browser.</p>
     <div class="cta">
       <a href="#planner" class="btn btn-primary">Build my free plan →</a>
       <a href="#tracker-sec" class="btn btn-ghost">Track my food</a>
@@ -361,7 +385,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
     <!-- PLANNER -->
     <div class="panel" data-panel="planner" id="panelPlanner" role="tabpanel" aria-labelledby="tabPlanner">
       <h2>Get your personalised plan</h2>
-      <p class="lead">Built on the Mifflin-St Jeor formula dietitians use — tuned to your goal, body, region and food preference.</p>
+      <p class="lead">Uses the Mifflin-St Jeor equation, a standard way to estimate calorie needs — tuned to your goal, body, region and food preference. Estimates, not medical advice.</p>
 
       <div style="margin-bottom:16px">
         <label id="lblRegion">Where in India do you eat?</label>
@@ -425,7 +449,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
         </div>
         <div class="bodyrow">
           <div class="bstat"><div class="v" id="rBMI">—</div><div class="n">Your BMI</div></div>
-          <div class="bstat"><div class="v" id="rHW" style="font-size:15px;padding-top:4px">—</div><div class="n">Healthy weight</div></div>
+          <div class="bstat"><div class="v" id="rHW" style="font-size:15px;padding-top:4px">—</div><div class="n">BMI 18.5–25 range</div></div>
           <div class="bstat"><div class="v" id="rWater" style="color:var(--w)">—</div><div class="n">Water / day</div></div>
         </div>
         <p class="hint" id="rNote"></p>
@@ -497,17 +521,29 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
     <div id="premLocked">
       <span class="tag">🔥 THE PREMIUM PACK</span>
       <h2>Monday is on us.<br/>See it before you pay a rupee.</h2>
-      <p class="pl">This is your real Monday — built from <b id="premRegion" style="color:var(--ink)">your region's</b> everyday food, at your calorie target, with a protein top-up where the meals fall short. The other six days work the same way.</p>
+      <p class="pl">This is your real Monday — built from <b id="premRegion" style="color:var(--ink)">your region's</b> everyday food, sized to your calorie target, with a protein top-up where the meals fall short. The day total below includes the top-up. The other six days work the same way.</p>
       <div id="previewOut"></div>
       <ul>
-        <li>✅ <span><b>All 7 days</b> — region-matched, veg / egg / non-veg, on your calorie target with a daily protein top-up</span></li>
+        <li>✅ <span><b>All 7 days</b> — region-matched, veg / egg / non-veg, sized to your calories, with a daily protein top-up and each day's true total</span></li>
         <li>✅ <span><b>A real grocery list</b> — actual quantities in grams and kilos, sorted by aisle</span></li>
         <li>✅ <span><b>Print / save as PDF</b> — fridge, family, or your cook</span></li>
-        <li>✅ <span><b>Protein cheat-sheet</b> — the cheapest Indian protein per rupee</span></li>
+        <li>✅ <span><b>Protein cheat-sheet</b> — common Indian protein sources compared</span></li>
       </ul>
       <div class="price"><span class="new">₹99</span><span class="lp">ONE-TIME · NOT A SUBSCRIPTION</span></div>
-      <a class="btn btn-primary" style="width:100%;background:linear-gradient(135deg,#ffb84d,#ff8a3d);box-shadow:0 8px 28px rgba(255,184,77,.3);color:#241303" id="payBtn" href="https://pages.razorpay.com/dietai-premium" target="_blank" rel="noopener">⚡ Unlock all 7 days — ₹99</a>
-      <p class="paynote">28 meals planned · one shopping list · yours to print. Secure via Razorpay — UPI, cards, netbanking. You'll come back here unlocked.</p>
+      <button type="button" class="btn btn-pay" id="payBtn">⚡ Unlock all 7 days — ₹99</button>
+      <p class="paynote">Pay with GPay, PhonePe, Paytm or any UPI app — or card / netbanking. Secure Razorpay checkout opens right here, and your week unlocks as soon as the payment goes through.</p>
+      <div id="payStatus" class="paystatus" role="status" aria-live="polite" hidden></div>
+      <details class="restore" id="restoreBox">
+        <summary>Already paid? Restore your purchase</summary>
+        <div class="restore-in">
+          <label for="restoreId">Payment ID from your Razorpay receipt</label>
+          <div class="restore-row">
+            <input id="restoreId" placeholder="pay_XXXXXXXXXXXXXX" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="44">
+            <button type="button" class="btn btn-ghost" id="restoreBtn">Restore</button>
+          </div>
+          <p class="hint">It starts with <b>pay_</b> and is in the email or SMS Razorpay sent when you paid.</p>
+        </div>
+      </details>
     </div>
     <div id="premUnlocked" style="display:none">
       <span class="tag">⭐ PREMIUM UNLOCKED</span>
@@ -523,7 +559,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       <div id="cheatSheet" style="margin-top:16px"></div>
       <div class="subcard" style="margin-top:16px">
         <b>🔑 Keep your access</b>
-        <p class="hint" style="margin-top:4px">Your unlock lives in this browser. If you clear your browsing data or switch phone, it's gone — unless you save your restore link now.</p>
+        <p class="hint" style="margin-top:4px">Your purchase is confirmed and saved in this browser. On a new phone, or after clearing your browser, use your restore link — or your payment ID <b id="payIdShow">—</b> under “Already paid?”.</p>
         <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="copyRestore()">📋 Copy my restore link</button>
       </div>
     </div>
@@ -534,7 +570,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
     <p class="lead">A real nutrition tool — not another locked-down app.</p>
     <div class="fcards">
       <div class="fcard"><div class="ic">🗺️</div><h3>Knows your region</h3><p>Idli in the South, thepla in the West, momos in the North-East. Plans built from what your kitchen already cooks.</p></div>
-      <div class="fcard"><div class="ic">🧮</div><h3>Honest numbers</h3><p>Mifflin-St Jeor + 1.8g protein/kg — the same formulas dietitians use. No fake "AI magic" overnight promises.</p></div>
+      <div class="fcard"><div class="ic">🧮</div><h3>Honest numbers</h3><p>Calories from the Mifflin-St Jeor equation, protein from your body weight, and every day's real total shown — including the top-up. Estimates, not overnight promises.</p></div>
       <div class="fcard"><div class="ic">🔒</div><h3>Private &amp; free, forever</h3><p>No account, no ads, no tracking cookies. Your weight, meals and logs are computed in your browser and never leave your device.</p></div>
     </div>
   </section>
@@ -543,8 +579,8 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
     <h2>Questions people ask</h2>
     <details><summary>Is it really free?</summary><div class="fa">Yes. The planner, tracker, water and weight logs are free forever. The optional Premium Pack (₹99 one-time) adds a full 7-day region-matched plan with a grocery list.</div></details>
     <details><summary>Will I have to eat boiled chicken and salads?</summary><div class="fa">No. Plans are built from your region's everyday meals — dal-roti, idli-sambar, macher jhol, thepla. Fat loss comes from portions and consistency, not exotic food.</div></details>
-    <details><summary>Where is my data stored?</summary><div class="fa">Your age, weight, height, plans, food log, water and weight history are stored only in your own browser and are never uploaded — we couldn't see them even if we wanted to. The one thing we do collect is anonymous usage counts (page views, which buttons get clicked, roughly where visitors came from) so we know which parts of the site are worth improving. No names, no personal data, no advertising trackers.</div></details>
-    <details><summary>How fast will I lose weight?</summary><div class="fa">The default deficit targets roughly 0.45 kg/week — the pace most dietitians consider sustainable. Slower is fine; consistency beats speed.</div></details>
+    <details><summary>Where is my data stored?</summary><div class="fa">Your age, weight, height, plans, food log, water and weight history are stored only in your own browser and are never uploaded — we couldn't see them even if we wanted to. The one thing we do collect is anonymous usage counts (page views, which buttons get clicked, roughly where visitors came from) so we know which parts of the site are worth improving. No names, no personal data, no advertising trackers. If you buy the Premium Pack, Razorpay handles the payment; we keep only the payment ID so your purchase can be confirmed and restored.</div></details>
+    <details><summary>How fast will I lose weight?</summary><div class="fa">The plan sets your calories about 500 kcal a day below your estimated maintenance. On paper that is roughly 0.45 kg a week, but real results vary from person to person and usually slow down over time. Slower is fine; consistency matters more than speed.</div></details>
   </section>
 </div>
 
@@ -704,12 +740,31 @@ function pickMeal(slotArr,dayIdx,preferProtein,dt){
   if(preferProtein){ok=ok.slice().sort(function(a,b){return b.p-a.p;});return ok[dayIdx%ok.length];}
   return ok[dayIdx%ok.length];
 }
+function clampScale(s){return Math.max(.75,Math.min(1.35,s));}
+function mealSums(meals,scale){var k=0,p=0;meals.forEach(function(m){k+=Math.round(m[2].k*scale);p+=Math.round(m[2].p*scale);});return {k:k,p:p};}
+/* Size the meals so that meals + protein top-up land on the calorie target. The top-up
+   depends on how much protein the (resized) meals give, so settle the two together,
+   then cap the top-up to whatever calories are left (+3% slack for rounding). */
+function fitDay(meals,baseK,target,protein,dt){
+  var scale=clampScale(target/baseK),s,tu;
+  for(var i=0;i<8;i++){
+    s=mealSums(meals,scale);
+    tu=topUp(protein-s.p,dt);
+    var next=clampScale((target-(tu?tu.kcal:0))/baseK);
+    if(Math.abs(next-scale)<0.002){scale=next;break;}
+    scale=next;
+  }
+  s=mealSums(meals,scale);
+  tu=topUp(protein-s.p,dt,Math.round(target*1.03)-s.k);
+  return {scale:scale,tu:tu,mealK:s.k,mealP:s.p,totK:s.k+(tu?tu.kcal:0),totP:s.p+(tu?tu.got:0)};
+}
 function buildDay(dayIdx,target,protein,rg,dt){
   var R=REGIONS[rg||region].meals,highP=protein>=100;
   var meals=[["Breakfast","🌅",pickMeal(R.B,dayIdx,false,dt)],["Lunch","☀️",pickMeal(R.L,dayIdx,highP,dt)],["Dinner","🌙",pickMeal(R.D,dayIdx+1,highP,dt)],["Snack","🍎",pickMeal(R.S,dayIdx,highP,dt)]];
   var k=0,p=0;meals.forEach(function(m){k+=m[2].k;p+=m[2].p;});
-  var scale=Math.max(.75,Math.min(1.35,target/k));
-  return {meals:meals,k:k,p:p,scale:scale};
+  var f=fitDay(meals,k,target,protein,dt||diet);
+  /* k/p: the dishes as described. mealK/mealP: as portioned. totK/totP: with the top-up. */
+  return {meals:meals,k:k,p:p,scale:f.scale,tu:f.tu,mealK:f.mealK,mealP:f.mealP,totK:f.totK,totP:f.totP,target:target,protein:protein};
 }
 /* The planner's formulas (Mifflin-St Jeor, a fixed deficit) are adult formulas;
    the disclaimer already sends under-18s to a doctor. One constant to change. */
@@ -734,8 +789,8 @@ function generatePlan(){
   if(bmiChk<12||bmiChk>80){markField('weight','Those height and weight numbers don\'t fit together — please check both.');return;}
   var bmr=10*w+6.25*h-5*age+(sex==='male'?5:-161);
   var tdee=bmr*act,target=tdee,lbl="calories to maintain";
-  if(goal==='lose'){target=tdee-500;lbl="calories/day to lose fat (~0.45 kg/week)";}
-  if(goal==='gain'){target=tdee+300;lbl="calories/day to build muscle";}
+  if(goal==='lose'){target=tdee-500;lbl="calories/day for fat loss (about 500 below maintenance)";}
+  if(goal==='gain'){target=tdee+300;lbl="calories/day for muscle gain (about 300 above maintenance, with training)";}
   var floor=sex==='male'?1500:1200,floored=false;
   if(target<floor){target=floor;floored=true;}
   target=Math.round(target/10)*10;
@@ -765,20 +820,21 @@ function generatePlan(){
   $('rBMI').textContent=bmi.toFixed(1);
   $('rHW').textContent=hwLo+'–'+hwHi+' kg';
   $('rWater').textContent=waterL.toFixed(2).replace(/\.?0+$/,'')+' L';
-  $('rNote').innerHTML="Estimated maintenance: <b>"+Math.round(tdee).toLocaleString()+" kcal</b>. BMI is a rough screen, not a diagnosis."+(floored?" We raised your target to a safe minimum of "+floor+" kcal — going lower isn't recommended.":"");
+  $('rNote').innerHTML="Estimated maintenance: <b>"+Math.round(tdee).toLocaleString()+" kcal</b>. BMI is a rough screen, not a diagnosis."+(floored?" We raised your target to "+floor+" kcal, the lowest this planner goes. For a lower target, talk to a doctor or registered dietitian.":"");
 
   var day=buildDay(0,target,protein);
-  var host=$('mealPlan');host.innerHTML='';
-  var dayP=0;
+  var host=$('mealPlan'),html='';
   day.meals.forEach(function(m,i){
-    var sk=Math.round(m[2].k*day.scale),sp=Math.round(m[2].p*day.scale);dayP+=sp;
-    host.innerHTML+='<div class="meal" style="animation-delay:'+(i*90)+'ms"><div class="ic">'+m[1]+'</div><div><div class="mt">'+esc(m[0])+' — '+esc(m[2].t)+'</div><div class="mi">'+esc(m[2].d)+'</div></div><div class="mk">'+sk+' kcal<br><span style="color:var(--p)">'+sp+'g P</span></div></div>';
+    var sk=Math.round(m[2].k*day.scale),sp=Math.round(m[2].p*day.scale);
+    html+='<div class="meal" style="animation-delay:'+(i*90)+'ms"><div class="ic">'+m[1]+'</div><div><div class="mt">'+esc(m[0])+' — '+esc(m[2].t)+'</div><div class="mi">'+esc(m[2].d)+'</div></div><div class="mk">'+sk+' kcal<br><span style="color:var(--p)">'+sp+'g P</span></div></div>';
   });
-  var tu=topUp(protein-dayP,diet);
-  if(tu)host.innerHTML+='<div class="meal" style="animation-delay:400ms;border-color:rgba(90,162,255,.35)"><div class="ic" style="background:rgba(90,162,255,.14)">➕</div><div><div class="mt">Protein top-up</div><div class="mi">'+esc(topUpText(tu))+'</div></div><div class="mk" style="color:var(--p)">'+(dayP+tu.got)+'g P<br>total</div></div>';
+  var tu=day.tu;
+  if(tu)html+='<div class="meal" style="animation-delay:400ms;border-color:rgba(90,162,255,.35)"><div class="ic" style="background:rgba(90,162,255,.14)">➕</div><div><div class="mt">Protein top-up</div><div class="mi">'+esc(topUpText(tu))+'</div></div><div class="mk" style="color:var(--p)">'+(tu.kcal?tu.kcal+' kcal<br>':'')+'+'+tu.got+'g P</div></div>';
+  host.innerHTML=html+dayTotalHTML(day);
   $('mealHead').textContent='🍽️ Your day — '+REGIONS[region].n+(region==='pan'?'':' India')+' style';
   var pct=Math.round(Math.abs(1-day.scale)*100);
-  $('portionNote').textContent=day.scale.toFixed(2)==='1.00'?'Portions shown hit your target as-is.':'Portions scaled ×'+day.scale.toFixed(2)+' to fit your '+target.toLocaleString()+' kcal target — adjust rice/roti up or down ~'+pct+'%.';
+  $('portionNote').textContent=day.scale.toFixed(2)==='1.00'?'Portions as described hit your target'+(tu&&tu.kcal?', with the top-up counted':'')+'.':
+    'Portions scaled ×'+day.scale.toFixed(2)+' so the day'+(tu&&tu.kcal?', including the protein top-up,':'')+' fits your '+target.toLocaleString()+' kcal target — eat about '+pct+'% '+(day.scale<1?'less':'more')+' rice/roti than written.';
 
   lastPlan={target:target,protein:protein,carbs:carbs,fat:fat,water:waterL,region:region,diet:diet,w:w};
   try{localStorage.setItem('dietai_plan',JSON.stringify(lastPlan));}catch(e){}
@@ -794,6 +850,8 @@ function planText(){
   var lines=['🥗 *My Diet AI plan* ('+REGIONS[lastPlan.region].n+', '+(lastPlan.diet==='veg'?'veg':lastPlan.diet==='egg'?'veg+egg':'non-veg')+')',
    '🎯 '+lastPlan.target.toLocaleString()+' kcal · '+lastPlan.protein+'g protein · '+lastPlan.water+'L water',''];
   day.meals.forEach(function(m){lines.push(m[1]+' *'+m[0]+'*: '+m[2].t+' — '+m[2].d+' ('+Math.round(m[2].k*day.scale)+' kcal)');});
+  if(day.tu&&day.tu.combo.length)lines.push('➕ *Protein top-up*: '+day.tu.combo.join(' + ')+' ('+day.tu.kcal+' kcal)');
+  lines.push('📊 Day total: '+day.totK.toLocaleString()+' kcal · '+day.totP+'g protein');
   lines.push('','Get yours free → https://dietai.in/?utm_source=whatsapp');
   return lines.join('\n');
 }
@@ -918,105 +976,338 @@ function renderWeight(){
   $('wHint').textContent='Latest: '+last.w+' kg · '+(delta<=0?'':'+')+delta+' kg over last '+ws.length+' entries.';
 }
 
-/* ---------- premium (dietai_premium + ?premium=unlocked) ---------- */
-function isPremium(){try{return localStorage.getItem('dietai_premium')==='1';}catch(e){return false;}}
+/* ---------- premium: unlock only after the server confirms the payment ----------
+   History: the pack used to unlock from a URL — Razorpay's payment page sent buyers to
+   /?premium=unlocked and this script believed it. Anyone who typed that address got the
+   pack free, the "restore link" was that same universal URL, and the funnel counted a
+   sale every time the URL was opened.
+
+   Now: the Worker (worker/index.js, deployed as dietai-events) creates a Razorpay order,
+   Razorpay's own checkout opens on this page, and after paying the Worker checks
+   Razorpay's signature and the payment, then hands back a signed unlock token. Only that
+   token unlocks. A typed URL does nothing.
+
+   Honest limit: the 7-day plan is still built in the browser, so someone editing this
+   script in devtools could get round it. Closing that means building the plan on a
+   server — not worth it at ₹99. What is closed is the free link anyone could share.
+
+   UPI on a phone: paying usually means switching to GPay/PhonePe, and the phone may
+   kill this tab meanwhile. The order ID is saved before checkout opens, so when the
+   customer comes back the page asks the Worker whether that order got paid. */
+var PAY_API='https://dietai-events.sudhanshuxg.workers.dev';
+var RZP_JS='https://checkout.razorpay.com/v1/checkout.js';
+var UNLOCK_KEY='dietai_unlock',PENDING_KEY='dietai_pending_order';
+var RECHECK_MS=7*864e5;            /* re-confirm a saved unlock with the server once a week */
+var TOKEN_FMT=/^v1\.pay_[A-Za-z0-9]{6,40}\.\d{9,11}\.[a-f0-9]{64}$/;
+var PAY_LABEL='⚡ Unlock all 7 days — ₹99';
 function logEv(ev,meta){try{if(window.dietaiLog)window.dietaiLog(ev,meta);}catch(e){}}
-(function(){
-  try{
-    var q=new URLSearchParams(location.search);
-    if(q.get('premium')==='unlocked'){
-      var firstUnlock=localStorage.getItem('dietai_premium')!=='1';
-      /* Log the sale BEFORE replaceState wipes the query string. This is the
-         single event that tells us whether the product earns anything. */
-      try{if(window.dietaiLogOnce)window.dietaiLogOnce('premium_unlocked',{first:firstUnlock});}catch(e){}
-      localStorage.setItem('dietai_premium','1');
-      if(firstUnlock)localStorage.setItem('dietai_premium_at',new Date().toISOString());
-      if(history.replaceState)history.replaceState(null,'',location.pathname);
-      if(firstUnlock)setTimeout(function(){
-        toast('🎉 Premium unlocked. Build your week below.');
-        var p=$('premium');if(p)p.scrollIntoView({behavior:'smooth'});
-      },600);
-    }
-  }catch(e){}
-  if(isPremium()){
-    $('premLocked').style.display='none';$('premUnlocked').style.display='block';
-  }
-  var pay=$('payBtn');
-  if(pay){
-    if(!pay.getAttribute('href')||pay.getAttribute('href').indexOf('razorpay')<0){
-      pay.removeAttribute('href');
-      pay.onclick=function(e){e.preventDefault();toast('Payments not set up yet — check back soon!');};
-    }else{
-      /* The real CTA. The old tracker listened for #premiumBtn, which only ever
-         existed in the retired premium.js — so no CTA click was ever recorded. */
-      pay.addEventListener('click',function(){
-        logEv('premium_click',{hasPlan:!!lastPlan,region:lastPlan?lastPlan.region:null});
-      });
-    }
-  }
-})();
-/* The pay button opens Razorpay in a new tab, and Razorpay redirects THAT tab
-   back unlocked. The tab the customer started in kept showing the ₹99 offer
-   with a live pay button — "did my payment fail?", a second payment, a refund
-   request. Unlock this tab as soon as another tab records the purchase. */
-function syncPremium(){
-  if(isPremium()&&$('premLocked').style.display!=='none'){
-    renderPremium();
-    toast('🎉 Payment received — your week is unlocked below.');
-    var p=$('premium');if(p)p.scrollIntoView({behavior:'smooth'});
-  }
+function readUnlock(){try{var u=JSON.parse(localStorage.getItem(UNLOCK_KEY)||'null');return u&&typeof u.t==='string'&&TOKEN_FMT.test(u.t)?u:null;}catch(e){return null;}}
+function isPremium(){return !!readUnlock();}
+function unlockPayId(){var u=readUnlock();return u?u.t.split('.')[1]:null;}
+function saveUnlock(token){try{localStorage.setItem(UNLOCK_KEY,JSON.stringify({t:token,v:Date.now()}));localStorage.removeItem(PENDING_KEY);}catch(e){}}
+function dropUnlock(){try{localStorage.removeItem(UNLOCK_KEY);}catch(e){}}
+function readPending(){try{var p=JSON.parse(localStorage.getItem(PENDING_KEY)||'null');return p&&/^order_[A-Za-z0-9]{6,40}$/.test(p.id)?p:null;}catch(e){return null;}}
+function clearPending(){try{localStorage.removeItem(PENDING_KEY);}catch(e){}}
+/* The old flag unlocked from the URL alone; it proves nothing, so it no longer counts. */
+try{localStorage.removeItem('dietai_premium');}catch(e){}
+
+/* POST JSON to the Worker. Resolves with the parsed body plus _status; rejects only on
+   a network failure or a 15-second timeout. */
+function payApi(path,body){
+  var ctl=window.AbortController?new AbortController():null,tm=null;
+  if(ctl)tm=setTimeout(function(){ctl.abort();},15000);
+  return fetch(PAY_API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{}),cache:'no-store',signal:ctl?ctl.signal:undefined})
+    .then(function(r){return r.json().catch(function(){return {};}).then(function(d){if(tm)clearTimeout(tm);d=d&&typeof d==='object'?d:{};d._status=r.status;return d;});},
+          function(e){if(tm)clearTimeout(tm);throw e;});
 }
-window.addEventListener('storage',function(e){if(e.key==='dietai_premium'&&e.newValue==='1')syncPremium();});
-window.addEventListener('focus',syncPremium);
-document.addEventListener('visibilitychange',function(){if(!document.hidden)syncPremium();});
-/* Copy the restore link so a customer who clears their browser, or switches
-   phone, can get their purchase back. Without this, "yours forever" is a promise
-   the site cannot keep. */
+function payMsg(html,kind){var s=$('payStatus');if(!s)return;if(!html){s.hidden=true;s.innerHTML='';return;}s.className='paystatus'+(kind?' '+kind:'');s.innerHTML=html;s.hidden=false;}
+function payBusy(on,label){var b=$('payBtn');if(!b)return;b.disabled=!!on;b.setAttribute('aria-busy',on?'true':'false');b.textContent=on?(label||'Opening secure checkout…'):PAY_LABEL;}
+function failText(er){
+  er=er||{};
+  if(er.reason==='payment_timed_out')return 'The payment request timed out before it was approved in your UPI app. <b>No money was taken.</b> Tap the button again and approve within a few minutes — or pick a different app.';
+  if(er.reason==='payment_cancelled')return 'The payment was cancelled. <b>No money was taken.</b> You can try again whenever you like.';
+  var d=er.description?esc(String(er.description).slice(0,160))+' ':'';
+  return 'That payment didn\'t go through. '+d+'<b>No money was taken.</b> Try again, or use another UPI app, card or netbanking.';
+}
+
+/* Razorpay's checkout script is fetched early — when the offer scrolls into view or the
+   finger lands on the button — so tapping "Unlock" opens checkout without a wait. */
+var rzpLoading=null;
+function loadRzp(){
+  if(window.Razorpay)return Promise.resolve();
+  if(rzpLoading)return rzpLoading;
+  rzpLoading=new Promise(function(res,rej){
+    var s=document.createElement('script');s.src=RZP_JS;s.async=true;
+    s.onload=function(){window.Razorpay?res():(rzpLoading=null,rej(new Error('checkout unavailable')));};
+    s.onerror=function(){rzpLoading=null;s.remove();rej(new Error('checkout unavailable'));};
+    document.head.appendChild(s);
+  });
+  return rzpLoading;
+}
+
+var checkoutOpen=false;
+function startCheckout(){
+  logEv('premium_click',{hasPlan:!!lastPlan,region:lastPlan?lastPlan.region:null});
+  if(isPremium()){renderPremium();return;}
+  payMsg('');payBusy(true);
+  Promise.all([payApi('/pay/order',{region:lastPlan?lastPlan.region:region,diet:lastPlan?lastPlan.diet:diet}),loadRzp()]).then(function(r){
+    var o=r[0];
+    if(!o.order_id||!o.key_id)throw o;
+    try{localStorage.setItem(PENDING_KEY,JSON.stringify({id:o.order_id,at:Date.now()}));}catch(e){}
+    openCheckout(o);
+  }).catch(function(e){
+    payBusy(false);
+    var why=(e&&e.error)||(e&&e.message)||'network';
+    logEv('checkout_error',{why:String(why).slice(0,40)});
+    payMsg(why==='payments_not_configured'
+      ?'Payments are being switched on right now — please try again in a few minutes.'
+      :'We couldn\'t open the secure checkout — check your internet connection and tap the button again. <b>Nothing was charged.</b>','err');
+  });
+}
+function openCheckout(o){
+  var settled=false;
+  var rz=new Razorpay({
+    key:o.key_id,order_id:o.order_id,amount:o.amount,currency:o.currency||'INR',
+    name:'Diet AI',description:'7-day plan + grocery list',image:'https://dietai.in/icon-192.png',
+    notes:{product:'dietai'},
+    theme:{color:'#ffb84d'},
+    retry:{enabled:true,max_count:4},
+    /* UPI first: almost every Indian buyer pays by UPI. Cards and netbanking stay below it. */
+    config:{display:{blocks:{upi:{name:'Pay with any UPI app',instruments:[{method:'upi'}]}},sequence:['block.upi'],preferences:{show_default_blocks:true}}},
+    /* ask before closing — a stray tap while waiting for the UPI app used to lose the sale */
+    modal:{confirm_close:true,escape:false,backdropclose:false,ondismiss:function(){
+      checkoutOpen=false;if(settled)return;payBusy(false);logEv('checkout_closed');
+      checkPending({reason:'closed'});
+    }},
+    handler:function(resp){settled=true;checkoutOpen=false;confirmPayment(o.order_id,resp,0);}
+  });
+  rz.on('payment.failed',function(r){
+    var er=(r&&r.error)||{};
+    logEv('payment_failed',{reason:String(er.reason||'').slice(0,40),step:String(er.step||'').slice(0,30),source:String(er.source||'').slice(0,20)});
+    payMsg(failText(er),'err');
+  });
+  logEv('checkout_opened');
+  checkoutOpen=true;payBusy(false);
+  rz.open();
+}
+function confirmPayment(orderId,resp,attempt){
+  payBusy(true,'Confirming your payment…');
+  payMsg('Payment received — confirming it with Razorpay…','ok');
+  payApi('/pay/verify',{order_id:orderId,payment_id:resp.razorpay_payment_id,signature:resp.razorpay_signature}).then(function(d){
+    if(d.ok&&d.token){unlockNow(d.token,'checkout');return;}
+    if(d._status>=500&&attempt<3){setTimeout(function(){confirmPayment(orderId,resp,attempt+1);},1500*(attempt+1));return;}
+    payBusy(false);
+    checkPending({reason:'verify_failed',paymentId:resp.razorpay_payment_id});
+  },function(){
+    if(attempt<3){setTimeout(function(){confirmPayment(orderId,resp,attempt+1);},1500*(attempt+1));return;}
+    payBusy(false);
+    payMsg('Your payment went through, but we couldn\'t reach our server to confirm it. Keep this payment ID: <b>'+esc(resp.razorpay_payment_id)+'</b>. Reload the page in a minute — or enter it under “Already paid?” below.','err');
+  });
+}
+function unlockNow(token,via){
+  var first=!isPremium();
+  saveUnlock(token);
+  if(via==='checkout'||via==='recovery'){try{if(first&&window.dietaiLogOnce)window.dietaiLogOnce('premium_unlocked',{via:via});}catch(e){}}
+  else logEv('restore_used',{via:via});
+  payMsg('');payBusy(false);
+  renderPremium();
+  toast(via==='checkout'||via==='recovery'?'🎉 Payment confirmed — your week is unlocked below.':'✅ Purchase restored — your week is below.');
+  var p=$('premium');if(p)p.scrollIntoView({behavior:'smooth'});
+}
+
+/* Ask the Worker whether the saved order got paid. Used after checkout closes, after a
+   failed confirmation, and on every page load while an order is pending — the case where
+   the UPI app took over the phone and the browser dropped this tab. */
+var pendingPoll=null;
+function checkPending(opt){
+  opt=opt||{};
+  var pd=readPending();if(!pd||isPremium())return;
+  var age=Date.now()-(+pd.at||0);
+  if(age>36*3600e3){clearPending();return;}
+  if(!opt.quiet)payMsg('Checking your payment…','ok');
+  payApi('/pay/status',{order_id:pd.id}).then(function(d){
+    if(d.paid&&d.token){unlockNow(d.token,'recovery');return;}
+    var tries=opt.tries||0;
+    if(d.state==='created'&&age<15*60e3&&tries<24){
+      /* a UPI request is out and not answered yet — keep checking for about two minutes */
+      payMsg('Waiting for your UPI app to confirm… keep this page open. If you already approved it, this updates by itself.','ok');
+      clearTimeout(pendingPoll);
+      pendingPoll=setTimeout(function(){checkPending({quiet:true,tries:tries+1,reason:opt.reason});},5000);
+      return;
+    }
+    if(d.state==='failed'){clearPending();payMsg(failText({reason:d.reason,description:d.description}),'err');return;}
+    if(d._status===503){if(!opt.quiet)payMsg('Payments are being switched on right now — please try again in a few minutes.','warn');return;}
+    if(d._status>=400&&d._status!==404){if(!opt.quiet)payMsg('We couldn\'t check your payment just now. If money left your account, reload in a minute or use “Already paid?” with the payment ID from Razorpay\'s SMS or email.','warn');return;}
+    if(opt.reason==='verify_failed'){
+      payMsg('We couldn\'t confirm that payment yet. If money left your account, enter the payment ID <b>'+esc(opt.paymentId||'')+'</b> under “Already paid?” below, or reload in a minute.','err');
+      return;
+    }
+    clearPending();
+    if(opt.reason==='closed')payMsg('Checkout closed — <b>nothing was charged</b>. Tap the button whenever you\'re ready.','');
+    else if(!opt.quiet)payMsg('');
+  },function(){
+    if(!opt.quiet)payMsg('We couldn\'t reach our server to check your payment. It will check again when you come back to this page.','warn');
+  });
+}
+
+/* Restore on a new phone: by payment ID (from Razorpay's receipt) or with a restore link. */
+function restoreById(){
+  var inp=$('restoreId'),v=(inp.value||'').trim();
+  inp.removeAttribute('aria-invalid');
+  if(!/^pay_[A-Za-z0-9]{6,40}$/.test(v)){markField('restoreId','That doesn\'t look like a payment ID — it starts with pay_ and is in your Razorpay receipt.');return;}
+  var b=$('restoreBtn');b.disabled=true;b.textContent='Checking…';
+  payApi('/pay/restore',{payment_id:v}).then(function(d){
+    b.disabled=false;b.textContent='Restore';
+    if(d.ok&&d.token){unlockNow(d.token,'payment_id');return;}
+    payMsg(d.error==='refunded'?'That payment was refunded, so it can\'t unlock the pack.'
+      :d.error==='not_paid'?'That payment hasn\'t gone through (Razorpay says: '+esc(d.status||'pending')+'). If money left your account, banks usually return it within 5–7 working days.'
+      :d.error==='payments_not_configured'?'Restoring is being switched on right now — please try again in a few minutes.'
+      :d.error==='too_many_requests'?'Too many tries — please wait a few minutes and try again.'
+      :'We couldn\'t find a Diet AI payment with that ID. Check it against your Razorpay email or SMS.','err');
+  },function(){b.disabled=false;b.textContent='Restore';payMsg('Couldn\'t reach our server — check your connection and try again.','err');});
+}
 function copyRestore(){
-  var url='https://dietai.in/?premium=unlocked';
+  var u=readUnlock();if(!u){toast('Unlock the pack first.');return;}
+  var url='https://dietai.in/?restore='+encodeURIComponent(u.t);
   function done(){toast('Restore link copied — send it to yourself on WhatsApp.');logEv('restore_copied');}
   try{
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(done,function(){prompt('Copy your restore link:',url);});return;}
   }catch(e){}
   prompt('Copy your restore link:',url);
 }
+/* Re-confirm a saved unlock once a week. A rejected token (e.g. after the Razorpay key
+   was rotated) is re-issued from the payment ID inside it; only a payment Razorpay says
+   is refunded, unpaid or not ours locks the pack again. Offline: keep the unlock. */
+function recheckUnlock(){
+  var u=readUnlock();if(!u||Date.now()-(+u.v||0)<RECHECK_MS)return;
+  payApi('/pay/check',{token:u.t}).then(function(d){
+    if(d.ok){saveUnlock(u.t);return;}
+    if(d._status!==200)return;
+    payApi('/pay/restore',{payment_id:u.t.split('.')[1]}).then(function(r){
+      if(r.ok&&r.token){saveUnlock(r.token);return;}
+      if(r._status===404||r._status===410||r._status===402){dropUnlock();renderPremium();
+        toast('We couldn\'t confirm your purchase. If you paid, restore it with your payment ID.');}
+    },function(){});
+  },function(){});
+}
+
+/* Links that arrive with a query: ?restore=<token> (a customer's own restore link) and the
+   retired ?premium=unlocked (old payment-page redirect, old restore links, people who
+   found the trick). Both are removed from the address bar. */
+(function(){
+  var q;try{q=new URLSearchParams(location.search);}catch(e){return;}
+  var t=q.get('restore'),legacy=q.get('premium')==='unlocked';
+  if(t!==null||legacy){
+    q.delete('restore');q.delete('premium');
+    var rest=q.toString();
+    try{if(history.replaceState)history.replaceState(null,'',location.pathname+(rest?'?'+rest:'')+location.hash);}catch(e){}
+  }
+  if(t&&TOKEN_FMT.test(t)&&!isPremium()){
+    payMsg('Restoring your purchase…','ok');
+    payApi('/pay/check',{token:t}).then(function(d){
+      if(d.ok){unlockNow(t,'link');return;}
+      if(d._status===200){
+        payApi('/pay/restore',{payment_id:t.split('.')[1]}).then(function(r){
+          if(r.ok&&r.token)unlockNow(r.token,'link');
+          else payMsg('That restore link didn\'t check out. If you paid, enter your payment ID under “Already paid?” below.','err');
+        },function(){payMsg('Couldn\'t reach our server — open your restore link again when you\'re online.','warn');});
+        return;
+      }
+      payMsg('Couldn\'t restore right now — please open your restore link again in a few minutes.','warn');
+    },function(){payMsg('Couldn\'t reach our server — open your restore link again when you\'re online.','warn');});
+  }
+  if(legacy&&!isPremium()){
+    logEv('legacy_unlock_link');
+    setTimeout(function(){
+      var rb=$('restoreBox');if(rb)rb.open=true;
+      payMsg('That old unlock link no longer works on its own. If you paid, enter the payment ID from your Razorpay receipt below and your pack comes straight back.','warn');
+    },300);
+  }
+})();
+
+(function(){
+  var pay=$('payBtn');
+  if(pay){
+    pay.addEventListener('click',startCheckout);
+    ['pointerenter','touchstart','focus'].forEach(function(ev){pay.addEventListener(ev,function(){loadRzp().catch(function(){});},{passive:true,once:true});});
+  }
+  var rb=$('restoreBtn');if(rb)rb.addEventListener('click',restoreById);
+  var ri=$('restoreId');if(ri)ri.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();restoreById();}});
+  var prem=$('premium');
+  if(prem&&'IntersectionObserver' in window&&!isPremium()){
+    var io=new IntersectionObserver(function(es){if(es[0].isIntersecting){io.disconnect();loadRzp().catch(function(){});}},{rootMargin:'200px'});
+    io.observe(prem);
+  }
+})();
+/* Another tab (a restore link, or the same site open twice) unlocking shows up here too. */
+function syncPremium(){
+  if(isPremium()&&$('premLocked').style.display!=='none'){
+    renderPremium();
+    toast('🎉 Your week is unlocked below.');
+    var p=$('premium');if(p)p.scrollIntoView({behavior:'smooth'});
+  }
+}
+window.addEventListener('storage',function(e){if(e.key===UNLOCK_KEY&&e.newValue)syncPremium();});
+window.addEventListener('focus',syncPremium);
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden)return;
+  syncPremium();
+  if(!checkoutOpen&&readPending()&&!isPremium())checkPending({quiet:true});
+});
 /* ---------- protein top-up ----------
-   Portions are scaled to hit the CALORIE target, which says nothing about
-   protein. A South-Indian veg day lands near 65g against a 147g target, so the
-   promise "every day hits your calories and protein" was not true — the single
-   most checkable claim in the paid pack. Rather than quietly drop the claim,
-   close the gap: work out the shortfall and name cheap Indian ways to fill it. */
-/* Greedy fill from cheap Indian sources, each capped at an amount a person will
-   actually eat in a day. 150g of dry soya closes the arithmetic and nobody eats
-   it, so the caps matter more than the maths. If the caps can't close the gap we
-   say so instead of pretending. */
+   Portions are scaled to the CALORIE target, which says nothing about protein. A
+   South-Indian veg day lands near 65g against a 147g target, so the plan names cheap
+   Indian ways to close the gap.
+
+   The top-up's own calories used to be left out. 200g of paneer is ~530 kcal and 60g of
+   soya ~210 kcal, yet day totals showed the meals alone: across 735 plan-days (7 regions
+   × 3 diets × 5 body types × 7 days) the real day ran a median ~670 kcal over target, up
+   to ~1,300 — more than the whole 500 kcal fat-loss deficit. Now the top-up is costed,
+   the meals shrink to make room for it (down to the usual 75% floor), and the top-up is
+   capped so the day stays within ~3% of the calorie target. Where that leaves protein
+   short, the day says so. Calories win that trade-off because the goal people pick is
+   usually fat loss; the protein target itself (1.8 g/kg) is an open nutrition decision. */
+/* Ordered by protein per calorie (soya ≈15g per 100 kcal, eggs ≈7.7, paneer ≈6.8,
+   curd ≈5.4), each capped at an amount a person will actually eat in a day. kcal:
+   soya chunks 345/100g (pack label), eggs 78 each, paneer 265/100g and curd ~65/100g —
+   the last three are the same figures as the tracker's food list. */
 var PBOOST=[
-  {n:'soya chunks',k:'soya',per:0.52,step:10,max:60,unit:'g',tag:'v'},
-  {n:'paneer',k:'paneer',per:0.18,step:25,max:200,unit:'g',tag:'v'},
-  {n:'boiled eggs',k:'egg',per:6,step:1,max:4,unit:'no',tag:'e'},
-  {n:'curd',k:'curd',per:0.035,step:50,max:400,unit:'g',tag:'v'}
+  {n:'soya chunks',k:'soya',per:0.52,kc:3.45,step:10,max:60,unit:'g',tag:'v'},
+  {n:'boiled eggs',k:'egg',per:6,kc:78,step:1,max:4,unit:'no',tag:'e'},
+  {n:'paneer',k:'paneer',per:0.18,kc:2.65,step:25,max:200,unit:'g',tag:'v'},
+  {n:'curd',k:'curd',per:0.035,kc:0.65,step:50,max:400,unit:'g',tag:'v'}
 ];
-function topUp(gapG,dietTag){
+/* budgetK: calories the top-up may use (omit for "whatever the gap needs"). */
+function topUp(gapG,dietTag,budgetK){
   if(!(gapG>8))return null;
   var allow=dietTag==='veg'?['v']:['v','e'];
-  var left=gapG,combo=[],items=[],got=0;
+  var left=gapG,room=budgetK==null?Infinity:Math.max(0,budgetK);
+  var combo=[],items=[],got=0,kcal=0,byCal=false;
   PBOOST.forEach(function(b){
     if(left<=4||allow.indexOf(b.tag)<0)return;
-    var amt=Math.min(b.max,Math.ceil((left/b.per)/b.step)*b.step);
+    var want=Math.min(b.max,Math.ceil((left/b.per)/b.step)*b.step);
+    var amt=Math.min(want,Math.floor((room/b.kc)/b.step)*b.step);
+    if(amt<want)byCal=true;
     if(amt<=0)return;
-    var gives=amt*b.per;
+    var gives=amt*b.per,cost=Math.round(amt*b.kc);
     combo.push(b.unit==='no'?amt+' '+b.n:amt+'g '+b.n);
-    items.push({k:b.k,amt:amt});
-    got+=gives;left-=gives;
+    items.push({k:b.k,amt:amt,kcal:cost});
+    got+=gives;left-=gives;kcal+=cost;room-=cost;
   });
-  return {gap:Math.round(gapG),combo:combo,items:items,got:Math.round(got),short:Math.max(0,Math.round(gapG-got))};
+  return {gap:Math.round(gapG),combo:combo,items:items,got:Math.round(got),kcal:kcal,short:Math.max(0,Math.round(gapG-got)),byCal:byCal};
 }
 function topUpText(t){
-  return t.combo.join(' + ')+' (+'+t.got+'g)'+(t.short>6?' — still ~'+t.short+'g short; that is the honest ceiling for these meals':'');
+  var s=t.combo.length?t.combo.join(' + ')+' (+'+t.got+'g protein, +'+t.kcal+' kcal)':'no room left in today\'s calories for a top-up';
+  if(t.short>8)s+=' — still ~'+t.short+'g short of your protein goal'+(t.byCal?'; more would take you over your calories':'; that is the honest ceiling for these meals');
+  return s;
 }
-function topUpHTML(gapG,dietTag){
-  var t=topUp(gapG,dietTag); if(!t)return'';
-  return '<div style="border-top:1px solid var(--line);padding-top:6px;margin-top:2px"><b style="color:var(--p)">➕ Protein top-up:</b> <span style="color:var(--muted)">'+esc(topUpText(t))+'</span></div>';
+/* One line under a day: the real total, meals plus top-up, against the target. */
+function dayTotalHTML(day){
+  var diff=day.totK-day.target,note='';
+  if(diff>Math.max(60,day.target*0.05))note='Even with the smallest portions we suggest, this day is ~'+diff+' kcal over your target. Skip part of the top-up if you\'d rather stay on target.';
+  else if(-diff>Math.max(60,day.target*0.05))note='This day comes to ~'+(-diff)+' kcal under your target — add a roti or a little rice to make it up.';
+  return '<div class="daytot"><span>Day total'+(day.tu&&day.tu.kcal?'<i>meals + protein top-up</i>':'')+'</span><span>'+day.totK.toLocaleString()+' kcal · '+day.totP+'g protein</span></div>'+
+    (note?'<p class="daynote">'+esc(note)+'</p>':'');
 }
 
 /* ---------- grocery engine ----------
@@ -1171,31 +1462,33 @@ function previewRows(day){
     return '<div class="pv-row"><div class="ic">'+m[1]+'</div><div class="tx"><div class="tt">'+esc(m[0])+' \u2014 '+esc(m[2].t)+'</div><div class="td">'+esc(m[2].d)+'</div></div><div class="kk">'+Math.round(m[2].k*day.scale)+' kcal<br>'+Math.round(m[2].p*day.scale)+'g P</div></div>';
   }).join('');
 }
+function topUpRow(tu){
+  return '<div class="pv-row" style="border-color:rgba(90,162,255,.35)"><div class="ic">➕</div><div class="tx"><div class="tt">Protein top-up</div><div class="td">'+esc(topUpText(tu))+'</div></div><div class="kk" style="color:var(--p)">'+(tu.kcal?tu.kcal+' kcal<br>':'')+'+'+tu.got+'g P</div></div>';
+}
 function renderPremium(){
   if(isPremium()){
     $('premLocked').style.display='none';$('premUnlocked').style.display='block';
+    var pid=$('payIdShow');if(pid)pid.textContent=unlockPayId()||'—';
     if(lastPlan&&!lastWeek)buildWeek(true);
     return;
   }
+  $('premLocked').style.display='block';$('premUnlocked').style.display='none';
   var host=$('previewOut');if(!host)return;
   if(!lastPlan){
-    host.innerHTML='<div class="pv-empty">Fill in your age, height and weight above and hit <b>Get my plan</b> \u2014 your free Monday appears here.</div>';
+    host.innerHTML='<div class="pv-empty">Fill in your age, height and weight above and hit <b>Get my plan</b> — your free Monday appears here.</div>';
     return;
   }
   $('premRegion').textContent=REGIONS[lastPlan.region].n==='Pan-India'?"India's":REGIONS[lastPlan.region].n+" India's";
   var day=buildDay(0,lastPlan.target,lastPlan.protein,lastPlan.region,lastPlan.diet);
-  var pvP=0;day.meals.forEach(function(m){pvP+=Math.round(m[2].p*day.scale);});
-  var pvTu=topUp(lastPlan.protein-pvP,lastPlan.diet);
   var rest=['Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(function(dn,i){
     var d=buildDay(i+1,lastPlan.target,lastPlan.protein,lastPlan.region,lastPlan.diet);
-    return '<div>'+esc(dn)+' \u2014 '+esc(d.meals.map(function(m){return m[2].t;}).join(' \u00b7 '))+'</div>';
+    return '<div>'+esc(dn)+' — '+esc(d.meals.map(function(m){return m[2].t;}).join(' · '))+'</div>';
   }).join('');
   host.innerHTML=
-    '<div class="pv"><div class="pv-head"><span>\ud83c\udf05 Monday \u00b7 '+lastPlan.target.toLocaleString()+' kcal \u00b7 '+lastPlan.protein+'g protein</span><span class="free">FREE</span></div>'+
-    previewRows(day)+
-    (pvTu?'<div class="pv-row" style="border-color:rgba(90,162,255,.35)"><div class="ic">➕</div><div class="tx"><div class="tt">Protein top-up</div><div class="td">'+esc(topUpText(pvTu))+'</div></div><div class="kk" style="color:var(--p)">'+(pvP+pvTu.got)+'g P<br>total</div></div>':'')+
+    '<div class="pv"><div class="pv-head"><span>🌅 Monday · target '+lastPlan.target.toLocaleString()+' kcal · '+lastPlan.protein+'g protein</span><span class="free">FREE</span></div>'+
+    previewRows(day)+(day.tu?topUpRow(day.tu):'')+dayTotalHTML(day)+
     '<div class="pv-locked"><div class="blur" aria-hidden="true">'+rest+'</div>'+
-    '<div class="cap"><div><b>\ud83d\udd12 Tuesday to Sunday</b><span>24 more meals, plus the grocery list to cook them</span></div></div></div></div>';
+    '<div class="cap"><div><b>🔒 Tuesday to Sunday</b><span>24 more meals, plus the grocery list to cook them</span></div></div></div></div>';
 }
 
 var lastWeek=null;
@@ -1206,31 +1499,30 @@ function buildWeek(quiet){
   var out='',bag={};lastWeek=[];
   days.forEach(function(dn,di){
     var day=buildDay(di,lastPlan.target,lastPlan.protein,lastPlan.region,lastPlan.diet);lastWeek.push({d:dn,day:day});
-    var dk=0,dp=0;
     var rows=day.meals.map(function(m){
       groAdd(bag,m[2].d,day.scale);
-      var k=Math.round(m[2].k*day.scale),p=Math.round(m[2].p*day.scale);dk+=k;dp+=p;
+      var k=Math.round(m[2].k*day.scale),p=Math.round(m[2].p*day.scale);
       return '<div>'+m[1]+' <b style="color:var(--ink)">'+esc(m[0])+':</b> '+esc(m[2].t)+' — '+esc(m[2].d)+' <span style="color:var(--g1)">('+k+' kcal / '+p+'g P)</span></div>';
     }).join('');
-    var tu=topUp(lastPlan.protein-dp,lastPlan.diet);
+    var tu=day.tu;
     if(tu){
-      rows+=topUpHTML(lastPlan.protein-dp,lastPlan.diet);
+      rows+='<div style="border-top:1px solid var(--line);padding-top:6px;margin-top:2px"><b style="color:var(--p)">➕ Protein top-up:</b> <span style="color:var(--muted)">'+esc(topUpText(tu))+'</span></div>';
       tu.items.forEach(function(it){bag[it.k]=(bag[it.k]||0)+it.amt;});
     }
-    var shownP=tu?dp+tu.got:dp;
-    out+='<details class="week-day"'+(di===0?' open':'')+'><summary>'+dn+'<span style="color:var(--g1);font-weight:800">'+dk+' kcal · '+shownP+'g P'+(tu?'*':'')+'</span></summary><div class="wd-body">'+rows+'</div></details>';
+    rows+=dayTotalHTML(day);
+    out+='<details class="week-day"'+(di===0?' open':'')+'><summary>'+dn+'<span style="color:var(--g1);font-weight:800">'+day.totK.toLocaleString()+' kcal · '+day.totP+'g P</span></summary><div class="wd-body">'+rows+'</div></details>';
   });
   out+='<div class="week-day" style="margin-top:14px"><div style="padding:14px"><b>🛒 Grocery list — the whole week, one trip</b>'+groRender(bag)+
-    '<p class="hint">Raw/uncooked quantities, already scaled to your portions. Round up to the nearest packet. <b>*</b> means the day reaches its protein target once you add that day\'s top-up.</p></div></div>';
+    '<p class="hint">Raw/uncooked quantities, already scaled to your portions, including each day\'s protein top-up. Round up to the nearest packet. Day totals include the top-up.</p></div></div>';
   $('printHead').innerHTML='<div class="ph-t">🥗 Diet AI — your 7-day plan</div><div class="ph-s">'+
     esc(REGIONS[lastPlan.region].n)+' · '+esc(lastPlan.diet==='veg'?'Vegetarian':lastPlan.diet==='egg'?'Veg + egg':'Non-vegetarian')+
-    ' · '+lastPlan.target.toLocaleString()+' kcal/day · '+lastPlan.protein+'g protein/day · '+lastPlan.water+'L water/day'+
-    '<br>Generated '+new Date().toLocaleDateString()+' · dietai.in · General nutrition estimates, not medical advice.</div>';
+    ' · target '+lastPlan.target.toLocaleString()+' kcal/day · '+lastPlan.protein+'g protein/day · '+lastPlan.water+'L water/day'+
+    '<br>Day totals include the protein top-up. Generated '+new Date().toLocaleDateString()+' · dietai.in · General nutrition estimates, not medical advice.</div>';
   $('weekOut').innerHTML=out;
   $('weekActions').style.display='grid';
-  $('cheatSheet').innerHTML='<div class="week-day"><div style="padding:14px"><b>💪 Protein cheat-sheet — cheapest Indian sources</b>'+
-    [['Soya chunks (100g)','52g protein'],['Whole moong (100g)','24g'],['Chana (100g)','19g'],['Eggs (2)','12g'],['Toned milk (500ml)','16g'],['Peanuts (100g)','26g'],['Curd (200g)','7g'],['Paneer (100g)','18g'],['Chicken (100g)','27g'],['Masoor dal (100g)','25g']].map(function(r){return '<div style="padding:4px 0;border-top:1px solid var(--line)">'+r[0]+' — <b style="color:var(--g1)">'+r[1]+'</b></div>';}).join('')+
-    '<p class="hint">Protein per 100g of the dry/raw ingredient. Cheapest per gram of protein is usually soya, then dals, then eggs.</p></div></div>';
+  $('cheatSheet').innerHTML='<div class="week-day"><div style="padding:14px"><b>💪 Protein cheat-sheet — common Indian sources</b>'+
+    [['Soya chunks (100g dry)','52g protein'],['Whole moong (100g dry)','24g'],['Chana (100g dry)','19g'],['Eggs (2)','12g'],['Toned milk (500ml)','16g'],['Peanuts (100g)','26g'],['Curd (200g)','7g'],['Paneer (100g)','18g'],['Chicken breast (100g raw)','22g'],['Masoor dal (100g dry)','25g']].map(function(r){return '<div style="padding:4px 0;border-top:1px solid var(--line)">'+r[0]+' — <b style="color:var(--g1)">'+r[1]+'</b></div>';}).join('')+
+    '<p class="hint">Approximate protein in the amount shown — check pack labels. Prices vary by city, but soya and dals are usually the cheapest protein per rupee.</p></div></div>';
   if(!quiet){toast('Your week is ready 🎉');logEv('pack_opened',{region:lastPlan.region});}
 }
 /* Collapsed <details> print as collapsed, so a customer printing their pack would
@@ -1261,7 +1553,7 @@ function shareWeek(){
   setInterval(function(){i=(i+1)%dishes.length;el.style.opacity=0;
     setTimeout(function(){el.innerHTML=dishes[i];el.style.opacity=1;},250);},2600);
   el.style.transition='opacity .25s';
-  var chips=["🍛 Rajma-chawal — 520 kcal","🥥 Idli-sambar — 330 kcal","🐟 Macher jhol — 560 kcal","🌶️ Thepla + curd — 380 kcal","🍜 Veg thukpa — 430 kcal","🫓 Chole-rice — 545 kcal","💧 35 ml water / kg","💪 1.8 g protein / kg","🌾 Dal bafla — 560 kcal","🥗 Sprouts chaat — 250 kcal"];
+  var chips=["🍛 Rajma-chawal — 520 kcal","🥥 Idli-sambar — 330 kcal","🐟 Macher jhol — 560 kcal","🌶️ Thepla + curd — 380 kcal","🍜 Veg thukpa — 430 kcal","🫓 Chole-rice — 545 kcal","💧 35 ml water / kg","💪 Protein target per kg","🌾 Dal bafla — 560 kcal","🥗 Sprouts chaat — 250 kcal"];
   $('tickerRow').innerHTML=(chips.concat(chips)).map(function(c){return '<span class="chip">'+c+'</span>';}).join('');
 })();
 
@@ -1280,6 +1572,9 @@ $('targetCal').value=localStorage.getItem('dietai_target')||'';
 $('yr').textContent=new Date().getFullYear();
 $('premRegion').textContent=REGIONS[region].n==='Pan-India'?"India's":REGIONS[region].n+" India's";
 renderTracker();renderWater();renderWeight();renderPremium();
+/* a customer back from their UPI app, or a weekly re-check of a saved unlock */
+if(!isPremium()&&readPending())checkPending({quiet:true});
+recheckUnlock();
 window.addEventListener('pageshow',function(){}); // no-op; keeps bfcache happy
 
 /* ---------- PWA: service worker + install nudge ---------- */

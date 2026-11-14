@@ -3,11 +3,11 @@
    main script runs. Every call is wrapped: this file can never break the site.
    Worker: dietai-events (Cloudflare).
 
-   Why not deferred any more: the main script strips ?premium=unlocked from the
-   URL with history.replaceState during parsing. A deferred logger runs AFTER
-   that and can never see the param, so the purchase event was never sent.
-   The main script now calls dietaiLog('premium_unlocked') itself, before it
-   strips the param. */
+   Why not deferred: the main script logs the unlock itself (dietaiLog /
+   dietaiLogOnce) as soon as the Worker confirms a payment, so the logger must
+   exist before it runs. The authoritative sale count is now 'payment_verified',
+   written by the Worker after Razorpay confirms the money; 'premium_unlocked'
+   from the browser is a secondary signal. */
 (function () {
   var WORKER = 'https://dietai-events.sudhanshuxg.workers.dev';
   var PRODUCT = 'dietai';
@@ -59,7 +59,7 @@
   }
 
   /* Fire an event at most once per browser, ever. Used for the purchase event so
-     a refresh of /?premium=unlocked can't inflate the conversion count. */
+     a refresh or a second visit can't inflate the conversion count. */
   function logOnce(event, meta) {
     try {
       var k = 'dietai_ev_' + event;
@@ -80,11 +80,11 @@
     }
   } catch (e) { log('page_view'); }
 
-  /* Backstop: if this browser is premium but the purchase was never reported,
-     report it now. Covers the case where the GitHub Pages CDN is still serving a
-     stale index.html that doesn't call dietaiLog itself. Costs one visit of delay,
-     but a sale gets counted instead of vanishing. */
+  /* Backstop: if this browser holds a server-issued unlock but the purchase was
+     never reported, report it now. (The old 'dietai_premium' flag was set by a URL
+     anyone could type, so it no longer counts as a purchase.) */
   try {
-    if (localStorage.getItem('dietai_premium') === '1') logOnce('premium_unlocked', { via: 'backstop' });
+    var u = JSON.parse(localStorage.getItem('dietai_unlock') || 'null');
+    if (u && typeof u.t === 'string' && u.t.indexOf('v1.pay_') === 0) logOnce('premium_unlocked', { via: 'backstop' });
   } catch (e) {}
 })();
