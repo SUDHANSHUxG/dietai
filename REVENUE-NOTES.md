@@ -29,14 +29,16 @@ planner, free Monday, the 7 days, print, WhatsApp text — is meals + top-up. Af
 +29 kcal, worst +67, none hidden. Top-up order is now by protein per calorie (soya, eggs,
 paneer, curd).
 
-**The trade-off this exposes — a decision for a nutrition expert, not code.** With
-calories honest, the 1.8 g/kg protein target is out of reach on most weight-loss days, and
-the day now says so ("still ~X g short of your protein goal"):
+**The trade-off this exposed, and the call made (15 Nov).** With calories honest, the
+1.8 g/kg protein target was out of reach on most weight-loss days. It is now **1.6 g/kg** —
+the top of the 1.2–1.6 g/kg range the ISSN position stand gives for the general population
+(see "Protein target evidence" below). Days that still fall short say so ("still ~X g short
+of your protein goal"). One constant, `PROTEIN_PER_KG` in `generatePlan()`:
 
 | protein target | weight-loss plan-days >8 g short (of 441) |
 |---|---|
-| 1.8 g/kg (current) | 426 (97%) |
-| 1.6 g/kg | 248 (56%) |
+| 1.8 g/kg (until 15 Nov) | 426 (97%) |
+| **1.6 g/kg (now)** | 248 (56%) |
 | 1.4 g/kg | 64 (15%) |
 
 Delivered protein on those days is still ~1.5 g/kg of adjusted weight (median).
@@ -69,7 +71,7 @@ is the IndexNow key (Bing, Yandex) — no account needed. Four calorie-level pag
 Indian adults: 0.83 g/kg (1 g/kg on cereal-based diets). ISSN position stand on diets for
 body-weight reduction: 1.2–1.6 g/kg for the general population, 1.6–2.2 g/kg with
 resistance training. The planner's 1.8 g/kg sits above the general-population range;
-1.6 g/kg is the top of it. One literal in `generatePlan()` (`1.8*refW`).
+1.6 g/kg is the top of it — now the planner's target.
 
 **Checks.** `tools/check.js` now runs the real Worker code against a fake Razorpay that
 signs payments exactly as Razorpay does (fresh secret per run): 156 checks, all passing.

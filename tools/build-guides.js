@@ -317,7 +317,7 @@ ${dayTable(nonveg, `With egg, chicken or fish · ${nonveg.k.toLocaleString('en-I
 <div class="mls">${mealList(rid)}</div>
 
 <h2>How the numbers are worked out</h2>
-<p>Your daily calorie need is estimated with the Mifflin-St Jeor equation, adjusted for activity. For weight loss we subtract 500 kcal a day — roughly 0.45 kg a week on paper; real results vary — and never go below 1,500 kcal for men or 1,200 kcal for women. Protein is set at 1.8 g per kg of body weight, using an adjusted weight above a BMI of 25 so the target stays realistic. Every calorie figure is an approximation of a typical home-cooked portion.</p>
+<p>Your daily calorie need is estimated with the Mifflin-St Jeor equation, adjusted for activity. For weight loss we subtract 500 kcal a day — roughly 0.45 kg a week on paper; real results vary — and never go below 1,500 kcal for men or 1,200 kcal for women. Protein is set at 1.6 g per kg of body weight — the top of the 1.2–1.6 g/kg range sports-nutrition researchers give for the general population — using an adjusted weight above a BMI of 25 so the target stays realistic. Every calorie figure is an approximation of a typical home-cooked portion.</p>
 
 <h2>Questions people ask</h2>
 ${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('\n')}

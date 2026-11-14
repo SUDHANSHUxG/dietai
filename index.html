@@ -804,14 +804,20 @@ function generatePlan(){
   target=Math.round(target/10)*10;
   var bmi=w/Math.pow(h/100,2);
   /* Protein is set per kg of ADJUSTED body weight, not scale weight. Fat mass
-     needs very little protein, so 1.8g/kg of a 110kg body asks for ~200g/day —
-     unreachable, and it squeezes carbs down to nothing. Above BMI 25 we count
-     the weight at BMI 25 plus 40% of the excess (the standard adjusted-body-
-     weight correction), then cap protein at 35% of calories so the split stays
-     something a person can actually eat. */
+     needs very little protein, so a per-kg target on a 110kg body asks for far
+     more than anyone eats and squeezes carbs down to nothing. Above BMI 25 we
+     count the weight at BMI 25 plus 40% of the excess (the standard adjusted-
+     body-weight correction), then cap protein at 35% of calories so the split
+     stays something a person can actually eat.
+     PROTEIN_PER_KG was 1.8 until Nov 2026. The ISSN position stand on diets for
+     body-weight reduction puts 1.2–1.6 g/kg as right for the general population
+     (1.6–2.2 with resistance training); 1.8 sat above that, and once the top-up's
+     calories were counted it was out of reach on almost every fat-loss day.
+     1.6 is the top of the general range. ICMR-NIN's RDA is 0.83 g/kg. */
+  var PROTEIN_PER_KG=1.6;
   var refW=w;
   if(bmi>25){var idealW=25*Math.pow(h/100,2);refW=idealW+0.4*(w-idealW);}
-  var protein=Math.round(1.8*refW);
+  var protein=Math.round(PROTEIN_PER_KG*refW);
   protein=Math.min(protein,Math.round(target*0.35/4));
   protein=Math.max(protein,Math.round(1.2*refW));
   var fat=Math.round((target*0.25)/9);
@@ -1292,7 +1298,7 @@ document.addEventListener('visibilitychange',function(){
    the meals shrink to make room for it (down to the usual 75% floor), and the top-up is
    capped so the day stays within ~3% of the calorie target. Where that leaves protein
    short, the day says so. Calories win that trade-off because the goal people pick is
-   usually fat loss; the protein target itself (1.8 g/kg) is an open nutrition decision. */
+   usually fat loss. The protein target is 1.6 g/kg (see generatePlan). */
 /* Ordered by protein per calorie (soya ≈15g per 100 kcal, eggs ≈7.7, paneer ≈6.8,
    curd ≈5.4), each capped at an amount a person will actually eat in a day. kcal:
    soya chunks 345/100g (pack label), eggs 78 each, paneer 265/100g and curd ~65/100g —
