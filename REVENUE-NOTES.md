@@ -27,7 +27,8 @@ test-key payments were logged as `payment_verified`, the real sale count; they a
 `payment_verified_test`, so the coming test payment can't show up as a sale.
 
 **One more door from search: `/vegetarian-indian-diet-plan/`.** "Vegetarian diet plan for
-weight loss" is one of the biggest diet searches in India, and no page answered it. Three
+weight loss" is a common diet search in India (volume not measured — check Search Console
+once it has data), and no page answered it. Three
 vegetarian days (no egg or meat) at 1,500 kcal — the highest-protein vegetarian day each
 region's meals allow, skipping the two regions the 1,500 kcal page already shows, so no table
 is duplicated — plus a vegetarian protein table sorted by protein per 100 kcal (soya chunks

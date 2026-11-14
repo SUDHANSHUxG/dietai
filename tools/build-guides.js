@@ -473,7 +473,7 @@ ${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></de
 }
 
 // ---- the vegetarian page ---------------------------------------------------
-// "vegetarian diet plan for weight loss" is one of the largest diet searches in India.
+// "vegetarian diet plan for weight loss" is a common diet search in India (volume not measured here).
 // Three vegetarian days (no egg, no meat) at 1,500 kcal: the highest-protein vegetarian
 // day each region's meals allow, skipping the two regions the 1,500 kcal page already
 // shows, so the two pages never carry the same tables. Every figure comes from the app.
