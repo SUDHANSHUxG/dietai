@@ -50,6 +50,27 @@ from fat", "ideal weight-loss meal", "what most adults should aim for". The page
 still says "Free AI Diet Plan" — left alone on purpose (it is what ranks; decide with
 Search Console data).
 
+**Funnel, read from D1 on 14 Nov (27 Oct–14 Nov).** Home page visits: Google 26, Bing 8,
+Yahoo/DuckDuckGo 3, "direct" 37 (owner, deploy bots, tests). The 7 regional guides: 1 visit.
+Plans built: 34 from search. ₹99 clicks from search visitors: **0** (the one click was the
+owner). So the blocker is attention and traffic, not checkout: the offer sat below the
+tracker buttons. Added a "See all 7 days" button under the plan and two events,
+`premium_seen` and `week_cta_click`, to tell whether people now reach the offer.
+
+**Search.** dietai.in had never been added to Google Search Console (no property on
+sudhanshuxg@gmail.com), so Google was never sent the sitemap — likely why the guides get
+no visits. A URL-prefix property for https://dietai.in/ was created on 14 Nov;
+`googlea16ee8de3adc33ae.html` verifies it once the site is deployed. Then submit
+`sitemap.xml` and request indexing for the guides. `2cae93f145dcf1d71723273726fad40a.txt`
+is the IndexNow key (Bing, Yandex) — no account needed. Four calorie-level pages added
+(1,200 / 1,500 / 1,800 / 2,000 kcal), generated from the planner's data.
+
+**Protein target evidence (for the decision above).** ICMR-NIN 2020 RDA for healthy
+Indian adults: 0.83 g/kg (1 g/kg on cereal-based diets). ISSN position stand on diets for
+body-weight reduction: 1.2–1.6 g/kg for the general population, 1.6–2.2 g/kg with
+resistance training. The planner's 1.8 g/kg sits above the general-population range;
+1.6 g/kg is the top of it. One literal in `generatePlan()` (`1.8*refW`).
+
 **Checks.** `tools/check.js` now runs the real Worker code against a fake Razorpay that
 signs payments exactly as Razorpay does (fresh secret per run): 156 checks, all passing.
 The same checks against the previous `main`: 36 fail, including the free URL unlock and
