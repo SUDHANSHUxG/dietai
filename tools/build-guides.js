@@ -252,7 +252,7 @@ details p{padding:0 15px 14px;color:#c4ccd9;font-size:15px}
 .others{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .others a{border:1px solid var(--line2);border-radius:999px;padding:7px 13px;font-size:13.5px;color:var(--ink);text-decoration:none}
 footer{border-top:1px solid var(--line);margin-top:44px;padding:22px 0 30px;color:var(--muted);font-size:13px}
-footer p{max-width:none;margin-top:8px;font-size:12px;color:#66738a}
+footer p{max-width:none;margin-top:8px;font-size:12px;color:#7a869c}
 @media print{body{background:#fff;color:#111}header,.cta,.final,.others,footer{display:none}.tbl{border-color:#ccc}}`;
 
 function page(rid) {
