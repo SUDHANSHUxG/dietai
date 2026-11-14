@@ -25,6 +25,7 @@ const BASE = process.env.BASE || 'http://localhost:8099';
 const WORKER = 'https://dietai-events.sudhanshuxg.workers.dev';
 const GUIDES = ['indian-diet-plan-for-weight-loss', 'north-indian-diet-plan', 'south-indian-diet-plan',
   'east-indian-diet-plan', 'west-indian-diet-plan', 'central-indian-diet-plan', 'north-east-indian-diet-plan'];
+const CAL_PAGES = [1200, 1500, 1800, 2000];
 const TOKEN_RE = /^v1\.pay_[A-Za-z0-9]{6,40}\.\d{9,11}\.[a-f0-9]{64}$/;
 
 let failed = 0;
@@ -568,7 +569,7 @@ async function section(title, fn) {
     const BANNED = [/dietitians use/i, /most dietitians consider/i, /safe minimum/i, /exact calorie/i, /AI nutrition coach/i, /healthy weight/i,
       /makes sure most of it comes from fat/i, /as good as a weight-loss lunch gets/i, /ideal weight-loss meal/i, /easiest cuisines in India to lose weight/i,
       /what most adults should aim for/i, /healthy range for most adults/i, /same formulas dietitians/i, /keeps you full longer/i];
-    for (const u of ['/', ...GUIDES.map((g) => '/' + g + '/')]) {
+    for (const u of ['/', ...GUIDES.map((g) => '/' + g + '/'), ...CAL_PAGES.map((k) => `/${k}-calorie-indian-diet-plan/`)]) {
       const html = await (await page.request.get(BASE + u)).text();
       const hits = BANNED.filter((re) => re.test(html)).map(String);
       ok(hits.length === 0, 'no unchecked claims on ' + u, hits.join(' ') || 'clean');
@@ -599,6 +600,22 @@ async function section(title, fn) {
     ok(await page.evaluate(() => region === 'south' && document.querySelector('#regionSeg button.on').dataset.region === 'south'), 'guide CTA opens the planner preset to its region');
     const sm = await (await page.request.get(BASE + '/sitemap.xml')).text();
     ok(GUIDES.every((s) => sm.includes(`https://dietai.in/${s}/`)), 'sitemap lists every guide');
+    for (const k of CAL_PAGES) {
+      const g = await newPage(ctx);
+      const res = await g.goto(`${BASE}/${k}-calorie-indian-diet-plan/`, { waitUntil: 'networkidle' });
+      const i = await g.evaluate((k) => {
+        const ld = JSON.parse(document.querySelector('script[type="application/ld+json"]').textContent);
+        const totals = [...document.querySelectorAll('table tfoot td.n:nth-of-type(2)')].map((td) => Number(td.textContent.replace(/,/g, '')));
+        return { faqMatch: ld.find((x) => x['@type'] === 'FAQPage').mainEntity.length === document.querySelectorAll('details').length,
+          tables: document.querySelectorAll('table').length, totals, junk: /NaN|undefined|\[object/.test(document.body.innerText),
+          linked: !!document.querySelector('a[href="/#planner"], a[href^="/?utm_source=cal-"]') };
+      }, k);
+      const near = i.totals.length === 3 && i.totals.every((t) => Math.abs(t - k) <= k * 0.03);
+      ok(res.status() === 200 && i.faqMatch && i.tables === 3 && !i.junk && near && i.linked, `/${k}-calorie-indian-diet-plan/: 3 days within 3% of ${k} kcal`, i.totals.join(', '));
+      await g.close();
+    }
+    ok(CAL_PAGES.every((k) => sm.includes(`https://dietai.in/${k}-calorie-indian-diet-plan/`)), 'sitemap lists every calorie page');
+    ok((await (await page.request.get(BASE + '/googlea16ee8de3adc33ae.html')).text()).trim() === 'google-site-verification: googlea16ee8de3adc33ae.html', 'Google Search Console verification file served');
     const robots = await (await page.request.get(BASE + '/robots.txt')).text();
     ok(/Disallow: \/\*\?restore=/.test(robots), 'robots.txt keeps restore links out of search');
     for (const f of ['/robots.txt', '/sitemap.xml']) ok((await page.request.get(BASE + f)).status() === 200, f + ' served');

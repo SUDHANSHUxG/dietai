@@ -338,6 +338,135 @@ ${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></de
 `;
 }
 
+// ---- calorie-level pages ------------------------------------------------------
+// People search by number ("1500 calorie diet plan indian") as often as by region.
+// Same meal data and the same scaling as the planner; every figure is computed here.
+const CAL = [1200, 1500, 1800, 2000];
+const calSlug = (k) => `${k}-calorie-indian-diet-plan`;
+const ACT = { 1.2: 'with a desk job and little exercise', 1.375: 'lightly active', 1.55: 'moderately active' };
+function plannerTarget(sex, age, h, w, act, goal) { // mirrors generatePlan() in index.html
+  const bmr = 10 * w + 6.25 * h - 5 * age + (sex === 'male' ? 5 : -161);
+  let t = bmr * act;
+  if (goal === 'lose') t -= 500;
+  const floor = sex === 'male' ? 1500 : 1200;
+  return Math.round(Math.max(t, floor) / 10) * 10;
+}
+// Two real examples of who the planner sends to roughly this number, from its own formula.
+function examplesFor(kcal) {
+  const out = [];
+  for (const goal of ['lose', 'maintain']) {
+    let best = null;
+    for (const sex of kcal >= 1800 ? ['male', 'female'] : ['female', 'male']) for (const age of [25, 30, 35, 40, 45]) for (const h of [152, 158, 163, 168, 173, 178])
+      for (const w of [52, 58, 64, 70, 76, 82, 88, 95]) for (const act of [1.2, 1.375, 1.55]) {
+        const bmi = w / Math.pow(h / 100, 2);
+        if (bmi < 19 || bmi > 33) continue;
+        const t = plannerTarget(sex, age, h, w, act, goal);
+        if ((sex === 'male' && t <= 1500 && kcal < 1500) || (sex === 'female' && t <= 1200 && kcal > 1200)) continue;
+        const d = Math.abs(t - kcal);
+        if (!best || d < best.d) best = { d, sex, age, h, w, act, goal, t };
+      }
+    if (best && best.d <= 40 && !(kcal === 1200 && goal === 'maintain')) out.push(best);
+  }
+  return out.map((e) => `a ${e.age}-year-old ${e.sex === 'male' ? 'man' : 'woman'}, ${e.h} cm and ${e.w} kg, ${ACT[e.act]}, gets about ${e.t.toLocaleString('en-IN')} kcal a day ${e.goal === 'lose' ? 'to lose fat' : 'to stay the same weight'}`);
+}
+function calPage(kcal) {
+  const slug = calSlug(kcal);
+  const url = `${SITE}/${slug}/`;
+  const K = kcal.toLocaleString('en-IN');
+  // Pick the regions whose meals actually scale to this number (portions never go
+  // below 75% of the descriptions, so a low target rules out the heavier cuisines).
+  const fit = (tags, mode, prefer) => ORDER.slice().sort((a, b) => prefer.indexOf(b) - prefer.indexOf(a))
+    .map((rid) => ({ rid, d: sampleDay(rid, tags, kcal, mode) }))
+    .sort((a, b) => (Math.abs(a.d.k - kcal) > kcal * 0.03) - (Math.abs(b.d.k - kcal) > kcal * 0.03));
+  const name = (rid) => rid === 'pan' ? 'pan-Indian' : G[rid].cuisine;
+  const veg = fit(['v'], 'lean', ['north', 'south']).slice(0, 2);
+  const nv = fit(['v', 'e', 'n'], 'protein', ['pan'])[0];
+  const days = [
+    ...veg.map((x) => ({ d: x.d, cap: 'Vegetarian · ' + name(x.rid) })),
+    { d: nv.d, cap: 'With egg, chicken or fish · ' + name(nv.rid) },
+  ];
+  const vegP = days.slice(0, 2).map((x) => x.d.p);
+  const ex = examplesFor(kcal);
+  const roti = food('Roti / Chapati (1)').k, rice = food('Plain rice (1 cup)').k;
+  const lede = kcal === 1200
+    ? `1,200 kcal a day is the lowest target the Diet AI planner ever sets, and only for women — most adults need more, and it never sets less than 1,500 for men. If a calculator gave you 1,200, here is what a full day of ordinary Indian food looks like at that level.`
+    : `What does ${K} kcal a day look like in everyday Indian food — dal, roti, rice, idli, curd, eggs? Three full sample days below, with calories and protein for every meal, all built from the same meal data the free planner uses.`;
+  const faq = [
+    [`Is ${K} calories a day right for me?`, `It depends on your age, height, weight, sex and how active you are, so ${K} is only a starting point. The free planner works out your own number with the Mifflin-St Jeor equation. It never sets less than 1,200 kcal for women or 1,500 kcal for men.`],
+    [`Can I eat roti and rice at ${K} calories?`, `Yes. One roti is about ${roti} kcal and a cup of cooked rice about ${rice} kcal, so at ${K} kcal it is the portion that matters, not the food. The sample days above include both.`],
+    [`How much protein do these vegetarian days give?`, `The two vegetarian days above give about ${Math.min(...vegP)}–${Math.max(...vegP)} g of protein. The planner sets your own protein goal from your weight and, where the meals fall short, suggests a top-up — soya chunks, paneer, curd or eggs — counted inside your calories.`],
+  ];
+  const ld = [
+    { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Diet AI', item: SITE + '/' },
+      { '@type': 'ListItem', position: 2, name: `${K} calorie Indian diet plan`, item: url } ] },
+    { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) },
+  ];
+  const planner = `/?utm_source=cal-${kcal}#planner`;
+  const otherCal = CAL.filter((x) => x !== kcal).map((x) => `<a href="/${calSlug(x)}/">${x.toLocaleString('en-IN')} kcal</a>`).join('');
+  const regions = ORDER.map((x) => `<a href="/${G[x].slug}/">${esc(G[x].h1.replace(/ for weight loss$/, ''))}</a>`).join('');
+  const title = `${K} Calorie Indian Diet Plan (Veg & Non-Veg) — Free Sample Days`;
+  const desc = `A free ${K} calorie Indian diet plan: three full days of everyday Indian food — veg and non-veg — with calories and protein for every meal, plus a free planner for your own target.`;
+  return `<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)} | Diet AI</title>
+<meta name="description" content="${esc(desc)}">
+<link rel="canonical" href="${url}">
+<meta name="theme-color" content="#07090f">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Diet AI">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(desc)}">
+<meta property="og:url" content="${url}">
+<meta property="og:image" content="${SITE}/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%97%3C/text%3E%3C/svg%3E">
+<script src="/events.js"></script>
+<style>${CSS}</style>
+<script type="application/ld+json">${JSON.stringify(ld)}</script>
+</head>
+<body>
+<header><div class="wrap nav"><a class="logo" href="/"><i aria-hidden="true">🥗</i> Diet AI</a><a class="btn sm" href="${planner}">Get my plan — free</a></div></header>
+<main class="wrap">
+<nav class="crumb" aria-label="Breadcrumb"><a href="/">Diet AI</a> › ${K} calorie Indian diet plan</nav>
+<h1>${K} calorie Indian diet plan</h1>
+<p class="lede">${esc(lede)}</p>
+${ex.length ? `<p class="note">For example, ${ex.map(esc).join('; ')} — by the planner's own formula. Your number may be different.</p>` : ''}
+<div class="cta"><a class="btn" href="${planner}">Work out my own calorie target</a><small>Free · no sign-up · 10 seconds</small></div>
+${days.map(({ d, cap }) => `<h2>${esc(cap)} — ${d.k.toLocaleString('en-IN')} kcal</h2>
+${dayTable(d, `${cap} · ${d.k.toLocaleString('en-IN')} kcal · ${d.p} g protein`)}${Math.abs(d.k - kcal) > kcal * 0.05 ? `<p class="note">This day lands at ${d.k.toLocaleString('en-IN')} kcal — ${d.k > kcal ? 'trim' : 'add'} a little rice or roti to reach ${K}.</p>` : ''}`).join('\n')}
+
+<h2>How to make ${K} kcal work</h2>
+<ul class="tips">
+<li><b>Adjust the grains, keep the dal</b><span>A roti is about ${roti} kcal and a cup of rice about ${rice} kcal. Moving the rice or roti up or down is the easiest way to hit a number without changing what you eat.</span></li>
+<li><b>Count the cooking fat</b><span>A teaspoon of oil or ghee is roughly 45 kcal. A heavy tadka can add 100–200 kcal that no recipe card shows.</span></li>
+<li><b>Put protein at every meal</b><span>Dal, curd, paneer, chana, eggs, chicken or fish at each meal makes it easier to reach your protein goal inside ${K} kcal.</span></li>
+</ul>
+
+<h2>Questions people ask</h2>
+${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('\n')}
+
+<section class="final">
+<h2>Your plan, at your own calories</h2>
+<p>These days are examples at exactly ${K} kcal. Enter your age, height and weight and the free planner builds a day of your region's food at your own target, with a protein top-up counted inside it.</p>
+<div class="cta"><a class="btn" href="${planner}">Get my free plan</a><small>Private — nothing you enter leaves your phone.</small></div>
+</section>
+
+<h2>Other calorie levels</h2>
+<div class="others">${otherCal}</div>
+<h2>Diet plans by region</h2>
+<div class="others">${regions}</div>
+</main>
+<footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans
+<p>Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and protein figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p></div></footer>
+</body>
+</html>
+`;
+}
+
 // ---- write pages + sitemap ------------------------------------------------
 const written = [];
 for (const rid of ORDER) {
@@ -346,6 +475,12 @@ for (const rid of ORDER) {
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'index.html'), page(rid));
   written.push(G[rid].slug);
+}
+for (const kcal of CAL) {
+  const dir = path.join(ROOT, calSlug(kcal));
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'index.html'), calPage(kcal));
+  written.push(calSlug(kcal));
 }
 
 const today = new Date().toISOString().slice(0, 10);
