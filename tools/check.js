@@ -234,6 +234,10 @@ async function section(title, fn) {
     ok(await page.evaluate(() => document.querySelectorAll('#previewOut .pv-row').length >= 4), 'free Monday preview renders');
     ok(await page.evaluate(() => !!document.querySelector('#previewOut .pv-locked')), 'Tuesday–Sunday locked');
     ok(await page.evaluate(() => document.getElementById('payBtn').tagName === 'BUTTON' && !document.querySelector('a[href*="pages.razorpay.com"]')), 'pay button opens checkout on the page; no payment-page link left');
+    ok(await page.isVisible('#weekCta'), 'a "see all 7 days" button sits right under the free plan');
+    await page.tap('#weekCta');
+    await page.waitForTimeout(900);
+    ok(sent.some((e) => e.event === 'week_cta_click') && sent.some((e) => e.event === 'premium_seen'), 'tapping it scrolls to the offer; week_cta_click and premium_seen logged');
     await page.tap('#payBtn');
     const unlocked1 = await waitUnlocked(page);
     ok(unlocked1, 'tap → Razorpay checkout → payment → unlocked on the same page');
@@ -604,7 +608,7 @@ async function section(title, fn) {
   const byEv = {}; eventStatus.forEach((e) => { byEv[e.ev] = byEv[e.ev] || new Set(); byEv[e.ev].add(e.status); });
   Object.keys(byEv).sort().forEach((n) => console.log('  ' + ([...byEv[n]].every((s) => s === 200) ? 'accepted ' : 'REJECTED ') + n));
   ok(eventStatus.length > 0 && eventStatus.every((e) => e.status === 200), 'every event sent was accepted');
-  ['page_view', 'plan_generated', 'premium_click', 'checkout_opened', 'premium_unlocked', 'pack_opened', 'payment_failed', 'checkout_closed', 'restore_used', 'legacy_unlock_link']
+  ['page_view', 'plan_generated', 'week_cta_click', 'premium_seen', 'premium_click', 'checkout_opened', 'premium_unlocked', 'pack_opened', 'payment_failed', 'checkout_closed', 'restore_used', 'legacy_unlock_link']
     .forEach((n) => ok(!!byEv[n], 'funnel event fires: ' + n));
 
   console.log('\nPage errors');

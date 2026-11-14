@@ -458,6 +458,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
         <p class="lead" style="margin-bottom:12px" id="mealSub">Matched to your region &amp; food preference — swap anything you like.</p>
         <div id="mealPlan"></div>
         <p class="hint" id="portionNote"></p>
+        <a href="#premium" class="btn btn-pay" id="weekCta" style="margin-top:12px">📅 See all 7 days + grocery list — Monday is free</a>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
           <button class="btn btn-ghost" onclick="sendToTracker()">📊 Load into tracker</button>
@@ -1231,6 +1232,24 @@ function recheckUnlock(){
     pay.addEventListener('click',startCheckout);
     ['pointerenter','touchstart','focus'].forEach(function(ev){pay.addEventListener(ev,function(){loadRzp().catch(function(){});},{passive:true,once:true});});
   }
+  /* Since 27 Oct, 34 visitors from search built a plan and none clicked the ₹99 button
+     (D1, 14 Nov). The offer sat below the planner, under the tracker and WhatsApp buttons,
+     so most never reached it. This button sits right under their plan, and premium_seen
+     records whether the offer itself was ever on screen. */
+  var wc=$('weekCta');
+  if(wc)wc.addEventListener('click',function(e){
+    e.preventDefault();logEv('week_cta_click',{premium:isPremium()});
+    var p=$('premium');if(p)p.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  var premEl=$('premium');
+  if(premEl&&'IntersectionObserver' in window){
+    var seenIO=new IntersectionObserver(function(es){
+      if(!es[0].isIntersecting||!lastPlan||isPremium())return;
+      try{if(sessionStorage.getItem('dietai_seen'))return;sessionStorage.setItem('dietai_seen','1');}catch(e){}
+      seenIO.disconnect();logEv('premium_seen',{region:lastPlan.region});
+    },{threshold:0.35});
+    seenIO.observe(premEl);
+  }
   var rb=$('restoreBtn');if(rb)rb.addEventListener('click',restoreById);
   var ri=$('restoreId');if(ri)ri.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();restoreById();}});
   var prem=$('premium');
@@ -1466,6 +1485,7 @@ function topUpRow(tu){
   return '<div class="pv-row" style="border-color:rgba(90,162,255,.35)"><div class="ic">➕</div><div class="tx"><div class="tt">Protein top-up</div><div class="td">'+esc(topUpText(tu))+'</div></div><div class="kk" style="color:var(--p)">'+(tu.kcal?tu.kcal+' kcal<br>':'')+'+'+tu.got+'g P</div></div>';
 }
 function renderPremium(){
+  var wcta=$('weekCta');if(wcta)wcta.textContent=isPremium()?'📅 Open my 7-day plan + grocery list':'📅 See all 7 days + grocery list — Monday is free';
   if(isPremium()){
     $('premLocked').style.display='none';$('premUnlocked').style.display='block';
     var pid=$('payIdShow');if(pid)pid.textContent=unlockPayId()||'—';
