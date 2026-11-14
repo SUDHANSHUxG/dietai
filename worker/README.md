@@ -17,6 +17,7 @@ payments run on the Vercel preview, never on dietai.in — with test keys a visi
 | 5 | Merge the PR — GitHub Pages deploys `main` to dietai.in | Claude, on "yes, deploy DietAI" | `https://dietai.in/sw.js?x=1` says `dietai-v6` |
 | 6 | Live check without spending: on dietai.in, "Already paid?" → your own earlier ₹99 payment ID from Razorpay → Restore | Claude or you | pack unlocks |
 | 7 | Deactivate the old payment page `pages.razorpay.com/dietai-premium` | you | nobody can pay outside the verified flow |
+| 8 | Tell search engines about the new pages: Search Console → verify (file `googlea16ee8de3adc33ae.html` is in the repo) → Sitemaps → `sitemap.xml`; Bing and others: submit the sitemap's URLs to IndexNow with key `2cae93f145dcf1d71723273726fad40a` (key file in the repo root) | Claude | Search Console shows the sitemap as Success |
 
 Key reuse: ClaimFight's Worker uses the same secret names, so one Razorpay key pair can
 serve both. Razorpay shows a Key Secret only once — if you regenerate the key, put the new
