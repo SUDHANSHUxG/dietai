@@ -12,7 +12,7 @@ payments run on the Vercel preview, never on dietai.in — with test keys a visi
 |---|------|-----|-------|
 | 1 | Cloudflare → Workers & Pages → `dietai-events` → **Edit code** → replace everything with `worker/index.js` → **Deploy** | Claude (with your yes) or you | `https://dietai-events.sudhanshuxg.workers.dev/api/health` shows `"payments":{"configured":false,"mode":"off"}` |
 | 2 | Razorpay → **Test mode** → Account & Settings → API Keys → **Generate key**; Cloudflare → `dietai-events` → Settings → **Variables and Secrets** → add Secrets `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` | you (Claude never types keys) | health shows `"configured":true,"mode":"test"` |
-| 3 | Test payment on the **Vercel preview** of the branch: Unlock → Netbanking → any bank → **Success** (no card numbers needed); also try **Failure** | Claude or you | pack unlocks after Success, stays locked after Failure; `/funnel` shows `payment_verified` |
+| 3 | Test payment on the **Vercel preview** of the branch: Unlock → Netbanking → any bank → **Success** (no card numbers needed); also try **Failure** | Claude or you | pack unlocks after Success, stays locked after Failure; `/funnel` shows `payment_verified_test` (test runs never count as sales) |
 | 4 | Replace both secrets with the **live** key pair (`rzp_live_…`) | you | health shows `"mode":"live"` |
 | 5 | Merge the PR — GitHub Pages deploys `main` to dietai.in | Claude, on "yes, deploy DietAI" | `https://dietai.in/sw.js?x=1` says `dietai-v6`; `https://dietai.in/REVENUE-NOTES` is gone (404) |
 | 6 | Live check without spending: on dietai.in, "Already paid?" → your own earlier ₹99 payment ID from Razorpay → Restore | Claude or you | pack unlocks |

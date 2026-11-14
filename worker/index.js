@@ -116,11 +116,14 @@ async function rzp(env, method, path, body) {
   return data;
 }
 
-// A payment counts for Diet AI if it is ours (notes.product) or is exactly the ₹99 price.
-// The second rule covers payments made on the old Razorpay payment page, which carry no notes.
+// A payment counts for Diet AI only if it is exactly ₹99 and is not tagged for another
+// product. Untagged covers the old Razorpay payment page (its notes hold the buyer's email
+// and phone, no product). The amount rule always applies: payment notes are set by the
+// browser, so a 'dietai' tag on a cheaper payment proves nothing.
 function isDietPayment(p) {
-  if (!p || p.currency !== CURRENCY || !(p.amount > 0)) return false;
-  return (p.notes && p.notes.product === 'dietai') || p.amount === PRICE_PAISE;
+  if (!p || p.currency !== CURRENCY || p.amount !== PRICE_PAISE) return false;
+  const product = p.notes && p.notes.product;
+  return !product || product === 'dietai';
 }
 const isRefunded = (p) => p.refund_status === 'full' || (p.amount_refunded || 0) >= p.amount;
 
@@ -169,14 +172,18 @@ async function logServer(env, event, meta) {
 }
 // The authoritative sale count: one 'payment_verified' row per Razorpay payment, written
 // by the server after Razorpay confirms it — unlike 'premium_unlocked', which the browser sends.
+// Payments made with test keys move no money, so they are logged as 'payment_verified_test'
+// and can never be counted as a sale, in /funnel or in a hand-written query.
+const saleEvent = (env) => (keyMode(env) === 'test' ? 'payment_verified_test' : 'payment_verified');
 async function recordSale(env, p, via) {
   if (!env.EVENTS) return;
+  const event = saleEvent(env);
   try {
-    const seen = await env.EVENTS.prepare("SELECT 1 FROM events WHERE event = 'payment_verified' AND meta LIKE ?1 LIMIT 1")
-      .bind('%"' + p.id + '"%').first();
+    const seen = await env.EVENTS.prepare('SELECT 1 FROM events WHERE event = ?2 AND meta LIKE ?1 LIMIT 1')
+      .bind('%"' + p.id + '"%', event).first();
     if (seen) return;
   } catch (e) { /* if the lookup fails, record anyway */ }
-  await logServer(env, 'payment_verified', {
+  await logServer(env, event, {
     payment_id: p.id, order_id: p.order_id || null, amount: p.amount, method: p.method || null, via, mode: keyMode(env),
   });
 }

@@ -142,9 +142,9 @@ function createFakeD1() {
         },
         async first() {
           if (sql === 'SELECT 1') return { 1: 1 };
-          if (/event = 'payment_verified' AND meta LIKE \?1/.test(sql)) {
+          if (/event = \?2 AND meta LIKE \?1/.test(sql)) {
             const needle = String(args[0]).replace(/^%|%$/g, '');
-            return rows.some((r) => r.event === 'payment_verified' && String(r.meta).includes(needle)) ? { 1: 1 } : null;
+            return rows.some((r) => r.event === args[1] && String(r.meta).includes(needle)) ? { 1: 1 } : null;
           }
           return null;
         },

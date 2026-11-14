@@ -20,7 +20,13 @@ source and its runbook. `_config.yml` now leaves `REVENUE-NOTES.md`, `README.md`
 `worker/` and `tools/` out of the build. The repo itself is public, so these files stay
 readable on GitHub: keys and anything secret never go in the repo.
 
-**Checks:** 178, all passing. New: http → https on the planner, a guide and a calorie page,
+**Two Worker fixes before it goes live.** Restore accepted any amount when a payment carried
+the `dietai` tag, but payment notes come from the browser — now a payment must be exactly ₹99
+and not tagged for another product (your 21 Oct ₹99 payment, untagged, still restores). And
+test-key payments were logged as `payment_verified`, the real sale count; they are now
+`payment_verified_test`, so the coming test payment can't show up as a sale.
+
+**Checks:** 182, all passing. New: http → https on the planner, a guide and a calorie page,
 a restore link survives the move, nothing moves with JavaScript off or on localhost, and
 the build config leaves out the internal files while keeping all 22 files the site needs.
 
@@ -41,7 +47,8 @@ the UPI request was never approved in their app. Checkout now says exactly that,
 money was taken, and offers the retry.
 
 **The authoritative sale metric is now `payment_verified`**, written by the Worker after
-Razorpay confirms the money (one row per payment). `premium_unlocked` is secondary.
+Razorpay confirms the money (one row per payment). Runs on test keys are logged as
+`payment_verified_test` instead, so they never count. `premium_unlocked` is secondary.
 
 **Calories.** Top-up calories were never counted: across 735 plan-days (7 regions × 3
 diets × 5 body types × 7 days) the real day ran a median **+667 kcal** over target, worst

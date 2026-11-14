@@ -60,7 +60,8 @@ async function section(title, fn) {
     let data = null; try { data = JSON.parse(text); } catch (e) {}
     return { status: res.status, data, text, headers: res.headers };
   };
-  const paidRows = (pid) => db.rows.filter((r) => r.event === 'payment_verified' && String(r.meta).includes(pid));
+  // This suite runs on test keys, so its sales are logged as payment_verified_test.
+  const paidRows = (pid, ev = 'payment_verified_test') => db.rows.filter((r) => r.event === ev && String(r.meta).includes(pid));
 
   // ================================================================ Worker
   console.log('\nWorker: health and switches');
@@ -89,7 +90,7 @@ async function section(title, fn) {
   r = await call('/pay/verify', { order_id: order1, payment_id: p1.payment_id, signature: p1.signature });
   ok(r.status === 200 && TOKEN_RE.test(r.data.token || ''), 'genuine Razorpay signature → unlock token', (r.data.token || '').slice(0, 32) + '…');
   const token1 = r.data.token;
-  ok(paidRows(p1.payment_id).length === 1, 'server records the sale as payment_verified (authoritative)');
+  ok(paidRows(p1.payment_id).length === 1, 'server records the sale (test keys → payment_verified_test, never a real sale)');
   r = await call('/pay/verify', { order_id: order1, payment_id: p1.payment_id, signature: p1.signature });
   ok(r.status === 200 && paidRows(p1.payment_id).length === 1, 'repeat confirmation does not double-count the sale');
   const bad = (p1.signature[0] === 'a' ? 'b' : 'a') + p1.signature.slice(1);
@@ -131,6 +132,12 @@ async function section(title, fn) {
   const cf = rz.addPayment({ amount: 49900, notes: { product: 'claimfight' } });
   r = await call('/pay/restore', { payment_id: cf.id });
   ok(r.status === 404, 'a ClaimFight (₹499) payment does not unlock Diet AI');
+  const otherProduct = rz.addPayment({ notes: { product: 'claimfight' } }); // ₹99, but tagged for another product
+  r = await call('/pay/restore', { payment_id: otherProduct.id });
+  ok(r.status === 404, 'a ₹99 payment tagged for another product does not unlock Diet AI');
+  const cheap = rz.addPayment({ amount: 100, notes: { product: 'dietai' } }); // checkout opened with the public key and a made-up ₹1
+  r = await call('/pay/restore', { payment_id: cheap.id });
+  ok(r.status === 404, 'a ₹1 payment that claims to be Diet AI does not unlock');
   const refunded = rz.addPayment({ amount_refunded: 9900, refund_status: 'full' });
   r = await call('/pay/restore', { payment_id: refunded.id });
   ok(r.status === 410 && r.data.error === 'refunded', 'refunded payment does not unlock');
@@ -159,6 +166,11 @@ async function section(title, fn) {
   ok(r.status === 403, 'live keys: a request with no Origin (script, bot) is refused');
   r = await call('/pay/check', { token: token1 }, { env: LIVE, origin: 'https://dietai.in' });
   ok(r.status === 200 && r.headers.get('Access-Control-Allow-Origin') === 'https://dietai.in', 'live keys: dietai.in allowed, CORS header set');
+  ok(!db.rows.some((x) => x.event === 'payment_verified'), 'no test-key payment was ever logged as a real sale');
+  const oL = (await call('/pay/order', {})).data.order_id;
+  const pL = rz.pay(oL, 'success');
+  r = await call('/pay/verify', { order_id: oL, payment_id: pL.payment_id, signature: pL.signature }, { env: LIVE, origin: 'https://dietai.in' });
+  ok(r.status === 200 && paidRows(pL.payment_id, 'payment_verified').length === 1 && paidRows(pL.payment_id).length === 0, 'live keys: the same flow is logged as payment_verified, the real sale count');
   r = await call('/pay/check', { token: token1 }, { origin: 'https://dietai-git-preview.vercel.app' });
   ok(r.status === 200 && r.headers.get('Access-Control-Allow-Origin') === 'https://dietai-git-preview.vercel.app', 'test keys: previews may run a full test payment');
   let limitedAt = 0;
