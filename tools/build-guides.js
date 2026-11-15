@@ -338,7 +338,7 @@ ${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></de
 <h2>Diet plans for other regions</h2>
 <div class="others">${others}<a href="/${VEG_SLUG}/">Vegetarian diet plan</a><a href="/${GAIN_SLUG}/">Weight-gain diet plan</a></div>
 </main>
-<footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans
+<footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans · <a href="/policies/">Terms, privacy &amp; delivery</a>
 <p>Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and protein figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p></div></footer>
 </body>
 </html>
@@ -468,7 +468,7 @@ ${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></de
 <h2>Diet plans by region</h2>
 <div class="others">${regions}<a href="/${VEG_SLUG}/">Vegetarian diet plan</a><a href="/${GAIN_SLUG}/">Weight-gain diet plan</a></div>
 </main>
-<footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans
+<footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans · <a href="/policies/">Terms, privacy &amp; delivery</a>
 <p>Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and protein figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p></div></footer>
 </body>
 </html>
@@ -586,7 +586,7 @@ ${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></de
 <h2>Diet plans by region</h2>
 <div class="others">${regions}</div>
 </main>
-<footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans
+<footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans · <a href="/policies/">Terms, privacy &amp; delivery</a>
 <p>Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and protein figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p></div></footer>
 </body>
 </html>
@@ -701,7 +701,70 @@ ${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></de
 <h2>Diet plans by region</h2>
 <div class="others">${regions}</div>
 </main>
-<footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans
+<footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans · <a href="/policies/">Terms, privacy &amp; delivery</a>
+<p>Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and protein figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p></div></footer>
+</body>
+</html>
+`;
+}
+
+// ---- terms, privacy and delivery ---------------------------------------------
+// Owner's choices (15 Nov 2026): seller shown as "Diet AI" only, no contact email yet, and no
+// refund promise yet. Every privacy line below is checked against the code: events.js sends
+// {product, event, source, meta, ts}; the Worker stores product/event/source/meta, no IP.
+const POL_SLUG = 'policies';
+function policiesPage() {
+  const url = `${SITE}/${POL_SLUG}/`;
+  const title = 'Terms, privacy and delivery';
+  const desc = 'How Diet AI works: terms of use, what stays on your phone, what the site counts, how payments are handled and how the ₹99 pack is delivered.';
+  return `<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+${HTTPS_JS}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)} | Diet AI</title>
+<meta name="description" content="${esc(desc)}">
+<link rel="canonical" href="${url}">
+<meta name="theme-color" content="#07090f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%97%3C/text%3E%3C/svg%3E">
+<script src="/events.js"></script>
+<style>${CSS}</style>
+</head>
+<body>
+<header><div class="wrap nav"><a class="logo" href="/"><i aria-hidden="true">🥗</i> Diet AI</a><a class="btn sm" href="/#planner">Get my plan — free</a></div></header>
+<main class="wrap">
+<nav class="crumb" aria-label="Breadcrumb"><a href="/">Diet AI</a> › Terms, privacy and delivery</nav>
+<h1>Terms, privacy and delivery</h1>
+<p class="lede">Diet AI (dietai.in) gives free Indian diet plans, guides and a food tracker, plus an optional 7-day plan pack for a one-time ₹99. There is no account and no subscription. Last updated 15 November 2026.</p>
+
+<h2 id="terms">Terms of use</h2>
+<ul class="tips">
+<li><b>Estimates, not medical advice</b><span>Everything on Diet AI is a general nutrition estimate for education. Calorie and protein figures are approximations. It is not meant for anyone under 18, or for anyone who is pregnant or managing a health condition without their doctor's or dietitian's advice.</span></li>
+<li><b>Your plan, for your use</b><span>Plans are built on your device from what you enter. The 7-day pack is for your personal use.</span></li>
+<li><b>Changes</b><span>Diet AI may change, improve or stop features. The pages and plans are provided as they are.</span></li>
+</ul>
+
+<h2 id="pricing">Pricing</h2>
+<ul class="tips">
+<li><b>₹99, one time</b><span>The 7-day plan pack costs ₹99, charged once in Indian rupees through Razorpay. The planner, guides and tracker are free.</span></li>
+</ul>
+
+<h2 id="privacy">Privacy</h2>
+<ul class="tips">
+<li><b>What stays on your phone</b><span>What you type into the planner and tracker — age, height, weight, plans, food log, water and weight history — is kept in your browser's storage on your device and is not sent to Diet AI.</span></li>
+<li><b>What the site counts</b><span>To see which pages and features people use, the site sends anonymous events to its server: for example a page view, that a plan was made (with its region, diet, goal and calorie target), or that checkout was opened. Each event carries where you first came from, such as a search engine or a link's source tag, but no name, email, phone number, age, height or weight. Diet AI itself sets no cookies.</span></li>
+<li><b>Payments</b><span>Payments are handled by Razorpay, under Razorpay's own terms and privacy policy. Diet AI never sees your card, UPI or bank details. Its server receives the payment ID, amount and status from Razorpay to confirm the purchase, and keeps the payment ID and amount to count sales.</span></li>
+<li><b>Your unlock</b><span>After you pay, an unlock code is saved in your browser so the pack stays open. Clearing this site's data in your browser removes it; "Already paid?" brings it back.</span></li>
+</ul>
+
+<h2 id="delivery">Delivery</h2>
+<ul class="tips">
+<li><b>Digital, nothing shipped</b><span>The 7-day pack is a digital plan. It appears on this site as soon as Razorpay confirms your payment, usually within seconds.</span></li>
+<li><b>If it doesn't open</b><span>If your phone closed the page during payment, or you are on a new phone, tap "Already paid?" and enter the payment ID from your Razorpay receipt — it starts with pay_. This works on any device.</span></li>
+</ul>
+</main>
+<footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans · <a href="/policies/">Terms, privacy &amp; delivery</a>
 <p>Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and protein figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p></div></footer>
 </body>
 </html>
@@ -729,6 +792,9 @@ written.push(VEG_SLUG);
 fs.mkdirSync(path.join(ROOT, GAIN_SLUG), { recursive: true });
 fs.writeFileSync(path.join(ROOT, GAIN_SLUG, 'index.html'), gainPage());
 written.push(GAIN_SLUG);
+// The policies page is linked from every footer but kept out of the sitemap: it is not a page anyone searches for.
+fs.mkdirSync(path.join(ROOT, POL_SLUG), { recursive: true });
+fs.writeFileSync(path.join(ROOT, POL_SLUG, 'index.html'), policiesPage());
 
 const today = new Date().toISOString().slice(0, 10);
 const urls = [['/', '1.0'], ...written.map(s => ['/' + s + '/', '0.8'])];

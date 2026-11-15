@@ -754,6 +754,16 @@ async function section(title, fn) {
       await g.close();
     }
     ok(sm.includes('https://dietai.in/indian-diet-plan-for-weight-gain/'), 'sitemap lists the weight-gain page');
+    {
+      const r = await page.request.get(BASE + '/policies/'); const t = await r.text();
+      const sections = ['terms', 'pricing', 'privacy', 'delivery'].every((id) => t.includes(`id="${id}"`));
+      ok(r.status() === 200 && sections && !/mailto:|@[a-z0-9-]+\.[a-z]/i.test(t) && !/refund/i.test(t) && /₹99, one time/.test(t),
+        '/policies/: terms, pricing, privacy and delivery; no email and no refund promise (owner chose to wait)');
+      const linksPol = async (u) => (await (await page.request.get(BASE + u)).text()).includes('href="/policies/"');
+      ok(await linksPol('/') && await linksPol('/north-indian-diet-plan/') && await linksPol('/1200-calorie-indian-diet-plan/') && await linksPol('/vegetarian-indian-diet-plan/') && await linksPol('/indian-diet-plan-for-weight-gain/'),
+        'every page links to the policies page');
+      ok(!sm.includes('/policies/'), 'policies page stays out of the sitemap');
+    }
     const linksVeg = async (u) => (await (await page.request.get(BASE + u)).text()).includes('href="/vegetarian-indian-diet-plan/"');
     ok(await linksVeg('/') && await linksVeg('/1500-calorie-indian-diet-plan/') && await linksVeg('/north-indian-diet-plan/'), 'homepage, calorie pages and guides link to the vegetarian page');
     const linksGain = async (u) => (await (await page.request.get(BASE + u)).text()).includes('href="/indian-diet-plan-for-weight-gain/"');
@@ -803,7 +813,7 @@ async function section(title, fn) {
     const cfg = fs.readFileSync(path.join(ROOT, '_config.yml'), 'utf8');
     const ex = ((cfg.match(/^exclude:\n((?:[ \t]+-[^\n]*\n?)+)/m) || [])[1] || '').split('\n').map((l) => l.replace(/^\s*-\s*/, '').trim()).filter(Boolean);
     ok(['REVENUE-NOTES.md', 'README.md', 'worker', 'tools'].every((x) => ex.includes(x)), 'GitHub Pages build leaves out the notes, README, Worker source and tools', ex.join(', '));
-    const site = ['index.html', 'sitemap.xml', 'robots.txt', 'sw.js', 'events.js', 'premium.js', 'manifest.json', 'og.png', 'CNAME', 'googlea16ee8de3adc33ae.html', '2cae93f145dcf1d71723273726fad40a.txt', ...GUIDES, ...CAL_PAGES.map((k) => k + '-calorie-indian-diet-plan'), 'vegetarian-indian-diet-plan', 'indian-diet-plan-for-weight-gain'];
+    const site = ['index.html', 'sitemap.xml', 'robots.txt', 'sw.js', 'events.js', 'premium.js', 'manifest.json', 'og.png', 'CNAME', 'googlea16ee8de3adc33ae.html', '2cae93f145dcf1d71723273726fad40a.txt', ...GUIDES, ...CAL_PAGES.map((k) => k + '-calorie-indian-diet-plan'), 'vegetarian-indian-diet-plan', 'indian-diet-plan-for-weight-gain', 'policies'];
     ok(site.every((f) => !ex.includes(f) && fs.existsSync(path.join(ROOT, f))), 'every page and file the site needs is still published (' + site.length + ')');
     ok(!/^(include|baseurl|permalink|plugins):/m.test(cfg), 'the config changes nothing else about the build');
   });

@@ -67,7 +67,18 @@ will be checked without spending — a restore with the 21 Oct ₹99 payment and
 created but not paid — then the real checkout opened and closed on dietai.in after the merge.
 Deploying waits for the owner's "yes, deploy DietAI" (asked 15 Nov: "Not yet").
 
-**Checks:** 199, all passing. New: http → https on the planner, a guide and a calorie page,
+**Terms, privacy and delivery page (`/policies/`).** The site took ₹99 with no terms, privacy or
+delivery page, and the Razorpay customer-support contact (phone, email, website) is empty, so
+receipts show no way to reach the seller. Owner's choices (15 Nov): seller shown as "Diet AI"
+only; no contact email yet; no refund promise yet; leave Razorpay's support details empty.
+The page covers terms, pricing (₹99 one time), privacy (written from what the code actually
+sends and stores) and delivery (digital, instant, "Already paid?" if it doesn't open). Linked
+from every footer, kept out of the sitemap. The data FAQ now says a made plan's region, diet,
+goal and calorie target are counted, and that the payment ID and amount are kept — it used to
+say plans are never uploaded. Still open: a contact route. Razorpay's own guidance sends
+buyers to the seller's contact page, and buyers who can't reach a seller go to their bank.
+
+**Checks:** 202, all passing. New: http → https on the planner, a guide and a calorie page,
 a restore link survives the move, nothing moves with JavaScript off or on localhost, and
 the build config leaves out the internal files while keeping all 22 files the site needs.
 
