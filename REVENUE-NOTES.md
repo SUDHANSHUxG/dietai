@@ -78,7 +78,12 @@ goal and calorie target are counted, and that the payment ID and amount are kept
 say plans are never uploaded. Still open: a contact route. Razorpay's own guidance sends
 buyers to the seller's contact page, and buyers who can't reach a seller go to their bank.
 
-**Checks:** 202, all passing. New: http → https on the planner, a guide and a calorie page,
+**Errors real visitors hit are now reported.** Nothing told us when the page broke on someone's
+phone. `events.js` now sends a `js_error` event (message, file path, line; never anything typed;
+each message once, at most 3 per page; other origins' scripts ignored), and the Worker accepts it.
+The privacy page and the data FAQ say so. The tracker's × buttons now have names for screen readers.
+
+**Checks:** 204, all passing. New: http → https on the planner, a guide and a calorie page,
 a restore link survives the move, nothing moves with JavaScript off or on localhost, and
 the build config leaves out the internal files while keeping all 22 files the site needs.
 

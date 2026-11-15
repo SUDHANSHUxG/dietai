@@ -333,7 +333,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
     "name": "Where is my data stored?",
     "acceptedAnswer": {
      "@type": "Answer",
-     "text": "Your age, weight, height, plans, food log, water and weight history are stored only in your own browser and are never uploaded — we couldn't see them even if we wanted to. The one thing we do collect is anonymous usage counts — page views, which buttons get clicked, the region, diet, goal and calorie target of a plan that was made, and roughly where visitors came from — so we know which parts of the site are worth improving. No names, no age, height or weight, no advertising trackers. If you buy the Premium Pack, Razorpay handles the payment; we keep only the payment ID and amount so your purchase can be confirmed and restored."
+     "text": "Your age, weight, height, plans, food log, water and weight history are stored only in your own browser and are never uploaded — we couldn't see them even if we wanted to. The one thing we do collect is anonymous usage counts — page views, which buttons get clicked, the region, diet, goal and calorie target of a plan that was made, roughly where visitors came from, and any error the page runs into — so we know which parts of the site are worth improving. No names, no age, height or weight, no advertising trackers. If you buy the Premium Pack, Razorpay handles the payment; we keep only the payment ID and amount so your purchase can be confirmed and restored."
     }
    },
    {
@@ -581,7 +581,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
     <h2>Questions people ask</h2>
     <details><summary>Is it really free?</summary><div class="fa">Yes. The planner, tracker, water and weight logs are free forever. The optional Premium Pack (₹99 one-time) adds a full 7-day region-matched plan with a grocery list.</div></details>
     <details><summary>Will I have to eat boiled chicken and salads?</summary><div class="fa">No. Plans are built from your region's everyday meals — dal-roti, idli-sambar, macher jhol, thepla. Fat loss comes from portions and consistency, not exotic food.</div></details>
-    <details><summary>Where is my data stored?</summary><div class="fa">Your age, weight, height, plans, food log, water and weight history are stored only in your own browser and are never uploaded — we couldn't see them even if we wanted to. The one thing we do collect is anonymous usage counts — page views, which buttons get clicked, the region, diet, goal and calorie target of a plan that was made, and roughly where visitors came from — so we know which parts of the site are worth improving. No names, no age, height or weight, no advertising trackers. If you buy the Premium Pack, Razorpay handles the payment; we keep only the payment ID and amount so your purchase can be confirmed and restored.</div></details>
+    <details><summary>Where is my data stored?</summary><div class="fa">Your age, weight, height, plans, food log, water and weight history are stored only in your own browser and are never uploaded — we couldn't see them even if we wanted to. The one thing we do collect is anonymous usage counts — page views, which buttons get clicked, the region, diet, goal and calorie target of a plan that was made, roughly where visitors came from, and any error the page runs into — so we know which parts of the site are worth improving. No names, no age, height or weight, no advertising trackers. If you buy the Premium Pack, Razorpay handles the payment; we keep only the payment ID and amount so your purchase can be confirmed and restored.</div></details>
     <details><summary>How fast will I lose weight?</summary><div class="fa">The plan sets your calories about 500 kcal a day below your estimated maintenance. On paper that is roughly 0.45 kg a week, but real results vary from person to person and usually slow down over time. Slower is fine; consistency matters more than speed.</div></details>
   </section>
 </div>
@@ -956,7 +956,7 @@ function renderTracker(){
   else{bar.style.width='0%';wrap.classList.remove('over');$('calBarLbl').textContent='Add a target to see your progress.';}
   var log=$('log');
   if(!foods.length){log.innerHTML='<div class="empty">No food logged yet today. Add your first item above 🍽️</div>';return;}
-  log.innerHTML=foods.map(function(f){return '<div class="log-item"><div><div class="nm">'+esc(f.n)+'</div><div class="meta">'+(+f.k||0)+' kcal · '+(+f.p||0)+'g protein</div></div><div class="k">'+(+f.k||0)+'</div><button class="del" onclick="delFood('+(+f.id||0)+')">×</button></div>';}).join('');
+  log.innerHTML=foods.map(function(f){return '<div class="log-item"><div><div class="nm">'+esc(f.n)+'</div><div class="meta">'+(+f.k||0)+' kcal · '+(+f.p||0)+'g protein</div></div><div class="k">'+(+f.k||0)+'</div><button class="del" aria-label="Remove '+esc(f.n)+'" onclick="delFood('+(+f.id||0)+')">×</button></div>';}).join('');
 }
 
 /* ---------- water (dietai_water) — defensive: accepts number or {date,n} ---------- */

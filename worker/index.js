@@ -27,7 +27,7 @@ const ALLOWED_EVENTS = [
   'page_view', 'plan_generated', 'premium_click', 'premium_unlocked', 'pack_opened',
   'share_plan', 'share_week', 'pack_printed', 'restore_copied',
   'checkout_opened', 'checkout_error', 'checkout_closed', 'payment_failed',
-  'restore_used', 'legacy_unlock_link', 'premium_seen', 'week_cta_click',
+  'restore_used', 'legacy_unlock_link', 'premium_seen', 'week_cta_click', 'js_error',
 ];
 const PRICE_PAISE = 9900; // ₹99 — the only place the price is decided
 const CURRENCY = 'INR';

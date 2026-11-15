@@ -632,6 +632,23 @@ async function section(title, fn) {
     ok(f.plans > 400 && f.issues.length === 0, `${f.plans} accepted bodies × 7 days: no broken numbers, and every day that misses its target says so`,
       `${f.days} days, ${f.weeks} weeks rendered; ${f.offNoted} extreme-body days carry a note${f.issues.length ? '; ' + f.issues.slice(0, 3).join(' | ') : ''}`);
   });
+  await section('Errors visitors hit are reported (once each, at most 3 a page, nothing typed)', async () => {
+    const c = await newCtx();
+    const g = await c.newPage(); // no pageerror listener: these errors are on purpose
+    await g.goto(BASE + '/?utm_source=errtest', { waitUntil: 'networkidle' });
+    const before = sent.length;
+    await g.evaluate(() => {
+      const boom = (m) => { const s = document.createElement('script'); s.textContent = 'throw new Error(' + JSON.stringify(m) + ')'; document.head.appendChild(s); };
+      boom('boom-one'); boom('boom-one'); boom('boom-two'); boom('boom-three'); boom('boom-four'); boom('boom-five');
+    });
+    await sleep(400);
+    const errsSent = sent.slice(before).filter((e) => e.event === 'js_error');
+    const ms = errsSent.map((e) => e.meta && e.meta.m);
+    ok(errsSent.length === 3 && ms.filter((m) => /boom-one/.test(m)).length === 1 && errsSent.every((e) => e.meta.p === '/' && !/[?#]/.test(e.meta.f || '')),
+      'thrown errors arrive as js_error: each message once, capped at 3, path without the query', ms.join(' | '));
+    ok(eventStatus.filter((x) => x.ev === 'js_error').every((x) => x.status === 200), 'the Worker accepts js_error');
+    await c.close();
+  });
   await section('Accessibility', async () => {
     const a11y = await page.evaluate(() => {
       const name = (el) => (el.getAttribute('aria-label') || '').trim() || (el.labels && el.labels[0] ? el.labels[0].textContent.trim() : '') || el.textContent.trim();

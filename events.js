@@ -72,6 +72,25 @@
   window.dietaiLog = log;
   window.dietaiLogOnce = logOnce;
 
+  /* Errors real visitors hit, so they can be fixed: the message and where in the code,
+     never anything typed. At most 3 per page and each message once. Scripts from other
+     origins (browser extensions, Razorpay) and the browser's opaque "Script error." are
+     ignored. */
+  try {
+    var errN = 0, errSeen = {};
+    var reportErr = function (msg, file, line, col) {
+      msg = String(msg || '').slice(0, 140);
+      if (!msg || msg === 'Script error.' || errN >= 3 || errSeen[msg]) return;
+      if (file && file.indexOf(location.origin) !== 0) return;
+      errSeen[msg] = 1; errN++;
+      log('js_error', { m: msg, f: file ? file.slice(location.origin.length).split(/[?#]/)[0].slice(0, 60) : '', l: line || 0, c: col || 0, p: location.pathname });
+    };
+    window.addEventListener('error', function (e) { if (e && e.message) reportErr(e.message, e.filename, e.lineno, e.colno); });
+    window.addEventListener('unhandledrejection', function (e) {
+      var r = e && e.reason; reportErr('unhandled: ' + (r && r.message ? r.message : String(r)), '', 0, 0);
+    });
+  } catch (e) {}
+
   /* one page_view per tab session */
   try {
     if (!sessionStorage.getItem('dietai_pv')) {
