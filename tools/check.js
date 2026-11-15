@@ -585,6 +585,21 @@ async function section(title, fn) {
       generatePlan(); return { age18: !!lastPlan && lastPlan.w === 65, flagged: document.querySelectorAll('[aria-invalid="true"]').length }; });
     ok(good.age18 && good.flagged === 0, 'accepts a valid 18-year-old and clears the error state');
   });
+  await section('Tracker starts a new day at midnight, even in a tab left open', async () => {
+    const c = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const g = await c.newPage();
+    await g.route(/^https:\/\//, (r) => r.abort());
+    await g.clock.install({ time: new Date('2026-11-15T23:50:00') });
+    await g.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
+    await g.evaluate(() => { document.getElementById('fName').value = 'Roti / Chapati (1)'; document.getElementById('fCal').value = 120; document.getElementById('fProt').value = 3; addFood(); tapWater(2); });
+    const before = await g.evaluate(() => ({ n: foods.length, w: waterN }));
+    await g.clock.fastForward('00:20:00');
+    const after = await g.evaluate(() => { document.dispatchEvent(new Event('visibilitychange')); return { n: foods.length, w: waterN, saved: localStorage.getItem('dietai_foods'), shown: document.getElementById('sCount').textContent }; });
+    ok(before.n === 1 && before.w === 3 && after.n === 0 && after.w === 0 && after.saved === '[]' && after.shown === '0', "yesterday's food and water clear on return after midnight", JSON.stringify({ before, after: { n: after.n, w: after.w } }));
+    await g.evaluate(() => { document.getElementById('fName').value = 'Banana (1)'; document.getElementById('fCal').value = 105; addFood(); });
+    ok(await g.evaluate(() => foods.length === 1 && JSON.parse(localStorage.getItem('dietai_foods')).length === 1), 'logging the next day works as normal');
+    await c.close();
+  });
   await section('Accessibility', async () => {
     const a11y = await page.evaluate(() => {
       const name = (el) => (el.getAttribute('aria-label') || '').trim() || (el.labels && el.labels[0] ? el.labels[0].textContent.trim() : '') || el.textContent.trim();

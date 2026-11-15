@@ -919,7 +919,18 @@ function autofill(){
   if(fd){$('fCal').value=fd.k;$('fProt').value=fd.p;}
 }
 function saveTarget(){localStorage.setItem('dietai_target',$('targetCal').value||'');}
+/* "Today" was worked out once, when the page loaded. A phone keeps a tab open for days, so
+   yesterday's food and water carried on into today until the page was reloaded. Every
+   tracker action now checks the date first, and so does coming back to the tab. */
+function rollDay(){
+  var now=new Date().toLocaleDateString();
+  if(now===todayStr)return false;
+  todayStr=now;foods=[];waterN=0;
+  try{localStorage.setItem('dietai_day',todayStr);localStorage.setItem('dietai_foods','[]');saveWater();}catch(e){}
+  return true;
+}
 function addFood(){
+  rollDay();
   var n=$('fName').value.trim();
   var k=parseInt($('fCal').value,10)||0,p=parseInt($('fProt').value,10)||0;
   if(!n||k<=0){toast('Enter a food name and its calories.');return;}
@@ -932,6 +943,7 @@ function addFood(){
 function delFood(id){foods=foods.filter(function(f){return f.id!==id;});localStorage.setItem('dietai_foods',JSON.stringify(foods));renderTracker();}
 function clearDay(){if(confirm("Clear all of today's entries?")){foods=[];localStorage.setItem('dietai_foods','[]');renderTracker();}}
 function renderTracker(){
+  rollDay();
   var totK=0,totP=0;foods.forEach(function(f){totK+=(+f.k||0);totP+=(+f.p||0);});
   var tgt=parseInt($('targetCal').value,10)||0;
   $('sCal').textContent=totK.toLocaleString();
@@ -966,7 +978,7 @@ function renderWater(){
   host.innerHTML=html;
   $('waterLbl').textContent='— '+(waterN*0.25).toFixed(2).replace(/\.?0+$/,'')+' L of '+(g*0.25)+' L'+(waterN>=g?' ✅ done!':'');
 }
-function tapWater(i){waterN=(i<waterN)?i:i+1;saveWater();renderWater();}
+function tapWater(i){if(rollDay())renderTracker();waterN=(i<waterN)?i:i+1;saveWater();renderWater();}
 
 /* ---------- weight (dietai_weightlog) — defensive: accepts array of {d,w} or numbers ---------- */
 function loadWeights(){
@@ -1294,6 +1306,7 @@ window.addEventListener('storage',function(e){if(e.key===UNLOCK_KEY&&e.newValue)
 window.addEventListener('focus',syncPremium);
 document.addEventListener('visibilitychange',function(){
   if(document.hidden)return;
+  if(rollDay()){renderTracker();renderWater();}
   syncPremium();
   if(!checkoutOpen&&readPending()&&!isPremium())checkPending({quiet:true});
 });
