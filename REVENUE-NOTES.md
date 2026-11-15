@@ -51,10 +51,10 @@ planner on Build muscle (`?goal=gain`, a new preset). Guide tables now say how m
 less rice/roti to eat ("about 35% more") instead of "a little". Sitemap: 14 URLs.
 
 **Tracker rolls over at midnight.** "Today" was fixed when the page loaded, and phones keep tabs
-open for days, so yesterday's food and water carried into today until a reload. Every tracker
+open for days, so yesterday's food, water and weight entry carried into today until a reload. Every tracker
 action and every return to the tab now checks the date first.
 
-**Checks:** 197, all passing. New: http → https on the planner, a guide and a calorie page,
+**Checks:** 198, all passing. New: http → https on the planner, a guide and a calorie page,
 a restore link survives the move, nothing moves with JavaScript off or on localhost, and
 the build config leaves out the internal files while keeping all 22 files the site needs.
 

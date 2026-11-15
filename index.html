@@ -991,6 +991,7 @@ function loadWeights(){
 }
 var weights=loadWeights();
 function logWeight(){
+  rollDay(); /* a weight logged after midnight in an old tab belongs to the new day */
   var v=parseFloat($('wIn').value);
   if(!v||v<20||v>400){toast('Enter a weight between 20 and 400 kg.');return;}
   var last=weights[weights.length-1];

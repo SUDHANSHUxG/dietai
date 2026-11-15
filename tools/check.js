@@ -591,13 +591,16 @@ async function section(title, fn) {
     await g.route(/^https:\/\//, (r) => r.abort());
     await g.clock.install({ time: new Date('2026-11-15T23:50:00') });
     await g.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
-    await g.evaluate(() => { document.getElementById('fName').value = 'Roti / Chapati (1)'; document.getElementById('fCal').value = 120; document.getElementById('fProt').value = 3; addFood(); tapWater(2); });
+    await g.evaluate(() => { document.getElementById('fName').value = 'Roti / Chapati (1)'; document.getElementById('fCal').value = 120; document.getElementById('fProt').value = 3; addFood(); tapWater(2);
+      document.getElementById('wIn').value = 70; logWeight(); });
     const before = await g.evaluate(() => ({ n: foods.length, w: waterN }));
     await g.clock.fastForward('00:20:00');
     const after = await g.evaluate(() => { document.dispatchEvent(new Event('visibilitychange')); return { n: foods.length, w: waterN, saved: localStorage.getItem('dietai_foods'), shown: document.getElementById('sCount').textContent }; });
     ok(before.n === 1 && before.w === 3 && after.n === 0 && after.w === 0 && after.saved === '[]' && after.shown === '0', "yesterday's food and water clear on return after midnight", JSON.stringify({ before, after: { n: after.n, w: after.w } }));
     await g.evaluate(() => { document.getElementById('fName').value = 'Banana (1)'; document.getElementById('fCal').value = 105; addFood(); });
     ok(await g.evaluate(() => foods.length === 1 && JSON.parse(localStorage.getItem('dietai_foods')).length === 1), 'logging the next day works as normal');
+    const wl = await g.evaluate(() => { document.getElementById('wIn').value = 69.5; logWeight(); return JSON.parse(localStorage.getItem('dietai_weightlog')); });
+    ok(wl.length === 2 && wl[0].w === 70 && wl[1].w === 69.5 && wl[0].d !== wl[1].d, "a weight logged after midnight starts a new day instead of overwriting yesterday's", JSON.stringify(wl));
     await c.close();
   });
   await section('Accessibility', async () => {
