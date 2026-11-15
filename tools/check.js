@@ -447,7 +447,7 @@ async function section(title, fn) {
     page = await newPage(ctx);
     await page.goto(BASE + '/', { waitUntil: 'networkidle' });
   });
-  await section('Day totals tell the truth (meals + protein top-up = the number shown)', async () => {
+  await section('Day totals tell the truth (meals + protein top-up + any extra = the number shown)', async () => {
     const cases = [['north', 'nonveg', 'male', 32, 175, 90, 'lose'], ['south', 'veg', 'female', 45, 155, 95, 'lose'],
       ['east', 'egg', 'male', 25, 180, 65, 'gain'], ['west', 'veg', 'female', 30, 160, 52, 'maintain'],
       ['northeast', 'nonveg', 'male', 55, 168, 120, 'lose'], ['pan', 'veg', 'male', 19, 172, 48, 'gain'],
@@ -460,14 +460,15 @@ async function section(title, fn) {
         const days = [...document.querySelectorAll('#weekOut details.week-day')].map((d) => {
           const meals = [...d.querySelectorAll('.wd-body > div')].map((x) => (x.textContent.match(/\((\d+) kcal \/ (\d+)g P\)/) || []).slice(1).map(Number)).filter((x) => x.length);
           const tuTxt = (d.querySelector('.wd-body') .textContent.match(/\+(\d+)g protein, \+(\d+) kcal/) || []).slice(1).map(Number);
+          const exTxt = (d.querySelector('.wd-body').textContent.match(/\(\+(\d+) kcal, \+(\d+)g protein\)/) || []).slice(1).map(Number);
           const tot = (d.querySelector('.daytot span:last-child').textContent.replace(/,/g, '').match(/(\d+) kcal · (\d+)g/) || []).slice(1).map(Number);
           const sum = (d.querySelector('summary span').textContent.replace(/,/g, '').match(/(\d+) kcal · (\d+)g/) || []).slice(1).map(Number);
-          return { mealK: meals.reduce((s, m) => s + m[0], 0), mealP: meals.reduce((s, m) => s + m[1], 0), tuP: tuTxt[0] || 0, tuK: tuTxt[1] || 0,
+          return { mealK: meals.reduce((s, m) => s + m[0], 0), mealP: meals.reduce((s, m) => s + m[1], 0), tuP: tuTxt[0] || 0, tuK: tuTxt[1] || 0, exK: exTxt[0] || 0, exP: exTxt[1] || 0,
             totK: tot[0], totP: tot[1], sumK: sum[0], sumP: sum[1], note: !!d.querySelector('.daynote'), short: /short of your protein goal/.test(d.textContent) };
         });
         return { target: lastPlan.target, protein: lastPlan.protein, days };
       }, c);
-      const addsUp = res.days.every((d) => d.mealK + d.tuK === d.totK && d.mealP + d.tuP === d.totP && d.totK === d.sumK && d.totP === d.sumP);
+      const addsUp = res.days.every((d) => d.mealK + d.tuK + d.exK === d.totK && d.mealP + d.tuP + d.exP === d.totP && d.totK === d.sumK && d.totP === d.sumP);
       const onTarget = res.days.every((d) => d.totK <= res.target * 1.05 || d.note);
       const shortSaid = res.days.every((d) => d.totP >= res.protein - 8 || d.short);
       const worst = Math.max(...res.days.map((d) => d.totK - res.target));
@@ -485,7 +486,8 @@ async function section(title, fn) {
           const day = buildDay(d, lastPlan.target, lastPlan.protein, rg, dt); n++;
           let k = 0; day.meals.forEach((m) => { k += Math.round(m[2].k * day.scale); });
           const tuK = day.tu ? day.tu.items.reduce((s, it) => s + it.kcal, 0) : 0;
-          if (k + tuK !== day.totK) hidden++;
+          const exK = day.ex ? day.ex.items.reduce((s, it) => s + it.kcal, 0) : 0;
+          if (k + tuK + exK !== day.totK) hidden++;
           const diff = day.totK - lastPlan.target, noted = diff > Math.max(60, lastPlan.target * 0.05); // dayTotalHTML shows a note then
           if (noted) flagged++;
           if (day.totK > lastPlan.target * 1.05 && !noted) over++;
@@ -504,6 +506,44 @@ async function section(title, fn) {
     });
     ok(pv.rows === pv.tot && pv.tot === pv.monday, 'free Monday preview total = its rows = the paid Monday', JSON.stringify(pv));
     await page.evaluate((t) => localStorage.setItem('dietai_unlock', JSON.stringify({ t, v: Date.now() })), paidToken);
+  });
+  await section('High calorie targets are met, not just flagged (muscle gain, very active)', async () => {
+    const r = await page.evaluate(() => {
+      const bodies = [['male', 22, 175, 60, '1.55', 'gain'], ['male', 30, 178, 72, '1.725', 'gain'], ['male', 25, 183, 80, '1.9', 'maintain'],
+        ['female', 24, 160, 48, '1.375', 'gain'], ['male', 32, 175, 90, '1.375', 'lose'], ['female', 45, 155, 95, '1.375', 'lose']];
+      let n = 0, under = 0, over = 0, ex = 0, loseEx = 0, worst = 0;
+      for (const rg of Object.keys(REGIONS)) for (const dt of ['veg', 'egg', 'nonveg']) for (const [sx, a, h, w, act, gl] of bodies) {
+        region = rg; diet = dt; sex = sx; goal = gl;
+        document.getElementById('age').value = a; document.getElementById('height').value = h; document.getElementById('weight').value = w; document.getElementById('activity').value = act;
+        generatePlan();
+        for (let d = 0; d < 7; d++) {
+          const day = buildDay(d, lastPlan.target, lastPlan.protein, rg, dt), diff = day.totK - lastPlan.target, lim = Math.max(60, lastPlan.target * 0.05); n++;
+          if (-diff > lim) under++; if (diff > lim) over++; if (day.ex) { ex++; if (gl === 'lose') loseEx++; }
+          if (Math.abs(diff) > Math.abs(worst)) worst = diff;
+        }
+      }
+      document.getElementById('activity').value = '1.375';
+      return { n, under, over, ex, loseEx, worst };
+    });
+    ok(r.under === 0 && r.over === 0, `all ${r.n} plan-days land within 5% of the target`, `worst ${r.worst > 0 ? '+' : ''}${r.worst} kcal; ${r.ex} days needed an extra`);
+    ok(r.loseEx === 0, 'fat-loss plans at light activity never get an extra');
+    const g = await page.evaluate(() => { region = 'north'; diet = 'veg'; sex = 'male'; goal = 'gain';
+      document.getElementById('age').value = 22; document.getElementById('height').value = 175; document.getElementById('weight').value = 60; document.getElementById('activity').value = '1.55';
+      generatePlan(); lastWeek = null; buildWeek(true);
+      const want = {}; lastWeek.forEach((w) => [w.day.tu, w.day.ex].forEach((x) => { if (x) x.items.forEach((it) => { if (it.k !== 'atta') want[it.k] = (want[it.k] || 0) + it.amt; }); }));
+      const rowFor = (label) => { const row = [...document.querySelectorAll('#weekOut .gro-row')].find((x) => x.firstChild.textContent.indexOf(label) === 0); return row ? row.lastChild.textContent : null; };
+      const kk = [...document.querySelectorAll('#mealPlan .meal .mk')].map((x) => Number((x.textContent.match(/(\d+) kcal/) || [0, 0])[1])).reduce((s, x) => s + x, 0);
+      const shown = Number(document.querySelector('#mealPlan .daytot span:last-child').textContent.replace(/,/g, '').match(/(\d+) kcal/)[1]);
+      const out = { want, banana: rowFor('Banana'), peanuts: rowFor('Peanuts'), plan: document.getElementById('mealPlan').textContent, note: document.getElementById('portionNote').textContent,
+        share: planText(), week: document.getElementById('weekOut').textContent, kk, shown, target: lastPlan.target };
+      document.getElementById('activity').value = '1.375';
+      return out;
+    });
+    ok(/Extra to reach your target/.test(g.plan) && /with the protein top-up and the extra|with the extra/.test(g.note) && g.kk === g.shown && Math.abs(g.shown - g.target) <= g.target * 0.05,
+      'a muscle-gain plan shows the extra, and its rows add up to the day total', `${g.shown} of ${g.target} kcal`);
+    ok(/Extra to reach your target/.test(g.week) && /Extra to reach your target/.test(g.share), 'the paid week and the WhatsApp text include the extra');
+    const num = (t) => (t ? parseFloat(t.replace(/[^\d.]/g, '')) * (/kg/.test(t) ? 1000 : 1) : 0);
+    ok((!g.want.banana || num(g.banana) >= g.want.banana) && (!g.want.peanuts || num(g.peanuts) >= g.want.peanuts), 'the grocery list covers the extras', `banana ${g.banana} for ${g.want.banana || 0}, peanuts ${g.peanuts} for ${g.want.peanuts || 0} g`);
   });
   await section('Grocery list', async () => {
     const gro = await page.evaluate(() => { region = 'south'; diet = 'egg'; sex = 'male'; goal = 'lose';

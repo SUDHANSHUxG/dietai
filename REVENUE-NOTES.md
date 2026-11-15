@@ -35,7 +35,15 @@ is duplicated — plus a vegetarian protein table sorted by protein per 100 kcal
 first). Every figure, including the 1.6 g/kg protein goal, is read from `index.html`. Linked
 from the homepage footer, the guides and the calorie pages; the sitemap now has 13 URLs.
 
-**Checks:** 186, all passing. New: http → https on the planner, a guide and a calorie page,
+**Muscle-gain plans now reach their target.** Meals stop growing at 1.35× portions, so for a
+young man building muscle (targets around 2,750–3,200 kcal) every day came out 500–1,100 kcal
+short, with only a note to "add a roti". A new "Extra to reach your target" row closes the gap
+with everyday foods in the tracker's own figures — toned milk, banana, peanuts, roti — and is
+counted in the day totals, the paid week, the grocery list, the printout and the WhatsApp text.
+Across 882 plan-days (6 bodies × 7 regions × 3 diets × 7 days) every day now lands within 5% of
+its target. Fat-loss plans at light activity never get an extra, so the main audience sees no change.
+
+**Checks:** 191, all passing. New: http → https on the planner, a guide and a calorie page,
 a restore link survives the move, nothing moves with JavaScript off or on localhost, and
 the build config leaves out the internal files while keeping all 22 files the site needs.
 

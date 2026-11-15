@@ -773,8 +773,9 @@ function buildDay(dayIdx,target,protein,rg,dt){
   var meals=[["Breakfast","🌅",pickMeal(R.B,dayIdx,false,dt)],["Lunch","☀️",pickMeal(R.L,dayIdx,highP,dt)],["Dinner","🌙",pickMeal(R.D,dayIdx+1,highP,dt)],["Snack","🍎",pickMeal(R.S,dayIdx,highP,dt)]];
   var k=0,p=0;meals.forEach(function(m){k+=m[2].k;p+=m[2].p;});
   var f=fitDay(meals,k,target,protein,dt||diet);
-  /* k/p: the dishes as described. mealK/mealP: as portioned. totK/totP: with the top-up. */
-  return {meals:meals,k:k,p:p,scale:f.scale,tu:f.tu,mealK:f.mealK,mealP:f.mealP,totK:f.totK,totP:f.totP,target:target,protein:protein};
+  var ex=extraFor(target,target-f.totK);
+  /* k/p: the dishes as described. mealK/mealP: as portioned. totK/totP: with the top-up and any extra. */
+  return {meals:meals,k:k,p:p,scale:f.scale,tu:f.tu,ex:ex,mealK:f.mealK,mealP:f.mealP,totK:f.totK+(ex?ex.kcal:0),totP:f.totP+(ex?ex.got:0),target:target,protein:protein};
 }
 /* The planner's formulas (Mifflin-St Jeor, a fixed deficit) are adult formulas;
    the disclaimer already sends under-18s to a doctor. One constant to change. */
@@ -846,11 +847,14 @@ function generatePlan(){
   });
   var tu=day.tu;
   if(tu)html+='<div class="meal" style="animation-delay:400ms;border-color:rgba(90,162,255,.35)"><div class="ic" style="background:rgba(90,162,255,.14)">➕</div><div><div class="mt">Protein top-up</div><div class="mi">'+esc(topUpText(tu))+'</div></div><div class="mk" style="color:var(--p)">'+(tu.kcal?tu.kcal+' kcal<br>':'')+'+'+tu.got+'g P</div></div>';
+  var ex=day.ex;
+  if(ex)html+='<div class="meal" style="animation-delay:460ms;border-color:rgba(255,184,77,.35)"><div class="ic" style="background:rgba(255,184,77,.14)">🥛</div><div><div class="mt">Extra to reach your target</div><div class="mi">'+esc(ex.combo.join(' + '))+' — eat it as a snack or with any meal</div></div><div class="mk">'+ex.kcal+' kcal<br><span style="color:var(--p)">+'+ex.got+'g P</span></div></div>';
   host.innerHTML=html+dayTotalHTML(day);
   $('mealHead').textContent='🍽️ Your day — '+REGIONS[region].n+(region==='pan'?'':' India')+' style';
-  var pct=Math.round(Math.abs(1-day.scale)*100);
-  $('portionNote').textContent=day.scale.toFixed(2)==='1.00'?'Portions as described hit your target'+(tu&&tu.kcal?', with the top-up counted':'')+'.':
-    'Portions scaled ×'+day.scale.toFixed(2)+' so the day'+(tu&&tu.kcal?', including the protein top-up,':'')+' fits your '+target.toLocaleString()+' kcal target — eat about '+pct+'% '+(day.scale<1?'less':'more')+' rice/roti than written.';
+  var pct=Math.round(Math.abs(1-day.scale)*100),withs=[];
+  if(tu&&tu.kcal)withs.push('the protein top-up');if(ex)withs.push('the extra');
+  $('portionNote').textContent=day.scale.toFixed(2)==='1.00'?'Portions as described hit your target'+(withs.length?', with '+withs.join(' and ')+' counted':'')+'.':
+    'Portions scaled ×'+day.scale.toFixed(2)+' so the day'+(withs.length?', with '+withs.join(' and ')+',':'')+' fits your '+target.toLocaleString()+' kcal target — eat about '+pct+'% '+(day.scale<1?'less':'more')+' rice/roti than written.';
 
   lastPlan={target:target,protein:protein,carbs:carbs,fat:fat,water:waterL,region:region,diet:diet,w:w};
   try{localStorage.setItem('dietai_plan',JSON.stringify(lastPlan));}catch(e){}
@@ -867,6 +871,7 @@ function planText(){
    '🎯 '+lastPlan.target.toLocaleString()+' kcal · '+lastPlan.protein+'g protein · '+lastPlan.water+'L water',''];
   day.meals.forEach(function(m){lines.push(m[1]+' *'+m[0]+'*: '+m[2].t+' — '+m[2].d+' ('+Math.round(m[2].k*day.scale)+' kcal)');});
   if(day.tu&&day.tu.combo.length)lines.push('➕ *Protein top-up*: '+day.tu.combo.join(' + ')+' ('+day.tu.kcal+' kcal)');
+  if(day.ex)lines.push('🥛 *Extra to reach your target*: '+day.ex.combo.join(' + ')+' ('+day.ex.kcal+' kcal)');
   lines.push('📊 Day total: '+day.totK.toLocaleString()+' kcal · '+day.totP+'g protein');
   lines.push('','Get yours free → https://dietai.in/?utm_source=whatsapp');
   return lines.join('\n');
@@ -1335,12 +1340,47 @@ function topUpText(t){
   if(t.short>8)s+=' — still ~'+t.short+'g short of your protein goal'+(t.byCal?'; more would take you over your calories':'; that is the honest ceiling for these meals');
   return s;
 }
-/* One line under a day: the real total, meals plus top-up, against the target. */
+/* Meals stop growing at 1.35x (past that, a portion is no longer the dish described), so a
+   high target -- muscle gain, or a tall, active man -- used to end 500-1,100 kcal short, with
+   only a note to "add a roti". The gap is now closed with everyday foods, using the tracker's
+   figures (Milk, toned (1 cup) 120 kcal / 8 g; Banana 105 / 1; Peanuts (30g) 170 / 7;
+   Roti 120 / 3), added one at a time in this order and counted like everything else.
+   gro: what one serving adds to the grocery list, in that item's unit (ml, count, g, g of atta). */
+var EXTRA=[
+  {k:'milk',one:'cup toned milk',many:'cups toned milk',kc:120,p:8,max:2,gro:200},
+  {k:'banana',one:'banana',many:'bananas',kc:105,p:1,max:2,gro:1},
+  {k:'peanuts',grams:30,kc:170,p:7,max:2,gro:30},
+  {k:'atta',one:'roti',many:'roti',kc:120,p:3,max:3,gro:45}
+];
+/* gapK: how far meals + top-up fall below the target. Only a gap the day would otherwise have
+   to apologise for (dayTotalHTML's threshold) gets an extra; it stops within 2% of the target
+   and never goes more than 3% over. */
+function extraFor(target,gapK){
+  if(!(gapK>Math.max(60,target*0.05)))return null;
+  var cnt={},kcal=0,got=0,ceil=gapK+Math.max(30,target*0.03),close=target*0.02,added=true;
+  while(added&&gapK-kcal>close){
+    added=false;
+    for(var i=0;i<EXTRA.length&&gapK-kcal>close;i++){
+      var e=EXTRA[i];
+      if((cnt[e.k]||0)>=e.max||kcal+e.kc>ceil)continue;
+      cnt[e.k]=(cnt[e.k]||0)+1;kcal+=e.kc;got+=e.p;added=true;
+    }
+  }
+  if(!kcal)return null;
+  var combo=[],items=[];
+  EXTRA.forEach(function(e){var n=cnt[e.k];if(!n)return;
+    combo.push(e.grams?(n*e.grams)+'g peanuts':n+' '+(n>1?e.many:e.one));
+    items.push({k:e.k,amt:n*e.gro,kcal:n*e.kc});});
+  return {combo:combo,items:items,kcal:kcal,got:got};
+}
+function extraText(x){return x.combo.join(' + ')+' (+'+x.kcal+' kcal, +'+x.got+'g protein)';}
+/* One line under a day: the real total, meals plus top-up plus any extra, against the target. */
 function dayTotalHTML(day){
   var diff=day.totK-day.target,note='';
   if(diff>Math.max(60,day.target*0.05))note='Even with the smallest portions we suggest, this day is ~'+diff+' kcal over your target. Skip part of the top-up if you\'d rather stay on target.';
   else if(-diff>Math.max(60,day.target*0.05))note='This day comes to ~'+(-diff)+' kcal under your target — add a roti or a little rice to make it up.';
-  return '<div class="daytot"><span>Day total'+(day.tu&&day.tu.kcal?'<i>incl. top-up</i>':'')+'</span><span>'+day.totK.toLocaleString()+' kcal · '+day.totP+'g protein</span></div>'+
+  var inc=[];if(day.tu&&day.tu.kcal)inc.push('top-up');if(day.ex)inc.push('extra');
+  return '<div class="daytot"><span>Day total'+(inc.length?'<i>incl. '+inc.join(' + ')+'</i>':'')+'</span><span>'+day.totK.toLocaleString()+' kcal · '+day.totP+'g protein</span></div>'+
     (note?'<p class="daynote">'+esc(note)+'</p>':'');
 }
 
@@ -1496,6 +1536,9 @@ function previewRows(day){
     return '<div class="pv-row"><div class="ic">'+m[1]+'</div><div class="tx"><div class="tt">'+esc(m[0])+' \u2014 '+esc(m[2].t)+'</div><div class="td">'+esc(m[2].d)+'</div></div><div class="kk">'+Math.round(m[2].k*day.scale)+' kcal<br>'+Math.round(m[2].p*day.scale)+'g P</div></div>';
   }).join('');
 }
+function extraRow(x){
+  return '<div class="pv-row" style="border-color:rgba(255,184,77,.35)"><div class="ic">🥛</div><div class="tx"><div class="tt">Extra to reach your target</div><div class="td">'+esc(x.combo.join(' + '))+'</div></div><div class="kk">'+x.kcal+' kcal<br>+'+x.got+'g P</div></div>';
+}
 function topUpRow(tu){
   return '<div class="pv-row" style="border-color:rgba(90,162,255,.35)"><div class="ic">➕</div><div class="tx"><div class="tt">Protein top-up</div><div class="td">'+esc(topUpText(tu))+'</div></div><div class="kk" style="color:var(--p)">'+(tu.kcal?tu.kcal+' kcal<br>':'')+'+'+tu.got+'g P</div></div>';
 }
@@ -1521,7 +1564,7 @@ function renderPremium(){
   }).join('');
   host.innerHTML=
     '<div class="pv"><div class="pv-head"><span>🌅 Monday · target '+lastPlan.target.toLocaleString()+' kcal · '+lastPlan.protein+'g protein</span><span class="free">FREE</span></div>'+
-    previewRows(day)+(day.tu?topUpRow(day.tu):'')+dayTotalHTML(day)+
+    previewRows(day)+(day.tu?topUpRow(day.tu):'')+(day.ex?extraRow(day.ex):'')+dayTotalHTML(day)+
     '<div class="pv-locked"><div class="blur" aria-hidden="true">'+rest+'</div>'+
     '<div class="cap"><div><b>🔒 Tuesday to Sunday</b><span>24 more meals, plus the grocery list to cook them</span></div></div></div></div>';
 }
@@ -1544,15 +1587,20 @@ function buildWeek(quiet){
       rows+='<div style="border-top:1px solid var(--line);padding-top:6px;margin-top:2px"><b style="color:var(--p)">➕ Protein top-up:</b> <span style="color:var(--muted)">'+esc(topUpText(tu))+'</span></div>';
       tu.items.forEach(function(it){bag[it.k]=(bag[it.k]||0)+it.amt;});
     }
+    var ex=day.ex;
+    if(ex){
+      rows+='<div style="border-top:1px solid var(--line);padding-top:6px;margin-top:2px"><b style="color:var(--c)">🥛 Extra to reach your target:</b> <span style="color:var(--muted)">'+esc(extraText(ex))+'</span></div>';
+      ex.items.forEach(function(it){bag[it.k]=(bag[it.k]||0)+it.amt;});
+    }
     rows+=dayTotalHTML(day);
     out+='<details class="week-day"'+(di===0?' open':'')+'><summary>'+dn+'<span style="color:var(--g1);font-weight:800">'+day.totK.toLocaleString()+' kcal · '+day.totP+'g P</span></summary><div class="wd-body">'+rows+'</div></details>';
   });
   out+='<div class="week-day" style="margin-top:14px"><div style="padding:14px"><b>🛒 Grocery list — the whole week, one trip</b>'+groRender(bag)+
-    '<p class="hint">Raw/uncooked quantities, already scaled to your portions, including each day\'s protein top-up. Round up to the nearest packet. Day totals include the top-up.</p></div></div>';
+    '<p class="hint">Raw/uncooked quantities, already scaled to your portions, including each day\'s protein top-up and any extra. Round up to the nearest packet. Day totals include both.</p></div></div>';
   $('printHead').innerHTML='<div class="ph-t">🥗 Diet AI — your 7-day plan</div><div class="ph-s">'+
     esc(REGIONS[lastPlan.region].n)+' · '+esc(lastPlan.diet==='veg'?'Vegetarian':lastPlan.diet==='egg'?'Veg + egg':'Non-vegetarian')+
     ' · target '+lastPlan.target.toLocaleString()+' kcal/day · '+lastPlan.protein+'g protein/day · '+lastPlan.water+'L water/day'+
-    '<br>Day totals include the protein top-up. Generated '+new Date().toLocaleDateString()+' · dietai.in · General nutrition estimates, not medical advice.</div>';
+    '<br>Day totals include the protein top-up and any extra to reach your target. Generated '+new Date().toLocaleDateString()+' · dietai.in · General nutrition estimates, not medical advice.</div>';
   $('weekOut').innerHTML=out;
   $('weekActions').style.display='grid';
   $('cheatSheet').innerHTML='<div class="week-day"><div style="padding:14px"><b>💪 Protein cheat-sheet — common Indian sources</b>'+
