@@ -3,14 +3,25 @@
    main script runs. Every call is wrapped: this file can never break the site.
    Worker: dietai-events (Cloudflare).
 
-   Why not deferred any more: the main script strips ?premium=unlocked from the
-   URL with history.replaceState during parsing. A deferred logger runs AFTER
-   that and can never see the param, so the purchase event was never sent.
-   The main script now calls dietaiLog('premium_unlocked') itself, before it
-   strips the param. */
+   Why not deferred: the main script logs the unlock itself (dietaiLog /
+   dietaiLogOnce) as soon as the Worker confirms a payment, so the logger must
+   exist before it runs. The authoritative sale count is now 'payment_verified',
+   written by the Worker after Razorpay confirms the money; 'premium_unlocked'
+   from the browser is a secondary signal. */
 (function () {
   var WORKER = 'https://dietai-events.sudhanshuxg.workers.dev';
   var PRODUCT = 'dietai';
+
+  /* Only the real site may write to the funnel. The repo also deploys to
+     Vercel, and its deployment bots and preview URLs were landing in D1 as
+     "direct" page views at the exact moment of every deploy. The Worker accepts
+     any origin, so the guard has to live here. localhost stays allowed so the
+     end-to-end checks (which intercept the Worker) can see events. */
+  var host = location.hostname;
+  if (!/^(www\.)?dietai\.in$|^localhost$|^127\.0\.0\.1$/.test(host)) {
+    window.dietaiLog = window.dietaiLogOnce = function () {};
+    return;
+  }
 
   /* ---- first-touch attribution -------------------------------------------
      Razorpay bounces the user off-site and back, which destroys document.referrer.
@@ -48,7 +59,7 @@
   }
 
   /* Fire an event at most once per browser, ever. Used for the purchase event so
-     a refresh of /?premium=unlocked can't inflate the conversion count. */
+     a refresh or a second visit can't inflate the conversion count. */
   function logOnce(event, meta) {
     try {
       var k = 'dietai_ev_' + event;
@@ -61,6 +72,25 @@
   window.dietaiLog = log;
   window.dietaiLogOnce = logOnce;
 
+  /* Errors real visitors hit, so they can be fixed: the message and where in the code,
+     never anything typed. At most 3 per page and each message once. Scripts from other
+     origins (browser extensions, Razorpay) and the browser's opaque "Script error." are
+     ignored. */
+  try {
+    var errN = 0, errSeen = {};
+    var reportErr = function (msg, file, line, col) {
+      msg = String(msg || '').slice(0, 140);
+      if (!msg || msg === 'Script error.' || errN >= 3 || errSeen[msg]) return;
+      if (file && file.indexOf(location.origin) !== 0) return;
+      errSeen[msg] = 1; errN++;
+      log('js_error', { m: msg, f: file ? file.slice(location.origin.length).split(/[?#]/)[0].slice(0, 60) : '', l: line || 0, c: col || 0, p: location.pathname });
+    };
+    window.addEventListener('error', function (e) { if (e && e.message) reportErr(e.message, e.filename, e.lineno, e.colno); });
+    window.addEventListener('unhandledrejection', function (e) {
+      var r = e && e.reason; reportErr('unhandled: ' + (r && r.message ? r.message : String(r)), '', 0, 0);
+    });
+  } catch (e) {}
+
   /* one page_view per tab session */
   try {
     if (!sessionStorage.getItem('dietai_pv')) {
@@ -69,11 +99,11 @@
     }
   } catch (e) { log('page_view'); }
 
-  /* Backstop: if this browser is premium but the purchase was never reported,
-     report it now. Covers the case where the GitHub Pages CDN is still serving a
-     stale index.html that doesn't call dietaiLog itself. Costs one visit of delay,
-     but a sale gets counted instead of vanishing. */
+  /* Backstop: if this browser holds a server-issued unlock but the purchase was
+     never reported, report it now. (The old 'dietai_premium' flag was set by a URL
+     anyone could type, so it no longer counts as a purchase.) */
   try {
-    if (localStorage.getItem('dietai_premium') === '1') logOnce('premium_unlocked', { via: 'backstop' });
+    var u = JSON.parse(localStorage.getItem('dietai_unlock') || 'null');
+    if (u && typeof u.t === 'string' && u.t.indexOf('v1.pay_') === 0) logOnce('premium_unlocked', { via: 'backstop' });
   } catch (e) {}
 })();

@@ -1,5 +1,5 @@
 /* Diet AI service worker — offline-first for the app shell */
-var CACHE = 'dietai-v5';
+var CACHE = 'dietai-v6'; /* v6: server-verified payments + honest day totals */
 var ASSETS = ['/', '/index.html', '/events.js', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', function (e) {

@@ -2,6 +2,182 @@
 
 Written 2026-09-05. Conclusions live here, not in a chat transcript.
 
+## 15 Nov 2026 — sixth pass: https only, and internal files off the site
+
+**http:// was a live path.** GitHub Pages "Enforce HTTPS" is off (the certificate is ready
+and the DNS check passes), so `http://dietai.in` serves the site too. That would have
+broken the new payments in two ways: the Worker accepts only `https://` origins, so
+checkout fails with `origin_not_allowed` for anyone on http; and browser storage is kept
+per origin, so an unlock or a saved plan made on http is invisible on https. Fix in code:
+the first script on every page sends http visitors to `https://dietai.in`, keeping the
+path, the query (restore links) and the hash. Ticking the setting is step 9 in
+`worker/README.md` and needs a yes.
+
+**Internal notes were public pages.** With no `_config.yml`, Jekyll rendered this file as
+a page at `https://dietai.in/REVENUE-NOTES` (status 200, checked 15 Nov) and served
+`tools/*.js` and `build-preview.py`; after the merge it would also have served the Worker
+source and its runbook. `_config.yml` now leaves `REVENUE-NOTES.md`, `README.md`,
+`worker/` and `tools/` out of the build. The repo itself is public, so these files stay
+readable on GitHub: keys and anything secret never go in the repo.
+
+**Two Worker fixes before it goes live.** Restore accepted any amount when a payment carried
+the `dietai` tag, but payment notes come from the browser — now a payment must be exactly ₹99
+and not tagged for another product (your 21 Oct ₹99 payment, untagged, still restores). And
+test-key payments were logged as `payment_verified`, the real sale count; they are now
+`payment_verified_test`, so the coming test payment can't show up as a sale.
+
+**One more door from search: `/vegetarian-indian-diet-plan/`.** "Vegetarian diet plan for
+weight loss" is a common diet search in India (volume not measured — check Search Console
+once it has data), and no page answered it. Three
+vegetarian days (no egg or meat) at 1,500 kcal — the highest-protein vegetarian day each
+region's meals allow, skipping the two regions the 1,500 kcal page already shows, so no table
+is duplicated — plus a vegetarian protein table sorted by protein per 100 kcal (soya chunks
+first). Every figure, including the 1.6 g/kg protein goal, is read from `index.html`. Linked
+from the homepage footer, the guides and the calorie pages; the sitemap now has 13 URLs.
+
+**Muscle-gain plans now reach their target.** Meals stop growing at 1.35× portions, so for a
+young man building muscle (targets around 2,750–3,200 kcal) every day came out 500–1,100 kcal
+short, with only a note to "add a roti". A new "Extra to reach your target" row closes the gap
+with everyday foods in the tracker's own figures — toned milk, banana, peanuts, roti — and is
+counted in the day totals, the paid week, the grocery list, the printout and the WhatsApp text.
+Across 882 plan-days (6 bodies × 7 regions × 3 diets × 7 days) every day now lands within 5% of
+its target. Fat-loss plans at light activity never get an extra, so the main audience sees no change.
+
+**A page for the other half of the planner: `/indian-diet-plan-for-weight-gain/`.** Now
+that gain plans reach their target, they get a door from search too: three days at 2,800 kcal
+(non-veg, egg, vegetarian), each built with the planner's own `EXTRA` list and `extraFor()`
+code read from `index.html`, so the page and the app can't drift apart. Its button opens the
+planner on Build muscle (`?goal=gain`, a new preset). Guide tables now say how much more or
+less rice/roti to eat ("about 35% more") instead of "a little". Sitemap: 14 URLs.
+
+**Tracker rolls over at midnight.** "Today" was fixed when the page loaded, and phones keep tabs
+open for days, so yesterday's food, water and weight entry carried into today until a reload. Every tracker
+action and every return to the tab now checks the date first.
+
+**Fuzzed the planner across every body the form accepts** (ages 18–100, 120–230 cm, 30–300 kg,
+both sexes, all goals, activities, diets and regions): 456 accepted bodies × 7 days, no broken
+numbers, and every day that misses its target says so. The days that still miss are extreme:
+targets above ~3,700 kcal (200–300 kg, or 230 cm athletes), where meals at 1.35× plus the largest
+extra can't reach, and tiny women at the 1,200 kcal floor (up to ~100 kcal over). Open question
+for a nutritionist, not code: for very high BMIs the formula uses actual weight, so a 300 kg
+"athlete" gets a fat-loss target near 7,800 kcal; an adjusted weight would be more sensible.
+
+**Decision (owner, 15 Nov): live Razorpay keys directly, no test-mode payment.** The live keys
+will be checked without spending — a restore with the 21 Oct ₹99 payment and a ₹99 order
+created but not paid — then the real checkout opened and closed on dietai.in after the merge.
+Deploying waits for the owner's "yes, deploy DietAI" (asked 15 Nov: "Not yet").
+
+**Terms, privacy and delivery page (`/policies/`).** The site took ₹99 with no terms, privacy or
+delivery page, and the Razorpay customer-support contact (phone, email, website) is empty, so
+receipts show no way to reach the seller. Owner's choices (15 Nov): seller shown as "Diet AI"
+only; no contact email yet; no refund promise yet; leave Razorpay's support details empty.
+The page covers terms, pricing (₹99 one time), privacy (written from what the code actually
+sends and stores) and delivery (digital, instant, "Already paid?" if it doesn't open). Linked
+from every footer, kept out of the sitemap. The data FAQ now says a made plan's region, diet,
+goal and calorie target are counted, and that the payment ID and amount are kept — it used to
+say plans are never uploaded. Still open: a contact route. Razorpay's own guidance sends
+buyers to the seller's contact page, and buyers who can't reach a seller go to their bank.
+
+**Errors real visitors hit are now reported.** Nothing told us when the page broke on someone's
+phone. `events.js` now sends a `js_error` event (message, file path, line; never anything typed;
+each message once, at most 3 per page; other origins' scripts ignored), and the Worker accepts it.
+The privacy page and the data FAQ say so. The tracker's × buttons now have names for screen readers.
+
+**Share my plan as an image.** WhatsApp and Instagram run on pictures; sharing was text only.
+A new button draws the free Monday as a 1080×1350 card — target, protein, water, each meal's
+calories, the day total and "Get yours free → dietai.in" — and opens the phone's share sheet
+where the browser can share files, otherwise saves the PNG. Counted as `share_plan` with
+`as: "image"`, so the Worker needs no change. Rows share the space, so 4 to 6 rows always fit.
+
+**Grocery list on WhatsApp.** In many homes someone else shops or cooks. The paid week now has
+"Send the grocery list on WhatsApp": the same list as on screen, grouped by aisle, as plain text
+(extras included). Counted as `share_week` with `what: "grocery"`; no Worker change.
+
+**Found while checking Cloudflare (15 Nov):** the Worker has no secrets at all, not even the
+`ADMIN_KEY` the runbook said was set, so `/funnel` answers 401 until one is added. Claude reads
+D1 directly, so nothing is blocked; the runbook now says so.
+
+**Checks:** 209, all passing. New: http → https on the planner, a guide and a calorie page,
+a restore link survives the move, nothing moves with JavaScript off or on localhost, and
+the build config leaves out the internal files while keeping all 22 files the site needs.
+
+## 14 Nov 2026 — fifth pass: verified payments, honest day totals, toned-down claims
+
+Supersedes the "honour-based paywall" and "every day hits protein" lines further down.
+
+**Payments.** The pack unlocked from a URL anyone could type (`/?premium=unlocked`), the
+restore link was that same URL, and `premium_unlocked` fired whenever it was opened. Now
+the page opens Razorpay's checkout itself (UPI first), the Worker (`worker/index.js`,
+deployed as `dietai-events`) creates the order at a fixed ₹99, checks Razorpay's signature
+and the payment, and issues a signed unlock token. The URL does nothing; the legacy
+`dietai_premium` flag is ignored. A UPI app that kills the browser tab no longer loses the
+sale: the order ID is saved first and checked on return. Customers restore on a new phone
+with their payment ID or a personal restore link. Razorpay data, 14 Nov: the one stranger
+who tried to pay (21 Oct) failed with `payment_timed_out` at `payment_authentication` —
+the UPI request was never approved in their app. Checkout now says exactly that, says no
+money was taken, and offers the retry.
+
+**The authoritative sale metric is now `payment_verified`**, written by the Worker after
+Razorpay confirms the money (one row per payment). Runs on test keys are logged as
+`payment_verified_test` instead, so they never count. `premium_unlocked` is secondary.
+
+**Calories.** Top-up calories were never counted: across 735 plan-days (7 regions × 3
+diets × 5 body types × 7 days) the real day ran a median **+667 kcal** over target, worst
++1,087 — the whole fat-loss deficit and more. Now meals shrink to make room (to the usual
+75% floor), the top-up is capped by the calories left (+3% slack), and every total shown —
+planner, free Monday, the 7 days, print, WhatsApp text — is meals + top-up. After: median
++29 kcal, worst +67, none hidden. Top-up order is now by protein per calorie (soya, eggs,
+paneer, curd).
+
+**The trade-off this exposed, and the call made (15 Nov).** With calories honest, the
+1.8 g/kg protein target was out of reach on most weight-loss days. It is now **1.6 g/kg** —
+the top of the 1.2–1.6 g/kg range the ISSN position stand gives for the general population
+(see "Protein target evidence" below). Days that still fall short say so ("still ~X g short
+of your protein goal"). One constant, `PROTEIN_PER_KG` in `generatePlan()`:
+
+| protein target | weight-loss plan-days >8 g short (of 441) |
+|---|---|
+| 1.8 g/kg (until 15 Nov) | 426 (97%) |
+| **1.6 g/kg (now)** | 248 (56%) |
+| 1.4 g/kg | 64 (15%) |
+
+Delivered protein on those days is still ~1.5 g/kg of adjusted weight (median).
+
+**Claims removed or softened** (no qualified person has checked them): "the formula
+dietitians use", "same formulas dietitians use" (1.8 g/kg is not that), "the pace most
+dietitians consider sustainable", "safe minimum", "exact calorie targets", "AI nutrition
+coach", "Healthy weight" (now "BMI 18.5–25 range" — Indian guidelines use a lower upper
+cut-off; also a decision for an expert), guide lines such as "makes sure most of it comes
+from fat", "ideal weight-loss meal", "what most adults should aim for". The page `<title>`
+still says "Free AI Diet Plan" — left alone on purpose (it is what ranks; decide with
+Search Console data).
+
+**Funnel, read from D1 on 14 Nov (27 Oct–14 Nov).** Home page visits: Google 26, Bing 8,
+Yahoo/DuckDuckGo 3, "direct" 37 (owner, deploy bots, tests). The 7 regional guides: 1 visit.
+Plans built: 34 from search. ₹99 clicks from search visitors: **0** (the one click was the
+owner). So the blocker is attention and traffic, not checkout: the offer sat below the
+tracker buttons. Added a "See all 7 days" button under the plan and two events,
+`premium_seen` and `week_cta_click`, to tell whether people now reach the offer.
+
+**Search.** dietai.in had never been added to Google Search Console (no property on
+sudhanshuxg@gmail.com), so Google was never sent the sitemap — likely why the guides get
+no visits. A URL-prefix property for https://dietai.in/ was created on 14 Nov;
+`googlea16ee8de3adc33ae.html` verifies it once the site is deployed. Then submit
+`sitemap.xml` and request indexing for the guides. `2cae93f145dcf1d71723273726fad40a.txt`
+is the IndexNow key (Bing, Yandex) — no account needed. Four calorie-level pages added
+(1,200 / 1,500 / 1,800 / 2,000 kcal), generated from the planner's data.
+
+**Protein target evidence (for the decision above).** ICMR-NIN 2020 RDA for healthy
+Indian adults: 0.83 g/kg (1 g/kg on cereal-based diets). ISSN position stand on diets for
+body-weight reduction: 1.2–1.6 g/kg for the general population, 1.6–2.2 g/kg with
+resistance training. The planner's 1.8 g/kg sits above the general-population range;
+1.6 g/kg is the top of it — now the planner's target.
+
+**Checks.** `tools/check.js` now runs the real Worker code against a fake Razorpay that
+signs payments exactly as Razorpay does (fresh secret per run): 156 checks, all passing.
+The same checks against the previous `main`: 36 fail, including the free URL unlock and
+every unchecked claim. Deploy steps: `worker/README.md`.
+
 ## The finding that matters most
 
 **Until this change, dietai.in could not report a sale.** Two independent bugs:
@@ -230,9 +406,9 @@ toggle for the visitor view and the paying-customer view.
 
 ## Open decisions (not mine to make)
 
-1. **Is 1.8 g/kg the right target?** It is achievable now, but for a heavier veg
-   customer it means ~800 g curd + 200 g paneer daily, which is expensive. 1.6 g/kg
-   would be gentler and cheaper. This is a nutrition position, so it needs a human.
+1. **Protein target.** Now 1.6 g/kg, the top of the ISSN general-population range (it was
+   1.8). A qualified nutritionist should still sign off on it and on the "BMI 18.5–25"
+   wording before either is stated as advice.
 2. **The grocery list is the wedge to real money.** It is now a clean, quantified
    list of Indian staples — one step from a Blinkit/Zepto basket. That is a
    commission on something the customer was going to buy anyway, and it recurs,

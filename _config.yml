@@ -1,0 +1,17 @@
+# GitHub Pages build settings for dietai.in.
+#
+# Only the website is published. The revenue notes, the README, the Worker
+# source and the build/test tools stay in the repo for whoever works on it, but
+# they are not served on dietai.in. Before this file existed, Jekyll turned
+# REVENUE-NOTES.md into a public page at https://dietai.in/REVENUE-NOTES.
+#
+# Every HTML page here has no front matter, so Jekyll copies it byte for byte.
+exclude:
+  - REVENUE-NOTES.md
+  - README.md
+  - worker
+  - tools
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor

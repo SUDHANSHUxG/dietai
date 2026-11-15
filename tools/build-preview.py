@@ -7,7 +7,8 @@ Writes <out_dir>/index.html (the homepage) and <out_dir>/<guide>/index.html.
 Not part of the site. Rules for the preview:
   - analytics are replaced by a stub that sends nothing, on every page — a real
     beacon from a preview would land in the live funnel this site depends on
-  - the Razorpay link is neutralised, so a preview can never reach a payment
+  - the pay and restore buttons are neutralised, so a preview can never reach a payment
+  - the "paying-customer view" uses a placeholder unlock that is never sent anywhere
   - links are rewritten to be relative, so the homepage and guides navigate
     inside the preview instead of jumping to the live dietai.in
   - no service worker, manifest or icons (those paths don't exist there)
@@ -16,8 +17,8 @@ import pathlib, re, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = pathlib.Path(sys.argv[1]).resolve()
-GUIDES = sorted(p.parent.name for p in ROOT.glob('*/index.html') if p.parent.name.endswith(('diet-plan', 'weight-loss')))
-assert len(GUIDES) == 7, GUIDES
+GUIDES = sorted(p.parent.name for p in ROOT.glob('*/index.html') if p.parent.name.endswith(('diet-plan', 'weight-loss', 'weight-gain')))
+assert len(GUIDES) == 13, GUIDES  # 7 regional guides + 4 calorie-level pages + vegetarian + weight gain
 
 STUB = """<script>
 /* preview: analytics stub — every call works, nothing is sent anywhere */
@@ -41,15 +42,16 @@ BANNER = """<div id="pvBar"><div class="pv-in">
 PREVIEW_JS = """<script>
 /* preview-only controls; none of this ships to dietai.in */
 (function(){
-  function isPrem(){try{return localStorage.getItem('dietai_premium')==='1';}catch(e){return false;}}
-  function set(on){try{on?localStorage.setItem('dietai_premium','1'):localStorage.removeItem('dietai_premium');}catch(e){}location.reload();}
+  /* placeholder unlock: right shape for the page, signed by nobody, re-checked never (v = now) */
+  var FAKE='v1.pay_PreviewOnly00001.'+Math.floor(Date.now()/1000)+'.'+Array(65).join('0');
+  function isPrem(){try{return !!localStorage.getItem('dietai_unlock');}catch(e){return false;}}
+  function set(on){try{on?localStorage.setItem('dietai_unlock',JSON.stringify({t:FAKE,v:Date.now()})):localStorage.removeItem('dietai_unlock');}catch(e){}location.reload();}
   var f=document.getElementById('pvFree'),p=document.getElementById('pvPaid');
   f.setAttribute('aria-pressed',String(!isPrem()));p.setAttribute('aria-pressed',String(isPrem()));
   f.onclick=function(){if(isPrem())set(false);};p.onclick=function(){if(!isPrem())set(true);};
-  var pay=document.getElementById('payBtn');
-  if(pay){pay.removeAttribute('href');pay.removeAttribute('target');pay.style.cursor='pointer';
-    pay.addEventListener('click',function(e){e.preventDefault();e.stopImmediatePropagation();
-      if(typeof toast==='function')toast('Preview: payment is off. Use "Paying-customer view" above.');},true);}
+  ['payBtn','restoreBtn'].forEach(function(id){var b=document.getElementById(id);if(!b)return;
+    b.addEventListener('click',function(e){e.preventDefault();e.stopImmediatePropagation();
+      if(typeof toast==='function')toast('Preview: payments are off here. Use "Paying-customer view" above.');},true);});
   try{if(!localStorage.getItem('dietai_plan')){
     document.getElementById('age').value=32;document.getElementById('height').value=175;document.getElementById('weight').value=90;
     if(typeof generatePlan==='function'){generatePlan();window.scrollTo(0,0);}}}catch(e){}
@@ -61,6 +63,8 @@ src = (ROOT / 'index.html').read_text(encoding='utf-8')
 style = re.search(r'<style>.*?</style>', src, re.S).group(0)
 body = re.search(r'<body>(.*?)</body>', src, re.S).group(1)
 body = body.replace("if('serviceWorker' in navigator&&location.protocol==='https:'){", "if(false){")
+assert "var RZP_JS='https://checkout.razorpay.com/v1/checkout.js';" in body
+body = body.replace("var RZP_JS='https://checkout.razorpay.com/v1/checkout.js';", "var RZP_JS='data:text/javascript,';")  # never load Razorpay in a preview
 for g in GUIDES:
     body = body.replace(f'href="/{g}/"', f'href="{g}/index.html"')
 assert not any(f'href="/{g}/"' in body for g in GUIDES), 'a guide link was not rewritten'
