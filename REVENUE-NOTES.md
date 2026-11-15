@@ -54,7 +54,15 @@ less rice/roti to eat ("about 35% more") instead of "a little". Sitemap: 14 URLs
 open for days, so yesterday's food, water and weight entry carried into today until a reload. Every tracker
 action and every return to the tab now checks the date first.
 
-**Checks:** 198, all passing. New: http → https on the planner, a guide and a calorie page,
+**Fuzzed the planner across every body the form accepts** (ages 18–100, 120–230 cm, 30–300 kg,
+both sexes, all goals, activities, diets and regions): 456 accepted bodies × 7 days, no broken
+numbers, and every day that misses its target says so. The days that still miss are extreme:
+targets above ~3,700 kcal (200–300 kg, or 230 cm athletes), where meals at 1.35× plus the largest
+extra can't reach, and tiny women at the 1,200 kcal floor (up to ~100 kcal over). Open question
+for a nutritionist, not code: for very high BMIs the formula uses actual weight, so a 300 kg
+"athlete" gets a fat-loss target near 7,800 kcal; an adjusted weight would be more sensible.
+
+**Checks:** 199, all passing. New: http → https on the planner, a guide and a calorie page,
 a restore link survives the move, nothing moves with JavaScript off or on localhost, and
 the build config leaves out the internal files while keeping all 22 files the site needs.
 

@@ -603,6 +603,35 @@ async function section(title, fn) {
     ok(wl.length === 2 && wl[0].w === 70 && wl[1].w === 69.5 && wl[0].d !== wl[1].d, "a weight logged after midnight starts a new day instead of overwriting yesterday's", JSON.stringify(wl));
     await c.close();
   });
+  await section('Every body the form accepts gets a sane plan (ages 18–100, 120–230 cm, 30–300 kg)', async () => {
+    const f = await page.evaluate(() => {
+      const issues = []; let plans = 0, days = 0, weeks = 0, offNoted = 0;
+      const toastOrig = window.toast; window.toast = () => {};
+      const acts = ['1.2', '1.375', '1.55', '1.725', '1.9'], diets = ['veg', 'egg', 'nonveg'], regs = Object.keys(REGIONS);
+      let i = 0;
+      for (const a of [18, 30, 60, 100]) for (const h of [120, 150, 175, 200, 230]) for (const w of [30, 45, 70, 120, 200, 300]) for (const sx of ['male', 'female']) for (const gl of ['lose', 'maintain', 'gain']) {
+        const dt = diets[i % 3], rg = regs[i % regs.length];
+        region = rg; diet = dt; sex = sx; goal = gl; lastPlan = null;
+        document.getElementById('age').value = a; document.getElementById('height').value = h; document.getElementById('weight').value = w; document.getElementById('activity').value = acts[i % acts.length]; i++;
+        generatePlan();
+        if (!lastPlan || lastPlan.w !== w) continue;
+        plans++;
+        const L = lastPlan;
+        if (![L.target, L.protein, L.carbs, L.fat, L.water].every((x) => Number.isFinite(x) && x > 0)) issues.push(`numbers ${a}/${h}/${w}/${sx}/${gl}`);
+        for (let d = 0; d < 7; d++) {
+          const day = buildDay(d, L.target, L.protein, rg, dt); days++;
+          if (!Number.isFinite(day.totK) || day.totK <= 0 || !Number.isFinite(day.totP)) issues.push(`day ${a}/${h}/${w}/${sx}/${gl}`);
+          if (Math.abs(day.totK - L.target) > Math.max(60, L.target * 0.05)) { if (/daynote/.test(dayTotalHTML(day))) offNoted++; else issues.push(`silent miss ${a}/${h}/${w}/${sx}/${gl}`); }
+        }
+        if (i % 9 === 0) { lastWeek = null; buildWeek(true); weeks++;
+          if (/NaN|undefined|\[object/.test(document.getElementById('weekOut').innerHTML + planText())) issues.push(`junk ${a}/${h}/${w}/${sx}/${gl}`); }
+      }
+      window.toast = toastOrig; document.getElementById('activity').value = '1.375';
+      return { plans, days, weeks, offNoted, issues };
+    });
+    ok(f.plans > 400 && f.issues.length === 0, `${f.plans} accepted bodies × 7 days: no broken numbers, and every day that misses its target says so`,
+      `${f.days} days, ${f.weeks} weeks rendered; ${f.offNoted} extreme-body days carry a note${f.issues.length ? '; ' + f.issues.slice(0, 3).join(' | ') : ''}`);
+  });
   await section('Accessibility', async () => {
     const a11y = await page.evaluate(() => {
       const name = (el) => (el.getAttribute('aria-label') || '').trim() || (el.labels && el.labels[0] ? el.labels[0].textContent.trim() : '') || el.textContent.trim();
