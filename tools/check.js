@@ -688,8 +688,29 @@ async function section(title, fn) {
       await g.close();
     }
     ok(sm.includes('https://dietai.in/vegetarian-indian-diet-plan/'), 'sitemap lists the vegetarian page');
+    {
+      const g = await newPage(ctx);
+      const res = await g.goto(`${BASE}/indian-diet-plan-for-weight-gain/`, { waitUntil: 'networkidle' });
+      const i = await g.evaluate(() => {
+        const ld = JSON.parse(document.querySelector('script[type="application/ld+json"]').textContent);
+        const tables = [...document.querySelectorAll('table')];
+        const rowsK = tables.map((t) => [...t.querySelectorAll('tbody tr')].reduce((s, r) => s + Number(r.querySelector('td.n').textContent.replace(/,/g, '')), 0));
+        const totals = tables.map((t) => Number(t.querySelector('tfoot td.n:nth-of-type(2)').textContent.replace(/,/g, '')));
+        return { faqMatch: ld.find((x) => x['@type'] === 'FAQPage').mainEntity.length === document.querySelectorAll('details').length,
+          n: tables.length, totals, rowsK, extras: tables.filter((t) => /^Extra/.test([...t.querySelectorAll('tbody th')].pop().textContent)).length,
+          meat: /chicken|fish|mutton|keema|prawn/i.test(tables[0].innerText), junk: /NaN|undefined|\[object/.test(document.body.innerText) };
+      });
+      ok(res.status() === 200 && i.faqMatch && i.n === 3 && !i.junk && i.meat && i.totals.every((t, k) => Math.abs(t - 2800) <= 84 && t === i.rowsK[k]) && i.extras === 3,
+        '/indian-diet-plan-for-weight-gain/: 3 days within 3% of 2,800 kcal, each with its extra row, rows add up', i.totals.join(', '));
+      await g.click('.cta .btn'); await g.waitForLoadState('networkidle');
+      ok(await g.evaluate(() => goal === 'gain' && document.querySelector('#goalSeg button.on').dataset.goal === 'gain'), 'weight-gain page button opens the planner set to Build muscle');
+      await g.close();
+    }
+    ok(sm.includes('https://dietai.in/indian-diet-plan-for-weight-gain/'), 'sitemap lists the weight-gain page');
     const linksVeg = async (u) => (await (await page.request.get(BASE + u)).text()).includes('href="/vegetarian-indian-diet-plan/"');
     ok(await linksVeg('/') && await linksVeg('/1500-calorie-indian-diet-plan/') && await linksVeg('/north-indian-diet-plan/'), 'homepage, calorie pages and guides link to the vegetarian page');
+    const linksGain = async (u) => (await (await page.request.get(BASE + u)).text()).includes('href="/indian-diet-plan-for-weight-gain/"');
+    ok(await linksGain('/') && await linksGain('/2000-calorie-indian-diet-plan/') && await linksGain('/south-indian-diet-plan/') && await linksGain('/vegetarian-indian-diet-plan/'), 'homepage, calorie pages, guides and the vegetarian page link to the weight-gain page');
     ok((await (await page.request.get(BASE + '/googlea16ee8de3adc33ae.html')).text()).trim() === 'google-site-verification: googlea16ee8de3adc33ae.html', 'Google Search Console verification file served');
     const robots = await (await page.request.get(BASE + '/robots.txt')).text();
     ok(/Disallow: \/\*\?restore=/.test(robots), 'robots.txt keeps restore links out of search');
@@ -735,7 +756,7 @@ async function section(title, fn) {
     const cfg = fs.readFileSync(path.join(ROOT, '_config.yml'), 'utf8');
     const ex = ((cfg.match(/^exclude:\n((?:[ \t]+-[^\n]*\n?)+)/m) || [])[1] || '').split('\n').map((l) => l.replace(/^\s*-\s*/, '').trim()).filter(Boolean);
     ok(['REVENUE-NOTES.md', 'README.md', 'worker', 'tools'].every((x) => ex.includes(x)), 'GitHub Pages build leaves out the notes, README, Worker source and tools', ex.join(', '));
-    const site = ['index.html', 'sitemap.xml', 'robots.txt', 'sw.js', 'events.js', 'premium.js', 'manifest.json', 'og.png', 'CNAME', 'googlea16ee8de3adc33ae.html', '2cae93f145dcf1d71723273726fad40a.txt', ...GUIDES, ...CAL_PAGES.map((k) => k + '-calorie-indian-diet-plan'), 'vegetarian-indian-diet-plan'];
+    const site = ['index.html', 'sitemap.xml', 'robots.txt', 'sw.js', 'events.js', 'premium.js', 'manifest.json', 'og.png', 'CNAME', 'googlea16ee8de3adc33ae.html', '2cae93f145dcf1d71723273726fad40a.txt', ...GUIDES, ...CAL_PAGES.map((k) => k + '-calorie-indian-diet-plan'), 'vegetarian-indian-diet-plan', 'indian-diet-plan-for-weight-gain'];
     ok(site.every((f) => !ex.includes(f) && fs.existsSync(path.join(ROOT, f))), 'every page and file the site needs is still published (' + site.length + ')');
     ok(!/^(include|baseurl|permalink|plugins):/m.test(cfg), 'the config changes nothing else about the build');
   });

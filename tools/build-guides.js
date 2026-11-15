@@ -175,13 +175,16 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
 const TAG = { v: 'Veg', e: 'Egg', n: 'Non-veg' };
 
 function dayTable(day, caption) {
-  const note = Math.abs(day.scale - 1) < 0.005
-    ? 'Portions as described.'
-    : `Portions scaled ×${day.scale.toFixed(2)} from the descriptions — eat a little ${day.scale > 1 ? 'more' : 'less'} rice or roti than written.`;
+  const pct = Math.round(Math.abs(1 - day.scale) * 100);
+  const note = (pct < 5
+    ? (pct === 0 ? 'Portions as described.' : 'Portions about as described.')
+    : `Portions scaled ×${day.scale.toFixed(2)} from the descriptions — eat about ${pct}% ${day.scale > 1 ? 'more' : 'less'} rice or roti than written.`)
+    + (day.extra ? ' The extra row makes up the rest.' : '');
+  const extraRow = day.extra ? `<tr><th scope="row">Extra</th><td><b>To reach the target</b><span>${esc(day.extra.combo.join(' + '))}</span></td><td class="n">${day.extra.kcal}</td><td class="n">${day.extra.got} g</td></tr>` : '';
   return `<div class="tbl"><table>
 <caption>${esc(caption)}</caption>
 <thead><tr><th scope="col">Meal</th><th scope="col">What to eat</th><th scope="col" class="n">kcal</th><th scope="col" class="n">Protein</th></tr></thead>
-<tbody>${day.rows.map(r => `<tr><th scope="row">${r.slot}</th><td><b>${esc(r.t)}</b><span>${esc(r.d)}</span></td><td class="n">${r.k}</td><td class="n">${r.p} g</td></tr>`).join('')}</tbody>
+<tbody>${day.rows.map(r => `<tr><th scope="row">${r.slot}</th><td><b>${esc(r.t)}</b><span>${esc(r.d)}</span></td><td class="n">${r.k}</td><td class="n">${r.p} g</td></tr>`).join('')}${extraRow}</tbody>
 <tfoot><tr><th scope="row">Day</th><td>${esc(note)}</td><td class="n">${day.k.toLocaleString('en-IN')}</td><td class="n">${day.p} g</td></tr></tfoot>
 </table></div>`;
 }
@@ -333,7 +336,7 @@ ${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></de
 </section>
 
 <h2>Diet plans for other regions</h2>
-<div class="others">${others}<a href="/${VEG_SLUG}/">Vegetarian diet plan</a></div>
+<div class="others">${others}<a href="/${VEG_SLUG}/">Vegetarian diet plan</a><a href="/${GAIN_SLUG}/">Weight-gain diet plan</a></div>
 </main>
 <footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans
 <p>Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and protein figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p></div></footer>
@@ -463,7 +466,7 @@ ${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></de
 <h2>Other calorie levels</h2>
 <div class="others">${otherCal}</div>
 <h2>Diet plans by region</h2>
-<div class="others">${regions}<a href="/${VEG_SLUG}/">Vegetarian diet plan</a></div>
+<div class="others">${regions}<a href="/${VEG_SLUG}/">Vegetarian diet plan</a><a href="/${GAIN_SLUG}/">Weight-gain diet plan</a></div>
 </main>
 <footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans
 <p>Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and protein figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p></div></footer>
@@ -579,7 +582,122 @@ ${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></de
 </section>
 
 <h2>Diet plans by calories</h2>
-<div class="others">${cal}</div>
+<div class="others">${cal}<a href="/${GAIN_SLUG}/">Weight-gain diet plan</a></div>
+<h2>Diet plans by region</h2>
+<div class="others">${regions}</div>
+</main>
+<footer><div class="wrap">© ${new Date().getFullYear()} <a href="/">dietai.in</a> · Free Indian diet plans
+<p>Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and protein figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p></div></footer>
+</body>
+</html>
+`;
+}
+
+// ---- the weight-gain page ---------------------------------------------------
+// The planner's "Build muscle" goal is maintenance + 300 kcal. Meals stop at 1.35x, and the
+// planner closes any remaining gap with an "extra" of everyday foods; this page uses the very
+// same EXTRA list and extraFor() code, lifted from index.html, so its days match the app.
+const GAIN_SLUG = 'indian-diet-plan-for-weight-gain';
+const GAIN_KCAL = 2800;
+const { EXTRA, extraFor } = (() => {
+  const a = html.indexOf('var EXTRA=['), b = html.indexOf('\nfunction extraText');
+  if (a < 0 || b < a) throw new Error('could not find EXTRA / extraFor in index.html');
+  const ctx = {};
+  vm.runInNewContext(html.slice(a, b) + ';this.EXTRA=EXTRA;this.extraFor=extraFor;', ctx);
+  return ctx;
+})();
+function gainPage() {
+  const url = `${SITE}/${GAIN_SLUG}/`;
+  const K = GAIN_KCAL.toLocaleString('en-IN');
+  // The worked example: what the planner sets for a 22-year-old man, 175 cm, 60 kg, training 3-5 times a week.
+  const exBody = { age: 22, h: 175, w: 60, act: 1.55 };
+  const exTarget = Math.round((10 * exBody.w + 6.25 * exBody.h - 5 * exBody.age + 5) * exBody.act + 300);
+  const kinds = [['nonveg', ['v', 'e', 'n'], 'n', 'Non-veg'], ['egg', ['v', 'e'], 'e', 'Egg'], ['veg', ['v'], 'v', 'Vegetarian']];
+  const used = new Set();
+  const days = kinds.map(([dt, tags, tag, label]) => {
+    const best = ORDER.filter((rid) => !used.has(rid)).map((rid) => {
+      const d = sampleDay(rid, tags, GAIN_KCAL, 'protein');
+      const ex = extraFor(GAIN_KCAL, GAIN_KCAL - d.k);
+      return { rid, d: Object.assign({}, d, { extra: ex, k: d.k + (ex ? ex.kcal : 0), p: d.p + (ex ? ex.got : 0) }) };
+    }).filter((x) => Math.abs(x.d.k - GAIN_KCAL) <= GAIN_KCAL * 0.03 && x.d.rows.some((r) => r.g === tag))
+      .sort((a, b) => (a.d.extra ? a.d.extra.kcal : 0) - (b.d.extra ? b.d.extra.kcal : 0) || b.d.p - a.d.p)[0];
+    if (!best) throw new Error('weight-gain page: no ' + dt + ' day fits ' + GAIN_KCAL + ' kcal');
+    used.add(best.rid);
+    return { label, rid: best.rid, d: best.d };
+  });
+  const name = (rid) => rid === 'pan' ? 'pan-Indian' : G[rid].cuisine;
+  const ps = days.map((x) => x.d.p);
+  const e = Object.fromEntries(EXTRA.map((x) => [x.k, x]));
+  const faq = [
+    ['How many calories do I need to gain weight?', `About 300 kcal a day more than you burn. The free planner works out what you burn from your age, height, weight, sex and activity (the Mifflin-St Jeor formula) and adds 300 kcal when you pick Build muscle — for a 22-year-old man, 175 cm and 60 kg, who trains 3–5 times a week, that is about ${exTarget.toLocaleString('en-IN')} kcal.`],
+    ['Can I gain weight on a vegetarian Indian diet?', `Yes. The vegetarian day above reaches ${days[2].d.k.toLocaleString('en-IN')} kcal with ${days[2].d.p} g of protein from everyday foods like dal, paneer, curd, chana and milk.`],
+    ['What can I add to eat more?', `When your meals fall short of your target, the planner adds a cup of toned milk (${e.milk.kc} kcal), a banana (${e.banana.kc} kcal), ${e.peanuts.grams} g of peanuts (${e.peanuts.kc} kcal) or a roti (${e.atta.kc} kcal), and counts them in your day.`],
+  ];
+  const ld = [
+    { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Diet AI', item: SITE + '/' },
+      { '@type': 'ListItem', position: 2, name: 'Indian diet plan for weight gain', item: url } ] },
+    { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) },
+  ];
+  const planner = '/?goal=gain&utm_source=gain#planner';
+  const cal = CAL.map((x) => `<a href="/${calSlug(x)}/">${x.toLocaleString('en-IN')} kcal</a>`).join('');
+  const regions = ORDER.map((x) => `<a href="/${G[x].slug}/">${esc(G[x].h1.replace(/ for weight loss$/, ''))}</a>`).join('');
+  const title = `Indian Diet Plan for Weight Gain — 3 Free Sample Days at ${K} kcal`;
+  const desc = `A free Indian diet plan for weight gain: three full ${K} kcal days — non-veg, egg and vegetarian — with calories and protein for every meal and the simple extras that make up the difference.`;
+  const lede = `Gaining weight as muscle rather than fat takes a modest surplus — the planner uses about 300 kcal a day above what you burn — together with strength training. Below are three full days at ${K} kcal, close to the ${exTarget.toLocaleString('en-IN')} kcal the planner sets for a 22-year-old man, 175 cm and 60 kg, who trains 3–5 times a week.`;
+  return `<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+${HTTPS_JS}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)} | Diet AI</title>
+<meta name="description" content="${esc(desc)}">
+<link rel="canonical" href="${url}">
+<meta name="theme-color" content="#07090f">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Diet AI">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(desc)}">
+<meta property="og:url" content="${url}">
+<meta property="og:image" content="${SITE}/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%97%3C/text%3E%3C/svg%3E">
+<script src="/events.js"></script>
+<style>${CSS}</style>
+<script type="application/ld+json">${JSON.stringify(ld)}</script>
+</head>
+<body>
+<header><div class="wrap nav"><a class="logo" href="/"><i aria-hidden="true">🥗</i> Diet AI</a><a class="btn sm" href="${planner}">Get my plan — free</a></div></header>
+<main class="wrap">
+<nav class="crumb" aria-label="Breadcrumb"><a href="/">Diet AI</a> › Indian diet plan for weight gain</nav>
+<h1>Indian diet plan for weight gain</h1>
+<p class="lede">${esc(lede)}</p>
+<div class="cta"><a class="btn" href="${planner}">Make my weight-gain plan</a><small>Free · no sign-up · 10 seconds</small></div>
+${days.map(({ label, rid, d }) => { const cap = label + ' · ' + name(rid); return `<h2>${esc(cap)} — ${d.k.toLocaleString('en-IN')} kcal, ${d.p} g protein</h2>
+${dayTable(d, `${cap} · ${d.k.toLocaleString('en-IN')} kcal · ${d.p} g protein`)}`; }).join('\n')}
+<p class="note">Meals stop at 1.35 times their written size; past that, a portion is no longer the dish described. The planner then adds an extra of everyday foods and counts it in your day, exactly as above.</p>
+
+<h2>How to make a weight-gain day work</h2>
+<ul class="tips">
+<li><b>Keep the surplus small</b><span>The planner adds 300 kcal a day to what you burn. A much bigger surplus adds more fat than muscle.</span></li>
+<li><b>Train</b><span>Extra food builds muscle only alongside strength training. The planner's Build muscle goal assumes you train.</span></li>
+<li><b>Get protein at every meal</b><span>These days give ${Math.min(...ps)}–${Math.max(...ps)} g. The planner sets your own goal at ${PROTEIN_PER_KG} g per kg of body weight and adds a top-up if your meals fall short.</span></li>
+<li><b>Use easy extras</b><span>A cup of toned milk is ${e.milk.kc} kcal, a banana ${e.banana.kc}, ${e.peanuts.grams} g of peanuts ${e.peanuts.kc} and a roti ${e.atta.kc} — the extras the planner uses when meals alone fall short.</span></li>
+<li><b>Weigh in once a week</b><span>Body weight swings day to day with water and food. One weigh-in a week, at the same time of day, shows the real trend.</span></li>
+</ul>
+
+<h2>Questions people ask</h2>
+${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('\n')}
+
+<section class="final">
+<h2>Your weight-gain plan, at your own calories</h2>
+<p>These days are examples at ${K} kcal. Enter your age, height and weight and the free planner builds a day of your region's food at your own target, with a protein top-up and any extra counted inside it.</p>
+<div class="cta"><a class="btn" href="${planner}">Get my free weight-gain plan</a><small>Private — nothing you enter leaves your phone.</small></div>
+</section>
+
+<h2>Diet plans by calories</h2>
+<div class="others">${cal}<a href="/${VEG_SLUG}/">Vegetarian diet plan</a></div>
 <h2>Diet plans by region</h2>
 <div class="others">${regions}</div>
 </main>
@@ -608,6 +726,9 @@ for (const kcal of CAL) {
 fs.mkdirSync(path.join(ROOT, VEG_SLUG), { recursive: true });
 fs.writeFileSync(path.join(ROOT, VEG_SLUG, 'index.html'), vegPage());
 written.push(VEG_SLUG);
+fs.mkdirSync(path.join(ROOT, GAIN_SLUG), { recursive: true });
+fs.writeFileSync(path.join(ROOT, GAIN_SLUG, 'index.html'), gainPage());
+written.push(GAIN_SLUG);
 
 const today = new Date().toISOString().slice(0, 10);
 const urls = [['/', '1.0'], ...written.map(s => ['/' + s + '/', '0.8'])];

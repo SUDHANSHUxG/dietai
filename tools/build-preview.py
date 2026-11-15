@@ -17,8 +17,8 @@ import pathlib, re, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = pathlib.Path(sys.argv[1]).resolve()
-GUIDES = sorted(p.parent.name for p in ROOT.glob('*/index.html') if p.parent.name.endswith(('diet-plan', 'weight-loss')))
-assert len(GUIDES) == 12, GUIDES  # 7 regional guides + 4 calorie-level pages + vegetarian
+GUIDES = sorted(p.parent.name for p in ROOT.glob('*/index.html') if p.parent.name.endswith(('diet-plan', 'weight-loss', 'weight-gain')))
+assert len(GUIDES) == 13, GUIDES  # 7 regional guides + 4 calorie-level pages + vegetarian + weight gain
 
 STUB = """<script>
 /* preview: analytics stub — every call works, nothing is sent anywhere */

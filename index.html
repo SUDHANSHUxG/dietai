@@ -609,6 +609,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       <a href="/1800-calorie-indian-diet-plan/">1,800 kcal</a>
       <a href="/2000-calorie-indian-diet-plan/">2,000 kcal</a>
       <a href="/vegetarian-indian-diet-plan/">Vegetarian</a>
+      <a href="/indian-diet-plan-for-weight-gain/">Weight gain</a>
     </nav>
     <p class="disc">Diet AI provides general nutrition estimates for educational purposes only and is not medical advice. Calorie and macro figures are approximations. Consult a qualified doctor or registered dietitian before making significant changes to your diet, especially if you are pregnant, under 18, or managing a health condition.</p>
   </div>
@@ -698,6 +699,7 @@ try{
   var qp=new URLSearchParams(location.search);
   var qr=qp.get('region');if(qr&&REGIONS[qr]){region=qr;try{localStorage.setItem('dietai_region',qr);}catch(e){}}
   var qd=qp.get('diet');if(qd==='veg'||qd==='egg'||qd==='nonveg')diet=qd;
+  var qg=qp.get('goal');if(qg==='lose'||qg==='maintain'||qg==='gain')goal=qg;
 }catch(e){}
 var lastPlan=null;
 try{lastPlan=JSON.parse(localStorage.getItem('dietai_plan')||'null');}catch(e){lastPlan=null;}
@@ -728,9 +730,11 @@ function wireSeg(segId,attr,setter){document.querySelectorAll('#'+segId+' button
 wireSeg('goalSeg','goal',function(v){goal=v;});
 wireSeg('sexSeg','sex',function(v){sex=v;});
 wireSeg('dietSeg','diet',function(v){diet=v;});
-/* reflect a diet passed in from a guide page (markup defaults to Veg) */
+/* reflect a diet or goal passed in from a guide page (markup defaults to Veg, Lose fat) */
 document.querySelectorAll('#dietSeg button').forEach(function(b){
   var on=b.dataset.diet===diet;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');});
+document.querySelectorAll('#goalSeg button').forEach(function(b){
+  var on=b.dataset.goal===goal;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');});
 
 /* ---------- planner ---------- */
 /* region and diet are passed in, never written back. Rebuilding a saved plan

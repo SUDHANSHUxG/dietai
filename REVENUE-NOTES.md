@@ -43,7 +43,14 @@ counted in the day totals, the paid week, the grocery list, the printout and the
 Across 882 plan-days (6 bodies × 7 regions × 3 diets × 7 days) every day now lands within 5% of
 its target. Fat-loss plans at light activity never get an extra, so the main audience sees no change.
 
-**Checks:** 191, all passing. New: http → https on the planner, a guide and a calorie page,
+**A page for the other half of the planner: `/indian-diet-plan-for-weight-gain/`.** Now
+that gain plans reach their target, they get a door from search too: three days at 2,800 kcal
+(non-veg, egg, vegetarian), each built with the planner's own `EXTRA` list and `extraFor()`
+code read from `index.html`, so the page and the app can't drift apart. Its button opens the
+planner on Build muscle (`?goal=gain`, a new preset). Guide tables now say how much more or
+less rice/roti to eat ("about 35% more") instead of "a little". Sitemap: 14 URLs.
+
+**Checks:** 195, all passing. New: http → https on the planner, a guide and a calorie page,
 a restore link survives the move, nothing moves with JavaScript off or on localhost, and
 the build config leaves out the internal files while keeping all 22 files the site needs.
 
