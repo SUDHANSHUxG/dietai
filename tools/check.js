@@ -649,6 +649,20 @@ async function section(title, fn) {
     ok(eventStatus.filter((x) => x.ev === 'js_error').every((x) => x.status === 200), 'the Worker accepts js_error');
     await c.close();
   });
+  await section('Share my plan as an image', async () => {
+    const c = await newCtx(); const g = await newPage(c);
+    await g.goto(BASE + '/', { waitUntil: 'networkidle' });
+    await g.evaluate(() => { region = 'north'; diet = 'veg'; sex = 'male'; goal = 'gain';
+      document.getElementById('age').value = 22; document.getElementById('height').value = 175; document.getElementById('weight').value = 60; document.getElementById('activity').value = '1.55'; generatePlan(); });
+    const dims = await g.evaluate(async () => { const b = await planImage(); const bm = await createImageBitmap(b); return { w: bm.width, h: bm.height, type: b.type, size: b.size }; });
+    ok(dims.w === 1080 && dims.h === 1350 && dims.type === 'image/png' && dims.size > 50000, 'plan card is a 1080×1350 PNG', JSON.stringify(dims));
+    const before = sent.length;
+    const [dl] = await Promise.all([g.waitForEvent('download'), g.click('#shareImgBtn')]);
+    await sleep(200);
+    ok(dl.suggestedFilename() === 'dietai-plan.png' && sent.slice(before).some((e) => e.event === 'share_plan' && e.meta && e.meta.as === 'image'),
+      'without a share sheet the card downloads, and the share is counted', dl.suggestedFilename());
+    await c.close();
+  });
   await section('Accessibility', async () => {
     const a11y = await page.evaluate(() => {
       const name = (el) => (el.getAttribute('aria-label') || '').trim() || (el.labels && el.labels[0] ? el.labels[0].textContent.trim() : '') || el.textContent.trim();

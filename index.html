@@ -464,6 +464,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
           <button class="btn btn-ghost" onclick="sendToTracker()">📊 Load into tracker</button>
           <button class="btn btn-wa" onclick="sharePlan()">📲 WhatsApp</button>
+          <button class="btn btn-ghost" id="shareImgBtn" onclick="shareImage()" style="grid-column:1/-1">🖼️ Share my plan as an image</button>
         </div>
       </div>
     </div>
@@ -884,6 +885,59 @@ function sharePlan(){
   if(!lastPlan){toast('Generate a plan first!');return;}
   logEv('share_plan',{region:lastPlan.region});
   window.open('https://wa.me/?text='+encodeURIComponent(planText()),'_blank');
+}
+/* A picture travels further than text on WhatsApp and Instagram: the free Monday drawn
+   as a 1080x1350 card with the real numbers, shared through the phone's share sheet where
+   the browser supports sharing files, otherwise saved as a PNG. Nothing leaves the phone
+   unless the person shares it. */
+function planImage(){
+  var day=buildDay(0,lastPlan.target,lastPlan.protein,lastPlan.region,lastPlan.diet);
+  var W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;
+  var x=c.getContext('2d'),F='system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+  x.fillStyle='#07090f';x.fillRect(0,0,W,H);
+  var g=x.createLinearGradient(0,0,W,0);g.addColorStop(0,'#34e58c');g.addColorStop(1,'#0ec47a');
+  x.fillStyle=g;x.fillRect(0,0,W,14);
+  function txt(t,px,y,col,weight,maxW){x.font=(weight||700)+' '+px+'px '+F;x.fillStyle=col||'#eef2f8';
+    var words=String(t).split(' '),line='',lines=[];
+    words.forEach(function(w){var test=line?line+' '+w:w;if(x.measureText(test).width>(maxW||W-144)&&line){lines.push(line);line=w;}else line=test;});
+    if(line)lines.push(line);lines.slice(0,2).forEach(function(l,i){x.fillText(l,72,y+i*px*1.25);});return y+lines.slice(0,2).length*px*1.25;}
+  var y=txt('🥗 My Diet AI plan',64,124,'#eef2f8',800);
+  y=txt(REGIONS[lastPlan.region].n+(lastPlan.region==='pan'?'':' India')+' · '+(lastPlan.diet==='veg'?'Vegetarian':lastPlan.diet==='egg'?'Veg + egg':'Non-vegetarian'),34,y+4,'#94a0b5',600);
+  x.font='800 84px '+F;x.fillStyle='#34e58c';x.fillText(lastPlan.target.toLocaleString()+' kcal',72,y+96);
+  y=txt(lastPlan.protein+' g protein · '+lastPlan.water+' L water a day',34,y+148,'#5aa2ff',700);
+  y+=26;x.fillStyle='rgba(255,255,255,.09)';x.fillRect(72,y,W-144,2);y+=24;
+  var rows=day.meals.map(function(m){return [m[0],m[2].t,Math.round(m[2].k*day.scale)];});
+  if(day.tu&&day.tu.kcal)rows.push(['Top-up',day.tu.combo.join(' + '),day.tu.kcal]);
+  if(day.ex)rows.push(['Extra',day.ex.combo.join(' + '),day.ex.kcal]);
+  /* rows share the space between the header and the day total, so 4 to 6 rows always fit */
+  var bottom=H-150-96,rowH=Math.min(128,Math.floor((bottom-y)/rows.length)),lab=Math.round(rowH*0.24),dish=Math.round(rowH*0.31);
+  function fit(t,px){x.font='700 '+px+'px '+F;if(x.measureText(t).width<=W-144)return t;
+    while(t.length>1&&x.measureText(t+'…').width>W-144)t=t.slice(0,-1);return t+'…';}
+  rows.forEach(function(r){
+    var by=y+lab+Math.round(rowH*0.12);
+    x.font='700 '+lab+'px '+F;x.fillStyle='#94a0b5';x.fillText(r[0].toUpperCase(),72,by);
+    var k=r[2]+' kcal';x.fillStyle='#34e58c';x.fillText(k,W-72-x.measureText(k).width,by);
+    var t=fit(r[1],dish);x.fillStyle='#eef2f8';x.fillText(t,72,by+Math.round(dish*1.3));
+    y+=rowH;
+  });
+  x.fillStyle='rgba(255,255,255,.09)';x.fillRect(72,y+8,W-144,2);
+  x.font='800 38px '+F;x.fillStyle='#eef2f8';x.fillText('Day total',72,y+64);
+  var tot=day.totK.toLocaleString()+' kcal · '+day.totP+' g protein';x.fillStyle='#34e58c';x.fillText(tot,W-72-x.measureText(tot).width,y+64);
+  x.fillStyle='#34e58c';x.fillRect(0,H-150,W,150);
+  x.font='800 46px '+F;x.fillStyle='#07090f';x.fillText('Get yours free → dietai.in',72,H-60);
+  return new Promise(function(res,rej){c.toBlob(function(b){b?res(b):rej(new Error('no image'));},'image/png');});
+}
+function shareImage(){
+  if(!lastPlan){toast('Generate a plan first!');return;}
+  logEv('share_plan',{region:lastPlan.region,as:'image'});
+  planImage().then(function(blob){
+    var file;try{file=new File([blob],'dietai-plan.png',{type:'image/png'});}catch(e){file=null;}
+    if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+      return navigator.share({files:[file],text:'My Diet AI plan — get yours free: https://dietai.in/?utm_source=image'}).catch(function(e){if(!e||e.name!=='AbortError')throw e;});
+    }
+    var a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download='dietai-plan.png';document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(u);a.remove();},1500);toast('Image saved — share it anywhere 📸');
+  }).catch(function(){toast('Could not make the image on this phone — try the WhatsApp button instead.');});
 }
 function sendToTracker(){
   if(lastPlan){$('targetCal').value=lastPlan.target;saveTarget();}

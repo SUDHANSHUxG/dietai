@@ -83,7 +83,13 @@ phone. `events.js` now sends a `js_error` event (message, file path, line; never
 each message once, at most 3 per page; other origins' scripts ignored), and the Worker accepts it.
 The privacy page and the data FAQ say so. The tracker's × buttons now have names for screen readers.
 
-**Checks:** 204, all passing. New: http → https on the planner, a guide and a calorie page,
+**Share my plan as an image.** WhatsApp and Instagram run on pictures; sharing was text only.
+A new button draws the free Monday as a 1080×1350 card — target, protein, water, each meal's
+calories, the day total and "Get yours free → dietai.in" — and opens the phone's share sheet
+where the browser can share files, otherwise saves the PNG. Counted as `share_plan` with
+`as: "image"`, so the Worker needs no change. Rows share the space, so 4 to 6 rows always fit.
+
+**Checks:** 206, all passing. New: http → https on the planner, a guide and a calorie page,
 a restore link survives the move, nothing moves with JavaScript off or on localhost, and
 the build config leaves out the internal files while keeping all 22 files the site needs.
 
