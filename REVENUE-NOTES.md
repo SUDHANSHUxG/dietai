@@ -62,6 +62,11 @@ extra can't reach, and tiny women at the 1,200 kcal floor (up to ~100 kcal over)
 for a nutritionist, not code: for very high BMIs the formula uses actual weight, so a 300 kg
 "athlete" gets a fat-loss target near 7,800 kcal; an adjusted weight would be more sensible.
 
+**Decision (owner, 15 Nov): live Razorpay keys directly, no test-mode payment.** The live keys
+will be checked without spending — a restore with the 21 Oct ₹99 payment and a ₹99 order
+created but not paid — then the real checkout opened and closed on dietai.in after the merge.
+Deploying waits for the owner's "yes, deploy DietAI" (asked 15 Nov: "Not yet").
+
 **Checks:** 199, all passing. New: http → https on the planner, a guide and a calorie page,
 a restore link survives the move, nothing moves with JavaScript off or on localhost, and
 the build config leaves out the internal files while keeping all 22 files the site needs.

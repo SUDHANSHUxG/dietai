@@ -8,6 +8,14 @@ pay button needs the Worker's `/pay/*` routes, and those need the Razorpay keys.
 payments run on the Vercel preview, never on dietai.in — with test keys a visitor could
 "pay" with Razorpay's fake Success button and get the pack free.
 
+**Chosen path (owner, 15 Nov 2026): live keys directly, no test payment — skip steps 2–3.**
+After step 4, check the live keys without spending anything, from a tab on `https://dietai.in`
+(the only origin a Worker with live keys accepts): POST `/pay/restore` with the owner's 21 Oct
+₹99 payment ID should answer `{"ok":true,"token":…}`, and POST `/pay/order` should create a ₹99
+order (nobody pays; it just stays unpaid). After the merge, open the real checkout on dietai.in
+and close it without paying. The first real purchase exercises the signature check; if that ever
+failed, the status check and restore-by-payment-ID still unlock the buyer.
+
 | # | Step | Who | Check |
 |---|------|-----|-------|
 | 1 | Cloudflare → Workers & Pages → `dietai-events` → **Edit code** → replace everything with `worker/index.js` → **Deploy** | Claude (with your yes) or you | `https://dietai-events.sudhanshuxg.workers.dev/api/health` shows `"payments":{"configured":false,"mode":"off"}` |
