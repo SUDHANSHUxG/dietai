@@ -663,6 +663,28 @@ async function section(title, fn) {
       'without a share sheet the card downloads, and the share is counted', dl.suggestedFilename());
     await c.close();
   });
+  await section('Grocery list goes to WhatsApp for whoever shops', async () => {
+    const c = await newCtx(); const g = await newPage(c);
+    await g.goto(BASE + '/', { waitUntil: 'networkidle' });
+    const before = sent.length;
+    const r = await g.evaluate(() => {
+      region = 'south'; diet = 'egg'; sex = 'male'; goal = 'gain';
+      document.getElementById('age').value = 22; document.getElementById('height').value = 175; document.getElementById('weight').value = 60; document.getElementById('activity').value = '1.55';
+      generatePlan(); lastWeek = null; buildWeek(true);
+      let opened = ''; const o = window.open; window.open = (u) => { opened = u; return null; };
+      shareGrocery(); window.open = o; document.getElementById('activity').value = '1.375';
+      const text = decodeURIComponent(opened.replace('https://wa.me/?text=', ''));
+      const onScreen = [...document.querySelectorAll('#weekOut .gro-row')].map((x) => x.firstChild.textContent);
+      return { url: opened.slice(0, 22), text, onScreen, btn: !!document.getElementById('groShareBtn') };
+    });
+    await sleep(200);
+    const listed = r.onScreen.every((n) => r.text.includes(n));
+    ok(r.btn && r.url.startsWith('https://wa.me/?text='), 'button opens WhatsApp with the list', r.url);
+    ok(listed && /Grocery list for the week/.test(r.text) && /Banana|Toned milk|Peanuts/.test(r.text) && !/NaN|undefined/.test(r.text),
+      `every item on screen is in the message (${r.onScreen.length} items, extras included)`);
+    ok(sent.slice(before).some((e) => e.event === 'share_week' && e.meta && e.meta.what === 'grocery'), 'the share is counted');
+    await c.close();
+  });
   await section('Accessibility', async () => {
     const a11y = await page.evaluate(() => {
       const name = (el) => (el.getAttribute('aria-label') || '').trim() || (el.labels && el.labels[0] ? el.labels[0].textContent.trim() : '') || el.textContent.trim();

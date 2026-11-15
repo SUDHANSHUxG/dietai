@@ -89,7 +89,15 @@ calories, the day total and "Get yours free → dietai.in" — and opens the pho
 where the browser can share files, otherwise saves the PNG. Counted as `share_plan` with
 `as: "image"`, so the Worker needs no change. Rows share the space, so 4 to 6 rows always fit.
 
-**Checks:** 206, all passing. New: http → https on the planner, a guide and a calorie page,
+**Grocery list on WhatsApp.** In many homes someone else shops or cooks. The paid week now has
+"Send the grocery list on WhatsApp": the same list as on screen, grouped by aisle, as plain text
+(extras included). Counted as `share_week` with `what: "grocery"`; no Worker change.
+
+**Found while checking Cloudflare (15 Nov):** the Worker has no secrets at all, not even the
+`ADMIN_KEY` the runbook said was set, so `/funnel` answers 401 until one is added. Claude reads
+D1 directly, so nothing is blocked; the runbook now says so.
+
+**Checks:** 209, all passing. New: http → https on the planner, a guide and a calorie page,
 a restore link survives the move, nothing moves with JavaScript off or on localhost, and
 the build config leaves out the internal files while keeping all 22 files the site needs.
 

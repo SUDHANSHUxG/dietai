@@ -558,6 +558,7 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0;color:var
       <div id="weekActions" style="display:none;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
         <button class="btn btn-ghost" onclick="printPack()">🖨️ Print / PDF</button>
         <button class="btn btn-wa" onclick="shareWeek()">📲 WhatsApp</button>
+        <button class="btn btn-ghost" id="groShareBtn" onclick="shareGrocery()" style="grid-column:1/-1">🛒 Send the grocery list on WhatsApp</button>
       </div>
       <div id="cheatSheet" style="margin-top:16px"></div>
       <div class="subcard" style="margin-top:16px">
@@ -1667,6 +1668,7 @@ function buildWeek(quiet){
     rows+=dayTotalHTML(day);
     out+='<details class="week-day"'+(di===0?' open':'')+'><summary>'+dn+'<span style="color:var(--g1);font-weight:800">'+day.totK.toLocaleString()+' kcal · '+day.totP+'g P</span></summary><div class="wd-body">'+rows+'</div></details>';
   });
+  lastGroBag=bag;
   out+='<div class="week-day" style="margin-top:14px"><div style="padding:14px"><b>🛒 Grocery list — the whole week, one trip</b>'+groRender(bag)+
     '<p class="hint">Raw/uncooked quantities, already scaled to your portions, including each day\'s protein top-up and any extra. Round up to the nearest packet. Day totals include both.</p></div></div>';
   $('printHead').innerHTML='<div class="ph-t">🥗 Diet AI — your 7-day plan</div><div class="ph-s">'+
@@ -1691,6 +1693,22 @@ function printPack(){
   logEv('pack_printed');
   window.print();
   setTimeout(restore,1500); /* Safari/iOS may not fire afterprint */
+}
+/* In many homes someone else does the shopping or the cooking: send them the week's list
+   as plain WhatsApp text, grouped like the list on screen. */
+var lastGroBag=null;
+function groceryText(bag){
+  var cats={},order=['Grains & flour','Pulses','Dairy & eggs','Meat & fish','Vegetables & fruit','Nuts & snacks','Ready-made','Pantry'];
+  Object.keys(bag).forEach(function(k){var it=GRO_CANON[k];if(!it)return;(cats[it.c]=cats[it.c]||[]).push('• '+it.n+' — '+groFmt(it,bag[k]));});
+  var lines=['🛒 *Grocery list for the week* (Diet AI · '+REGIONS[lastPlan.region].n+')',''];
+  order.forEach(function(c){if(!cats[c])return;lines.push('*'+c+'*');lines=lines.concat(cats[c]);lines.push('');});
+  lines.push('Raw quantities for 7 days. Made with https://dietai.in/?utm_source=grocery');
+  return lines.join('\n');
+}
+function shareGrocery(){
+  if(!lastWeek||!lastPlan||!lastGroBag){toast('Open your 7-day plan first!');return;}
+  logEv('share_week',{what:'grocery'});
+  window.open('https://wa.me/?text='+encodeURIComponent(groceryText(lastGroBag)),'_blank');
 }
 function shareWeek(){
   if(!lastWeek||!lastPlan){toast('Build your week first!');return;}

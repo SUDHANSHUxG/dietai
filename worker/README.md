@@ -32,6 +32,9 @@ Key reuse: ClaimFight's Worker uses the same secret names, so one Razorpay key p
 serve both. Razorpay shows a Key Secret only once — if you regenerate the key, put the new
 secret into **both** Workers, or ClaimFight's checkout stops working.
 
+`ADMIN_KEY` is not set (checked 15 Nov): `/funnel` answers 401 until it is added as a Secret.
+Claude reads the D1 table directly, so nothing depends on it.
+
 What the secrets do: the Key ID is public (Razorpay checkout shows it). The Key Secret
 creates orders, checks Razorpay's payment signatures and signs unlock tokens. Rotating it
 invalidates every unlock token; customers' pages re-issue theirs from the payment ID inside.

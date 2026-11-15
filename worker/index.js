@@ -13,7 +13,7 @@
 //
 // Bindings / secrets (Worker → Settings → Variables and Secrets):
 //   EVENTS               D1 database (already bound)
-//   ADMIN_KEY            secret (already set) — for /funnel
+//   ADMIN_KEY            secret, not set yet — /funnel answers 401 until it is
 //   RAZORPAY_KEY_ID      secret — rzp_test_... first, rzp_live_... when going live
 //   RAZORPAY_KEY_SECRET  secret — shown once by Razorpay when the key is generated
 // Same names as the ClaimFight worker, so one Razorpay key pair can serve both.
